@@ -17,94 +17,102 @@ class Layouter:
     activation_offset = 10
     message_offset = 20
 
-    def __init__(self):
+    def __init__(self, description: model.SequenceDiagramDescription):
+        self.description = description
         self.participant_info: Dict[str, ParticipantInfo] = {}
         self.current_y = self.sequence_start_offset
+        self.file = output.File()
+        self.page = output.Page(self.file, 'Diagram')
+        self.frame = output.Frame(self.page, '')
+        self.executed = False
 
-    def layout(self, description: model.SequenceDiagramDescription) -> output.File:
-        file = output.File()
-        page = output.Page(file, 'Diagram')
+    def layout(self) -> output.File:
+        assert not self.executed, "layouter instance can only be used once"
+        self.executed = True
 
-        self.create_participants(page, description)
-        self.process_statements(description)
-        self.finalize(page, description)
+        self.initialize()
+        self.process_statements()
+        self.finalize()
 
-        return file
+        return self.file
 
-    def create_participants(self, page: output.Page, description: model.SequenceDiagramDescription):
-        for index, participant in enumerate(description.participants):
-            lifeline = output.Lifeline(page, participant.name)
+    def initialize(self):
+        end_x = 0
+
+        for index, participant in enumerate(self.description.participants):
+            lifeline = output.Lifeline(self.page, participant.name)
 
             lifeline.width = self.lifeline_width
             lifeline.x = index * (self.lifeline_width + self.lifeline_spacing)
 
+            end_x = lifeline.x + self.lifeline_width
+
             self.participant_info[participant.alias] = ParticipantInfo(participant, lifeline)
 
-    def finalize(self, page: output.Page, description: model.SequenceDiagramDescription):
+        self.frame.value = self.description.title
+        self.frame.x = -self.frame_padding
+        self.frame.y = -self.frame_padding - self.frame.header_height
+        self.frame.width = end_x + 2 * self.frame_padding
+
+    def finalize(self):
         self.current_y += self.sequence_end_offset
 
         for participant in self.participant_info.values():
             participant.lifeline.height = self.current_y
 
-        frame = output.Frame(page, description.title)
-        frame.x = -self.frame_padding
-        frame.y = -self.frame_padding - frame.header_height
-        frame.width = 2 * self.frame_padding + len(description.participants) * self.lifeline_width + \
-                      (len(description.participants) - 1) * self.lifeline_spacing
-        frame.height = frame.header_height + 2 * self.frame_padding + self.current_y
+        self.frame.height = (self.current_y - self.frame.y) + self.frame_padding
 
-    def process_statements(self, description: model.SequenceDiagramDescription):
+    def process_statements(self):
         handlers = {
-            model.Activation: self.handle_activation,
-            model.Deactivation: self.handle_deactivation,
-            model.Message: self.handle_message,
+            model.ActivateStatement: self.handle_activation,
+            model.DeactivateStatement: self.handle_deactivation,
+            model.MessageStatement: self.handle_message,
         }
 
-        for statement in description.statements:
+        for statement in self.description.statements:
             if type(statement) not in handlers:
                 raise NotImplementedError()
 
+            # noinspection PyTypeChecker
             handlers[type(statement)](statement)
 
-    def handle_activation(self, statement: model.Activation):
+    def handle_activation(self, statement: model.ActivateStatement):
         info = self.participant_info[statement.name]
+        assert not info.activation_stack, "explicit activation allowed only if object is inactive"
 
         activation = output.Activation(info.lifeline)
         activation.y = self.current_y
         info.activation_stack.append(activation)
 
-        self.current_y += self.activation_offset
-
-    def handle_deactivation(self, statement: model.Deactivation):
+    def handle_deactivation(self, statement: model.DeactivateStatement):
         info = self.participant_info[statement.name]
-        assert info.activation_stack
+        assert info.activation_stack, "deactivation not possible, participant is inactive"
 
         activation = info.activation_stack.pop()
         activation.height = self.current_y - activation.y
 
-        self.current_y += self.activation_offset
-
-    def handle_message(self, statement: model.Message):
+    def handle_message(self, statement: model.MessageStatement):
+        assert statement.sender != statement.receiver, "use self call syntax"
         sender_info = self.participant_info[statement.sender]
         receiver_info = self.participant_info[statement.receiver]
 
-        if statement.activation == model.ActivationType.ACTIVATE:
+        if statement.activation == model.MessageActivationType.ACTIVATE:
+            self.current_y += self.message_offset
+
             activation = output.Activation(receiver_info.lifeline)
             activation.y = self.current_y
             receiver_info.activation_stack.append(activation)
 
-            self.current_y += self.activation_offset
-
+            assert sender_info.activation_stack, "sender must be active to send a message"
             output.MessageActivate(sender_info.activation_stack[-1], activation, statement.text)
 
-        elif statement.activation == model.ActivationType.DEACTIVATE:
+        elif statement.activation == model.MessageActivationType.DEACTIVATE:
             self.current_y += self.message_offset
 
             activation = sender_info.activation_stack.pop()
             activation.height = self.current_y - activation.y
 
-            self.current_y += self.activation_offset
-
+            assert receiver_info.activation_stack, "receiver must be active to deactivate"
             output.MessageDeactivate(activation, receiver_info.activation_stack[-1], statement.text)
         else:
             raise NotImplementedError()
@@ -112,7 +120,7 @@ class Layouter:
 
 @dataclass
 class ParticipantInfo:
-    participant: model.Participant
+    participant: model.ParticipantDeclaration
     lifeline: output.Lifeline
     activation_stack: List[output.Activation] = None
 

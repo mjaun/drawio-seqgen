@@ -1,9 +1,9 @@
 from lark import Lark, Transformer
 from pathlib import Path
 
-from model import SequenceDiagramDescription, Participant, Activation, Deactivation, LineStyle, ArrowStyle, \
-    ActivationType, \
-    Message, Title
+from model import SequenceDiagramDescription, ParticipantDeclaration, ActivateStatement, DeactivateStatement, MessageLineStyle, MessageArrowStyle, \
+    MessageActivationType, \
+    MessageStatement, TitleDeclaration
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
@@ -29,13 +29,13 @@ class SeqgenTransformer(Transformer):
 
     def title(self, items):
         assert len(items) == 1
-        return Title(str(items[0]))
+        return TitleDeclaration(str(items[0]))
 
     def participant(self, items):
         if len(items) == 1:
-            return Participant(name=items[0])
+            return ParticipantDeclaration(name=items[0])
         elif len(items) == 2:
-            return Participant(name=items[0], alias=items[1])
+            return ParticipantDeclaration(name=items[0], alias=items[1])
         else:
             raise NotImplementedError()
 
@@ -45,11 +45,11 @@ class SeqgenTransformer(Transformer):
 
     def activation(self, items):
         assert len(items) == 1
-        return Activation(str(items[0]))
+        return ActivateStatement(str(items[0]))
 
     def deactivation(self, items):
         assert len(items) == 1
-        return Deactivation(str(items[0]))
+        return DeactivateStatement(str(items[0]))
 
     def message(self, items):
         assert len(items) == 4
@@ -59,23 +59,23 @@ class SeqgenTransformer(Transformer):
         receiver = items[2]
         text = items[3]
 
-        return Message(sender, receiver, text, activation, line, arrow)
+        return MessageStatement(sender, receiver, text, activation, line, arrow)
 
     def arrow(self, items):
         assert len(items) in (2, 3)
 
         line_map = {
-            '-': LineStyle.SOLID,
-            '--': LineStyle.DASHED,
+            '-': MessageLineStyle.SOLID,
+            '--': MessageLineStyle.DASHED,
         }
         arrow_map = {
-            '>': ArrowStyle.BLOCK,
-            '>>': ArrowStyle.OPEN,
+            '>': MessageArrowStyle.BLOCK,
+            '>>': MessageArrowStyle.OPEN,
         }
         activation_map = {
-            '': ActivationType.NONE,
-            '+': ActivationType.ACTIVATE,
-            '-': ActivationType.DEACTIVATE,
+            '': MessageActivationType.NONE,
+            '+': MessageActivationType.ACTIVATE,
+            '-': MessageActivationType.DEACTIVATE,
         }
 
         line_str = str(items[0])

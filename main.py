@@ -10,10 +10,7 @@ def main():
 
     description = parse(example)
 
-    print(description.participants)
-    print(description.statements)
-
-    file = Layouter().layout(description)
+    file = Layouter(description).layout()
 
     file.write(SCRIPT_DIR / 'output.xml')
     file.write(SCRIPT_DIR / 'output.drawio')

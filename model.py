@@ -3,29 +3,13 @@ from enum import Enum, auto
 from typing import List
 
 
-class ActivationType(Enum):
-    NONE = auto()
-    ACTIVATE = auto()
-    DEACTIVATE = auto()
-
-
-class LineStyle(Enum):
-    SOLID = auto()
-    DASHED = auto()
-
-
-class ArrowStyle(Enum):
-    BLOCK = auto()
-    OPEN = auto()
-
-
 @dataclass
-class Title:
+class TitleDeclaration:
     text: str
 
 
 @dataclass
-class Participant:
+class ParticipantDeclaration:
     name: str
     alias: str = None
 
@@ -40,35 +24,51 @@ class Statement:
 
 
 @dataclass
-class Activation(Statement):
+class ActivateStatement(Statement):
     name: str
 
 
 @dataclass
-class Deactivation(Statement):
+class DeactivateStatement(Statement):
     name: str
 
 
+class MessageActivationType(Enum):
+    NONE = auto()
+    ACTIVATE = auto()
+    DEACTIVATE = auto()
+
+
+class MessageLineStyle(Enum):
+    SOLID = auto()
+    DASHED = auto()
+
+
+class MessageArrowStyle(Enum):
+    BLOCK = auto()
+    OPEN = auto()
+
+
 @dataclass
-class Message(Statement):
+class MessageStatement(Statement):
     sender: str
     receiver: str
     text: str
-    activation: ActivationType
-    line: LineStyle
-    arrow: ArrowStyle
+    activation: MessageActivationType
+    line: MessageLineStyle
+    arrow: MessageArrowStyle
 
 
 class SequenceDiagramDescription:
     def __init__(self, items):
-        self.participants: List[Participant] = []
+        self.participants: List[ParticipantDeclaration] = []
         self.statements: List[Statement] = []
         self.title = 'Sequence Diagram'
 
         for item in items:
-            if isinstance(item, Participant):
+            if isinstance(item, ParticipantDeclaration):
                 self.participants.append(item)
             if isinstance(item, Statement):
                 self.statements.append(item)
-            if isinstance(item, Title):
+            if isinstance(item, TitleDeclaration):
                 self.title = item.text
