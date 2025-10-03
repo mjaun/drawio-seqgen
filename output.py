@@ -119,6 +119,29 @@ class ObjectWithAbsoluteGeometry(Object):
         return cell
 
 
+class Frame(ObjectWithAbsoluteGeometry):
+    def __init__(self, page: Page, value: str):
+        super().__init__(page, None, value)
+
+        self.header_width = 200
+        self.header_height = 30
+
+    def attr(self) -> Dict[str, str]:
+        return {
+            'vertex': '1'
+        }
+
+    def style(self) -> Dict[str, str]:
+        return {
+            'shape': 'umlFrame',
+            'whiteSpace': 'wrap',
+            'html': '1',
+            'pointerEvents': '0',
+            'width': str(self.header_width),
+            'height': str(self.header_height),
+        }
+
+
 class Lifeline(ObjectWithAbsoluteGeometry):
     def __init__(self, page: Page, value: str):
         super().__init__(page, None, value)

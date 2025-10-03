@@ -20,6 +20,11 @@ class ArrowStyle(Enum):
 
 
 @dataclass
+class Title:
+    text: str
+
+
+@dataclass
 class Participant:
     name: str
     alias: str = None
@@ -56,5 +61,14 @@ class Message(Statement):
 
 class SequenceDiagramDescription:
     def __init__(self, items):
-        self.participants: List[Participant] = [item for item in items if isinstance(item, Participant)]
-        self.statements: List[Statement] = [item for item in items if isinstance(item, Statement)]
+        self.participants: List[Participant] = []
+        self.statements: List[Statement] = []
+        self.title = 'Sequence Diagram'
+
+        for item in items:
+            if isinstance(item, Participant):
+                self.participants.append(item)
+            if isinstance(item, Statement):
+                self.statements.append(item)
+            if isinstance(item, Title):
+                self.title = item.text

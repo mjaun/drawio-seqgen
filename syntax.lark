@@ -1,6 +1,8 @@
 start: statement*
 
-statement: participant | activation | deactivation | message
+statement: title | participant | activation | deactivation | message
+
+title: "title" _SPACE+ TEXT _NEWLINE
 
 participant: "participant" _SPACE+ name participant_alias? _NEWLINE
 participant_alias: _SPACE+ "as" _SPACE+ name
@@ -8,7 +10,7 @@ participant_alias: _SPACE+ "as" _SPACE+ name
 activation: "activate" _SPACE+ name _NEWLINE
 deactivation: "deactivate" _SPACE+ name _NEWLINE
 
-message: name _SPACE+ arrow _SPACE+ name _SPACE* ":" _SPACE* MESSAGE_TEXT _NEWLINE
+message: name _SPACE+ arrow _SPACE+ name _SPACE* ":" _SPACE* TEXT _NEWLINE
 
 arrow: ARROW_LINE ARROW_END ARROW_ACTIVATION?
 ARROW_LINE: /-{1,2}/
@@ -19,7 +21,7 @@ name: QUOTED_NAME | UNQUOTED_NAME
 QUOTED_NAME: /"[^\n]*"/
 UNQUOTED_NAME: /[A-Za-z0-9_]+/
 
-MESSAGE_TEXT: /[^\n]+/
+TEXT: /[^\n]+/
 
 _BEGIN: /(?m)^/
 _END: /(?m)$/

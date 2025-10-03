@@ -9,7 +9,11 @@ class Layouter:
     lifeline_width = 120
     lifeline_spacing = 40
 
+    frame_padding = 30
+
     sequence_start_offset = 60
+    sequence_end_offset = 20
+
     activation_offset = 10
     message_offset = 20
 
@@ -23,6 +27,7 @@ class Layouter:
 
         self.create_participants(page, description)
         self.process_statements(description)
+        self.finalize(page, description)
 
         return file
 
@@ -34,6 +39,19 @@ class Layouter:
             lifeline.x = index * (self.lifeline_width + self.lifeline_spacing)
 
             self.participant_info[participant.alias] = ParticipantInfo(participant, lifeline)
+
+    def finalize(self, page: output.Page, description: model.SequenceDiagramDescription):
+        self.current_y += self.sequence_end_offset
+
+        for participant in self.participant_info.values():
+            participant.lifeline.height = self.current_y
+
+        frame = output.Frame(page, description.title)
+        frame.x = -self.frame_padding
+        frame.y = -self.frame_padding - frame.header_height
+        frame.width = 2 * self.frame_padding + len(description.participants) * self.lifeline_width + \
+                      (len(description.participants) - 1) * self.lifeline_spacing
+        frame.height = frame.header_height + 2 * self.frame_padding + self.current_y
 
     def process_statements(self, description: model.SequenceDiagramDescription):
         handlers = {

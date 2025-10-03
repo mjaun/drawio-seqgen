@@ -1,8 +1,9 @@
 from lark import Lark, Transformer
 from pathlib import Path
 
-from model import SequenceDiagramDescription, Participant, Activation, Deactivation, LineStyle, ArrowStyle, ActivationType, \
-    Message
+from model import SequenceDiagramDescription, Participant, Activation, Deactivation, LineStyle, ArrowStyle, \
+    ActivationType, \
+    Message, Title
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
@@ -25,6 +26,10 @@ class SeqgenTransformer(Transformer):
     def statement(self, items):
         assert len(items) == 1
         return items[0]
+
+    def title(self, items):
+        assert len(items) == 1
+        return Title(str(items[0]))
 
     def participant(self, items):
         if len(items) == 1:
