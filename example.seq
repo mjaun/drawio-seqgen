@@ -1,0 +1,7 @@
+participant Alice as A
+participant John as J
+
+activate A
+A ->+ J: dispatch
+J -->>- A: return
+deactivate A

@@ -1,0 +1,32 @@
+start: statement*
+
+statement: participant | activation | deactivation | message
+
+participant: "participant" _SPACE+ name participant_alias? _NEWLINE
+participant_alias: _SPACE+ "as" _SPACE+ name
+
+activation: "activate" _SPACE+ name _NEWLINE
+deactivation: "deactivate" _SPACE+ name _NEWLINE
+
+message: name _SPACE+ arrow _SPACE+ name _SPACE* ":" _SPACE* MESSAGE_TEXT _NEWLINE
+
+arrow: ARROW_LINE ARROW_END ARROW_ACTIVATION?
+ARROW_LINE: /-{1,2}/
+ARROW_END: />{1,2}/
+ARROW_ACTIVATION: /\+|-/
+
+name: QUOTED_NAME | UNQUOTED_NAME
+QUOTED_NAME: /"[^\n]*"/
+UNQUOTED_NAME: /[A-Za-z0-9_]+/
+
+MESSAGE_TEXT: /[^\n]+/
+
+_BEGIN: /(?m)^/
+_END: /(?m)$/
+_SPACE: /[ \t]+/
+_NEWLINE: /\r?\n/
+
+%ignore _BEGIN _SPACE* _NEWLINE // empty lines
+%ignore _BEGIN _SPACE+ // leading white space
+%ignore _SPACE+ _END // trailing white space
+%ignore _BEGIN _SPACE* /%%.*/ _NEWLINE // mermaid comments

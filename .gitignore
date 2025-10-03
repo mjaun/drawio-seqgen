@@ -1,0 +1,5 @@
+/.venv/
+*.pyc
+*.drawio
+*.xml
+*.bkp
