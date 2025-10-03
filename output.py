@@ -48,10 +48,11 @@ class Page:
             'connect': '1',
             'arrows': '1',
             'fold': '1',
-            'page': '1',
+            'page': '0',
             'pageScale': '1',
             'pageWidth': '850',
             'pageHeight': '1100',
+            'background': '#ffffff',
             'math': '0',
             'shadow': '0',
         })

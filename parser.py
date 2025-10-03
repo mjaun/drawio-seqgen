@@ -1,28 +1,26 @@
-from dataclasses import dataclass
-from enum import Enum, auto
 from lark import Lark, Transformer
 from pathlib import Path
+
+from model import SequenceDiagramDescription, Participant, Activation, Deactivation, LineStyle, ArrowStyle, ActivationType, \
+    Message
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
 
-def parse(text):
+def parse(text) -> 'SequenceDiagramDescription':
     with open(SCRIPT_DIR / 'syntax.lark', 'r') as f:
         grammar = f.read()
 
     lark = Lark(grammar, start='start')
-
     parsed = lark.parse(text)
-    transformed = MermaidTransformer().transform(parsed)
-
-    print(transformed)
+    transformed = SeqgenTransformer().transform(parsed)
 
     return transformed
 
 
-class MermaidTransformer(Transformer):
+class SeqgenTransformer(Transformer):
     def start(self, items):
-        return list(items)
+        return SequenceDiagramDescription(items)
 
     def statement(self, items):
         assert len(items) == 1
@@ -70,9 +68,9 @@ class MermaidTransformer(Transformer):
             '>>': ArrowStyle.OPEN,
         }
         activation_map = {
-            '': MessageActivation.NONE,
-            '+': MessageActivation.ACTIVATE,
-            '-': MessageActivation.DEACTIVATE,
+            '': ActivationType.NONE,
+            '+': ActivationType.ACTIVATE,
+            '-': ActivationType.DEACTIVATE,
         }
 
         line_str = str(items[0])
@@ -90,49 +88,3 @@ class MermaidTransformer(Transformer):
             return str(items[0])
         else:
             raise NotImplementedError()
-
-
-class MessageActivation(Enum):
-    NONE = auto()
-    ACTIVATE = auto()
-    DEACTIVATE = auto()
-
-
-class LineStyle(Enum):
-    SOLID = auto()
-    DASHED = auto()
-
-
-class ArrowStyle(Enum):
-    BLOCK = auto()
-    OPEN = auto()
-
-
-@dataclass
-class Participant:
-    name: str
-    alias: str = None
-
-    def __post_init__(self):
-        if not self.alias:
-            self.alias = self.name
-
-
-@dataclass
-class Message:
-    sender: str
-    receiver: str
-    text: str
-    activation: MessageActivation
-    line: LineStyle
-    arrow: ArrowStyle
-
-
-@dataclass
-class Activation:
-    name: str
-
-
-@dataclass
-class Deactivation:
-    name: str
