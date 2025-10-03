@@ -7,8 +7,8 @@ participant George as G
 activate A
 A ->+ J: dispatch
 J ->+ G: dispatch
-G -->- J: return
+G -->>- J: return
 J ->+ A: dispatch
-A -->- J: return
+A -->>- J: return
 J -->>- A: return
 deactivate A

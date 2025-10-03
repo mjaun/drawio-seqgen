@@ -1,6 +1,11 @@
 import xml.etree.ElementTree as ET
 
-from typing import List, Dict, Optional, Callable, Union
+from enum import auto, Enum
+from typing import List, Dict, Optional
+
+from model import MessageLineStyle, MessageArrowStyle
+
+ACTIVATION_WIDTH = 10
 
 
 class File:
@@ -175,7 +180,6 @@ class Activation(Object):
         super().__init__(parent.page, parent, '')
 
         self.y = 90
-        self.width = 10
         self.height = 100
 
     def attr(self):
@@ -200,9 +204,9 @@ class Activation(Object):
         assert isinstance(self.parent, Lifeline)
 
         ET.SubElement(cell, 'mxGeometry', attrib={
-            'x': str((self.parent.width / 2) - (self.width / 2)),
+            'x': str((self.parent.width / 2) - (ACTIVATION_WIDTH / 2)),
             'y': str(self.y),
-            'width': str(self.width),
+            'width': str(ACTIVATION_WIDTH),
             'height': str(self.height),
             'as': 'geometry'
         })
@@ -210,11 +214,20 @@ class Activation(Object):
         return cell
 
 
-class MessageActivate(Object):
+class MessageType(Enum):
+    ACTIVATE_FROM_LEFT = auto()
+    DEACTIVATE_FROM_LEFT = auto()
+
+
+class Message(Object):
     def __init__(self, source: Object, target: Object, value: str):
         super().__init__(source.page, None, value)
         self.source = source
         self.target = target
+
+        self.type = MessageType.ACTIVATE_FROM_LEFT
+        self.line = MessageLineStyle.SOLID
+        self.arrow = MessageArrowStyle.BLOCK
 
     def attr(self):
         return {
@@ -224,17 +237,36 @@ class MessageActivate(Object):
         }
 
     def style(self):
-        return {
+        arrow_map = {
+            MessageArrowStyle.BLOCK: 'block',
+            MessageArrowStyle.OPEN: 'open',
+        }
+
+        style = {
             'html': '1',
             'verticalAlign': 'bottom',
-            'endArrow': 'block',
+            'endArrow': arrow_map[self.arrow],
+            'dashed': '0' if self.line == MessageLineStyle.SOLID else '1',
             'curved': '0',
             'rounded': '0',
-            'entryX': '0',
-            'entryY': '0',
-            'entryDx': '0',
-            'entryDy': '5',
         }
+
+        if self.type == MessageType.ACTIVATE_FROM_LEFT:
+            style.update({
+                'entryX': '0',
+                'entryY': '0',
+                'entryDx': '0',
+                'entryDy': '5',
+            })
+        if self.type == MessageType.DEACTIVATE_FROM_LEFT:
+            style.update({
+                'exitX': '0',
+                'exitY': '1',
+                'exitDx': '0',
+                'exitDy': '-5',
+            })
+
+        return style
 
     def xml(self, xml_parent: ET.Element) -> ET.Element:
         cell = super().xml(xml_parent)
@@ -244,51 +276,13 @@ class MessageActivate(Object):
             'as': 'geometry'
         })
 
-        ET.SubElement(geometry, 'mxPoint', attrib={
-            'as': 'sourcePoint'
-        })
-
-        return cell
-
-
-class MessageDeactivate(Object):
-    def __init__(self, source: Object, target: Object, value: str):
-        super().__init__(source.page, None, value)
-        self.source = source
-        self.target = target
-
-    def attr(self):
-        return {
-            'edge': '1',
-            'source': self.source.id,
-            'target': self.target.id,
+        as_map = {
+            MessageType.ACTIVATE_FROM_LEFT: 'sourcePoint',
+            MessageType.DEACTIVATE_FROM_LEFT: 'targetPoint',
         }
 
-    def style(self):
-        return {
-            'html': '1',
-            'verticalAlign': 'bottom',
-            'endArrow': 'open',
-            'dashed': '1',
-            'endSize': '8',
-            'curved': '0',
-            'rounded': '0',
-            'exitX': '0',
-            'exitY': '1',
-            'exitDx': '0',
-            'exitDy': '-5',
-        }
-
-    def xml(self, xml_parent: ET.Element) -> ET.Element:
-        cell = super().xml(xml_parent)
-
-        geometry = ET.SubElement(cell, 'mxGeometry', attrib={
-            'relative': '1',
-            'as': 'geometry'
-        })
-
         ET.SubElement(geometry, 'mxPoint', attrib={
-            'as': 'targetPoint'
+            'as': as_map[self.type],
         })
 
         return cell

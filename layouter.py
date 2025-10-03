@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from typing import List, Dict, Optional
+from typing import List, Dict
 
 import model
 import output
+from output import MessageType
 
 
 class Layouter:
@@ -104,7 +105,10 @@ class Layouter:
             receiver_info.activation_stack.append(activation)
 
             assert sender_info.activation_stack, "sender must be active to send a message"
-            output.MessageActivate(sender_info.activation_stack[-1], activation, statement.text)
+            message = output.Message(sender_info.activation_stack[-1], activation, statement.text)
+            message.line = statement.line
+            message.arrow = statement.arrow
+            message.type = output.MessageType.ACTIVATE_FROM_LEFT
 
         elif statement.activation == model.MessageActivationType.DEACTIVATE:
             self.current_y += self.message_offset
@@ -113,7 +117,11 @@ class Layouter:
             activation.height = self.current_y - activation.y
 
             assert receiver_info.activation_stack, "receiver must be active to deactivate"
-            output.MessageDeactivate(activation, receiver_info.activation_stack[-1], statement.text)
+            message = output.Message(activation, receiver_info.activation_stack[-1], statement.text)
+            message.line = statement.line
+            message.arrow = statement.arrow
+            message.type = output.MessageType.DEACTIVATE_FROM_LEFT
+
         else:
             raise NotImplementedError()
 
