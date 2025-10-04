@@ -48,21 +48,34 @@ class SeqTransformer(Transformer):
     @staticmethod
     def title(items):
         assert len(items) == 1
-        return TitleDeclaration(str(items[0]))
+        return TitleTextDeclaration(str(items[0]))
+
+    @staticmethod
+    def title_size(items):
+        assert len(items) == 2
+        return TitleSizeDeclaration(int(items[0]), int(items[1]))
 
     @staticmethod
     def participant(items):
-        if len(items) == 1:
-            return ParticipantDeclaration(name=items[0])
-        elif len(items) == 2:
-            return ParticipantDeclaration(name=items[0], alias=items[1])
-        else:
-            raise NotImplementedError()
+        assert len(items) in (1, 2)
+        text = items[0]
+        name = items[1] if len(items) == 2 else text
+        return ParticipantNameDeclaration(text, name)
 
     @staticmethod
     def participant_alias(items):
         assert len(items) == 1
         return items[0]
+
+    @staticmethod
+    def participant_spacing(items):
+        assert len(items) == 1
+        return ParticipantSpacingDeclaration(int(items[0]))
+
+    @staticmethod
+    def participant_width(items):
+        assert len(items) == 1
+        return ParticipantWidthDeclaration(int(items[0]))
 
     @staticmethod
     def activation(items):

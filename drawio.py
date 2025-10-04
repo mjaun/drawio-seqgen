@@ -131,8 +131,8 @@ class Frame(ObjectWithAbsoluteGeometry):
     def __init__(self, page: Page, value: str):
         super().__init__(page, None, value)
 
-        self.header_width = 200
-        self.header_height = 30
+        self.box_width = 160
+        self.box_height = 30
 
     def attr(self) -> Dict[str, str]:
         return {
@@ -145,8 +145,8 @@ class Frame(ObjectWithAbsoluteGeometry):
             'whiteSpace': 'wrap',
             'html': '1',
             'pointerEvents': '0',
-            'width': str(self.header_width),
-            'height': str(self.header_height),
+            'width': str(self.box_width),
+            'height': str(self.box_height),
         }
 
 

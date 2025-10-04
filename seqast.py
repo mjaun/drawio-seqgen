@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import List
+from typing import List, Optional
 
 from drawio import MessageLineStyle, MessageArrowStyle
 
@@ -11,18 +11,35 @@ class Declaration:
 
 
 @dataclass
-class TitleDeclaration(Declaration):
+class TitleTextDeclaration(Declaration):
     text: str
 
 
 @dataclass
-class ParticipantDeclaration(Declaration):
-    name: str
-    alias: str = None
+class TitleSizeDeclaration(Declaration):
+    width: int
+    height: int
 
-    def __post_init__(self):
-        if not self.alias:
-            self.alias = self.name
+
+@dataclass
+class ParticipantDeclaration:
+    pass
+
+
+@dataclass
+class ParticipantNameDeclaration(ParticipantDeclaration):
+    text: str
+    name: str
+
+
+@dataclass
+class ParticipantWidthDeclaration(ParticipantDeclaration):
+    width: int
+
+
+@dataclass
+class ParticipantSpacingDeclaration(ParticipantDeclaration):
+    spacing: int
 
 
 @dataclass
@@ -69,13 +86,11 @@ class SpacingStatement(Statement):
 
 
 class SeqDescription:
-    def __init__(self, declarations, statements: List[Statement]):
+    def __init__(self, declarations: List[Declaration], statements: List[Statement]):
         self.statements: List[Statement] = statements
         self.participants: List[ParticipantDeclaration] = all_of_type(ParticipantDeclaration, declarations)
-        self.title = 'Sequence Diagram'
-
-        if title_declaration := last_of_type(TitleDeclaration, declarations):
-            self.title = title_declaration.text
+        self.title: Optional[TitleTextDeclaration] = last_of_type(TitleTextDeclaration, declarations)
+        self.title_size: Optional[TitleSizeDeclaration] = last_of_type(TitleSizeDeclaration, declarations)
 
 
 def last_of_type(type, items):

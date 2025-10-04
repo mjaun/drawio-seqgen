@@ -1,7 +1,15 @@
-title Example
+title Example<br/>Test
+title size 200x40
+
+participant width 120
+participant spacing 40
 
 participant Alice as A
 participant John as J
+
+participant width 160
+participant spacing 100
+
 participant George as G
 
 activate A

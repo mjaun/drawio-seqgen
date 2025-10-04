@@ -3,13 +3,17 @@ start: declaration_list statement_list
 declaration_list: declaration+
 statement_list: statement+
 
-declaration: title | participant
+declaration: title_size | title | participant_width | participant_spacing | participant
 statement: activation | deactivation | message | self_call | spacing
 
 title: "title" _SPACE+ TEXT _NEWLINE
+title_size: "title size" _SPACE+ NUMBER "x" NUMBER _NEWLINE
 
 participant: "participant" _SPACE+ name participant_alias? _NEWLINE
 participant_alias: _SPACE+ "as" _SPACE+ name
+
+participant_width: "participant width" _SPACE+ NUMBER _NEWLINE
+participant_spacing: "participant spacing" _SPACE+ NUMBER _NEWLINE
 
 spacing: "spacing" _SPACE+ NUMBER _NEWLINE
 
