@@ -1,5 +1,4 @@
-from dataclasses import dataclass
-from typing import List, Dict, Optional, Set
+from typing import List, Dict, Optional
 
 import seqast
 import drawio
@@ -14,6 +13,8 @@ CONTROL_FRAME_BOX_WIDTH = 60
 CONTROL_FRAME_BOX_HEIGHT = 20
 CONTROL_FRAME_SPACING = 20
 
+SELF_CALL_DEFAULT_WIDTH = 80
+
 STATEMENT_OFFSET_Y = 10
 MESSAGE_MIN_SPACING = 20
 
@@ -27,11 +28,10 @@ class ParticipantInfo:
         self.activation_stack: List[drawio.Activation] = []
 
 
-class FrameInfo:
-    def __init__(self, frame: drawio.Frame):
-        self.frame = frame
-        self.participants: Set[ParticipantInfo] = set()
-        self.inner_frames: Set[FrameInfo] = set()
+class FrameDimension:
+    def __init__(self):
+        self.min_x: Optional[int] = None
+        self.max_x: Optional[int] = None
 
 
 class Layouter:
@@ -39,7 +39,7 @@ class Layouter:
         self.description = description
         self.participant_info: Dict[str, ParticipantInfo] = {}
         self.last_offset_per_gap: Dict[int, int] = {i: 0 for i in range(len(description.participants) - 1)}
-        self.frame_stack: List[FrameInfo] = []
+        self.frame_dimension_stack: List[FrameDimension] = []
         self.current_position_y = LIFELINE_HEIGHT + (2 * STATEMENT_OFFSET_Y)
 
         self.file = drawio.File()
@@ -52,8 +52,8 @@ class Layouter:
         assert not self.executed, "layouter instance can only be used once"
         self.executed = True
 
-        self.setup_participants()
         self.setup_title_frame()
+        self.setup_participants()
 
         self.process_statements(self.description.statements)
 
@@ -61,6 +61,20 @@ class Layouter:
         self.finalize_title_frame()
 
         return self.file
+
+    def setup_title_frame(self):
+        if title_decl := self.description.title:
+            self.title_frame.value = title_decl.text
+        else:
+            self.title_frame.value = 'Sequence Diagram'
+
+        if title_size_decl := self.description.title_size:
+            self.title_frame.box_width = title_size_decl.width
+            self.title_frame.box_height = title_size_decl.height
+
+        self.title_frame.y = -TITLE_FRAME_PADDING - self.title_frame.box_height
+
+        self.frame_dimension_stack.append(FrameDimension())
 
     def setup_participants(self):
         lifeline_width = LIFELINE_DEFAULT_WIDTH
@@ -86,21 +100,7 @@ class Layouter:
             else:
                 raise NotImplementedError()
 
-    def setup_title_frame(self):
-        if title_decl := self.description.title:
-            self.title_frame.value = title_decl.text
-        else:
-            self.title_frame.value = 'Sequence Diagram'
-
-        if title_size_decl := self.description.title_size:
-            self.title_frame.box_width = title_size_decl.width
-            self.title_frame.box_height = title_size_decl.height
-
-        self.title_frame.x = -TITLE_FRAME_PADDING
-        self.title_frame.y = -TITLE_FRAME_PADDING - self.title_frame.box_height
-
-        participants_width = max(p.lifeline.x + p.lifeline.width for p in self.participant_info.values())
-        self.title_frame.width = participants_width + (2 * TITLE_FRAME_PADDING)
+        self.request_frame_dimensions(0, end_x)
 
     def finalize_participants(self):
         self.current_position_y += (2 * STATEMENT_OFFSET_Y)
@@ -111,6 +111,11 @@ class Layouter:
 
     def finalize_title_frame(self):
         self.title_frame.height = (self.current_position_y - self.title_frame.y) + TITLE_FRAME_PADDING
+
+        assert len(self.frame_dimension_stack) == 1
+        dimensions = self.frame_dimension_stack.pop()
+        self.title_frame.x = dimensions.min_x - TITLE_FRAME_PADDING
+        self.title_frame.width = dimensions.max_x + TITLE_FRAME_PADDING - self.title_frame.x
 
     def process_statements(self, statements: List[seqast.Statement]):
         handlers = {
@@ -130,7 +135,7 @@ class Layouter:
         participant = self.participant_info[statement.name]
 
         self.activate_participant(participant)
-        self.add_frame_participants(participant)
+        self.request_frame_dimensions(participant.lifeline.center_x())
         self.current_position_y += STATEMENT_OFFSET_Y
 
     def handle_deactivate(self, statement: seqast.DeactivateStatement):
@@ -138,7 +143,6 @@ class Layouter:
         assert participant.activation_stack, "deactivation not possible, participant is inactive"
 
         self.deactivate_participant(participant)
-        self.add_frame_participants(participant)
         self.current_position_y += STATEMENT_OFFSET_Y
 
     def handle_message(self, statement: seqast.MessageStatement):
@@ -169,7 +173,7 @@ class Layouter:
             y=self.current_position_y
         ))
 
-        self.add_frame_participants(sender, receiver)
+        self.request_frame_dimensions(sender.lifeline.center_x(), receiver.lifeline.center_x())
         self.current_position_y += STATEMENT_OFFSET_Y
 
     def handle_message_activate(self, statement: seqast.MessageStatement):
@@ -187,7 +191,7 @@ class Layouter:
         else:
             message.type = drawio.MessageAnchor.TOP_RIGHT
 
-        self.add_frame_participants(sender, receiver)
+        self.request_frame_dimensions(sender.lifeline.center_x(), receiver.lifeline.center_x())
         self.current_position_y += STATEMENT_OFFSET_Y
 
     def handle_message_deactivate(self, statement: seqast.MessageStatement):
@@ -207,7 +211,7 @@ class Layouter:
 
         self.deactivate_participant(sender)
 
-        self.add_frame_participants(sender, receiver)
+        self.request_frame_dimensions(sender.lifeline.center_x(), receiver.lifeline.center_x())
         self.current_position_y += STATEMENT_OFFSET_Y
 
     def handle_message_fireforget(self, statement: seqast.MessageStatement):
@@ -230,7 +234,7 @@ class Layouter:
         self.current_position_y += STATEMENT_OFFSET_Y
         self.deactivate_participant(receiver)
 
-        self.add_frame_participants(sender, receiver)
+        self.request_frame_dimensions(sender.lifeline.center_x(), receiver.lifeline.center_x())
         self.current_position_y += STATEMENT_OFFSET_Y
 
     def handle_self_call(self, statement: seqast.SelfCallStatement):
@@ -248,7 +252,8 @@ class Layouter:
         message = drawio.Message(regular_activation, self_call_activation, statement.text)
         message.alignment = drawio.TextAlignment.MIDDLE_RIGHT
 
-        self_call_x = participant.lifeline.center_x() + self_call_activation.dx + 25
+        lifeline_x = participant.lifeline.center_x()
+        self_call_x = lifeline_x + self_call_activation.dx + 25
 
         message.points.append(drawio.Point(
             x=self_call_x,
@@ -264,7 +269,9 @@ class Layouter:
         self.current_position_y += 2 * STATEMENT_OFFSET_Y
         self.deactivate_participant(participant)
 
-        self.add_frame_participants(participant)
+        self_call_width = statement.width if statement.width is not None else SELF_CALL_DEFAULT_WIDTH
+        self.request_frame_dimensions(lifeline_x, lifeline_x + self_call_width)
+
         self.current_position_y += STATEMENT_OFFSET_Y
 
     def handle_option(self, statement: seqast.OptionStatement):
@@ -277,12 +284,8 @@ class Layouter:
         frame.box_height = CONTROL_FRAME_BOX_HEIGHT
 
         # push frame stack
-        frame_info = FrameInfo(frame)
-
-        if self.frame_stack:
-            self.frame_stack[-1].inner_frames.add(frame_info)
-
-        self.frame_stack.append(frame_info)
+        dimension = FrameDimension()
+        self.frame_dimension_stack.append(dimension)
 
         # positioning on frame begin
         self.current_position_y += CONTROL_FRAME_BOX_HEIGHT
@@ -301,21 +304,14 @@ class Layouter:
         self.current_position_y += STATEMENT_OFFSET_Y
 
         # set frame width
-        min_x = min(p.lifeline.center_x() for p in frame_info.participants) - CONTROL_FRAME_SPACING
-        max_x = max(p.lifeline.center_x() for p in frame_info.participants) + CONTROL_FRAME_SPACING
-
-        if frame_info.inner_frames:
-            inner_frame_min_x = min(f.frame.x for f in frame_info.inner_frames) - CONTROL_FRAME_SPACING
-            inner_frame_max_x = max(f.frame.x + f.frame.width for f in frame_info.inner_frames) + CONTROL_FRAME_SPACING
-
-            min_x = min(min_x, inner_frame_min_x)
-            max_x = max(max_x, inner_frame_max_x)
-
-        frame.x = min_x
-        frame.width = max_x - min_x
+        frame.x = dimension.min_x - CONTROL_FRAME_SPACING
+        frame.width = dimension.max_x + CONTROL_FRAME_SPACING - frame.x
 
         # pop frame stack
-        self.frame_stack.pop()
+        self.frame_dimension_stack.pop()
+
+        # request dimension for parent frame
+        self.request_frame_dimensions(frame.x, frame.x + frame.width)
 
     def handle_spacing(self, statement: seqast.SpacingStatement):
         self.current_position_y += statement.spacing
@@ -333,10 +329,7 @@ class Layouter:
 
         if current_spacing < required_spacing:
             self.current_position_y += required_spacing - current_spacing
-
-            # round up to the next statement offset
-            self.current_position_y = ((
-                                               self.current_position_y + STATEMENT_OFFSET_Y - 1) // STATEMENT_OFFSET_Y) * STATEMENT_OFFSET_Y
+            self.current_position_y = round_up_int(self.current_position_y, STATEMENT_OFFSET_Y)
 
         for gap in range(start_gap, end_gap):
             self.last_offset_per_gap[gap] = self.current_position_y + message_dy
@@ -351,9 +344,18 @@ class Layouter:
         message.type = drawio.MessageAnchor.NONE
         return message
 
-    def add_frame_participants(self, *args):
-        if self.frame_stack:
-            self.frame_stack[-1].participants.update(args)
+    def request_frame_dimensions(self, *x: int):
+        dimension = self.frame_dimension_stack[-1]
+
+        if dimension.min_x is None:
+            dimension.min_x = min(x)
+        else:
+            dimension.min_x = min(dimension.min_x, min(x))
+
+        if dimension.max_x is None:
+            dimension.max_x = max(x)
+        else:
+            dimension.max_x = max(dimension.max_x, max(x))
 
     def activate_participant(self, participant: ParticipantInfo, activator: Optional[ParticipantInfo] = None):
         activation = drawio.Activation(participant.lifeline)
@@ -386,3 +388,8 @@ class Layouter:
     def deactivate_participant(self, participant: ParticipantInfo):
         activation = participant.activation_stack.pop()
         activation.height = self.current_position_y - activation.y
+
+
+def round_up_int(number: int, multiple: int = 1):
+    assert multiple >= 1
+    return ((number + multiple - 1) // multiple) * multiple

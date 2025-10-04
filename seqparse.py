@@ -100,8 +100,17 @@ class SeqTransformer(Transformer):
 
     @staticmethod
     def self_call(items):
-        assert len(items) == 2
-        return SelfCallStatement(items[0], items[1])
+        assert len(items) in (2, 3)
+
+        if len(items) == 2:
+            return SelfCallStatement(items[0], items[1])
+        else:
+            return SelfCallStatement(items[0], items[2], items[1])
+
+    @staticmethod
+    def self_call_width(items):
+        assert len(items) == 1
+        return int(items[0])
 
     @staticmethod
     def option(items):

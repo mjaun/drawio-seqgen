@@ -78,6 +78,7 @@ class MessageStatement(Statement):
 class SelfCallStatement(Statement):
     name: str
     text: str
+    width: Optional[int] = None
 
 
 @dataclass

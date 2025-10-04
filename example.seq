@@ -25,7 +25,7 @@ opt nested happenings
 J ->| G : hello
 
 J ->+ G: dummy
-G: self call
+G width 60: self call
 deactivate G
 
 end

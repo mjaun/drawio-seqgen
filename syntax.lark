@@ -21,7 +21,9 @@ activation: "activate" _SPACE+ name _NEWLINE
 deactivation: "deactivate" _SPACE+ name _NEWLINE
 
 message: name _SPACE+ arrow _SPACE+ name _SPACE* ":" _SPACE* TEXT _NEWLINE
-self_call: name _SPACE* ":" _SPACE* TEXT _NEWLINE
+
+self_call: name self_call_width? _SPACE* ":" _SPACE* TEXT _NEWLINE
+self_call_width: _SPACE+ "width" _SPACE+ NUMBER
 
 option: "opt" _SPACE+ TEXT _NEWLINE statement_list "end" _NEWLINE
 
