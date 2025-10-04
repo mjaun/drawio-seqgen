@@ -85,6 +85,12 @@ class SpacingStatement(Statement):
     spacing: int
 
 
+@dataclass
+class OptionStatement(Statement):
+    text: str
+    inner: List[Statement]
+
+
 class SeqDescription:
     def __init__(self, declarations: List[Declaration], statements: List[Statement]):
         self.statements: List[Statement] = statements

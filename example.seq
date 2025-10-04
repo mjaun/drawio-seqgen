@@ -16,7 +16,17 @@ activate A
 A ->+ J: dispatch
 J ->+ G: dispatch
 G -->>- J: return
+
+opt something happened
 J ->> A: yield
+J ->> A: yield
+
+opt nested happenings
+J ->| G : hello
+end
+
+end
+
 J ->+ A: dispatch
 A -->>- J: return
 J -->>- A: return

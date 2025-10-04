@@ -104,6 +104,11 @@ class SeqTransformer(Transformer):
         return SelfCallStatement(items[0], items[1])
 
     @staticmethod
+    def option(items):
+        assert len(items) == 2
+        return OptionStatement(str(items[0]), items[1])
+
+    @staticmethod
     def arrow(items):
         assert len(items) in (2, 3)
 

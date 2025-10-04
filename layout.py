@@ -1,16 +1,18 @@
 from dataclasses import dataclass
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Set
 
 import seqast
 import drawio
 
 LIFELINE_DEFAULT_WIDTH = 160
 LIFELINE_DEFAULT_SPACING = 40
+LIFELINE_HEIGHT = 40
 
 TITLE_FRAME_PADDING = 30
 
-START_POSITION_Y = 60
-END_OFFSET_Y = 20
+CONTROL_FRAME_BOX_WIDTH = 60
+CONTROL_FRAME_BOX_HEIGHT = 20
+CONTROL_FRAME_SPACING = 20
 
 STATEMENT_OFFSET_Y = 10
 MESSAGE_MIN_SPACING = 20
@@ -18,15 +20,18 @@ MESSAGE_MIN_SPACING = 20
 ACTIVATION_STACK_OFFSET_X = drawio.ACTIVATION_WIDTH / 2
 
 
-@dataclass
 class ParticipantInfo:
-    index: int
-    lifeline: drawio.Lifeline
-    activation_stack: List[drawio.Activation] = None
+    def __init__(self, index: int, lifeline: drawio.Lifeline):
+        self.index = index
+        self.lifeline = lifeline
+        self.activation_stack: List[drawio.Activation] = []
 
-    def __post_init__(self):
-        if not self.activation_stack:
-            self.activation_stack = []
+
+class FrameInfo:
+    def __init__(self, frame: drawio.Frame):
+        self.frame = frame
+        self.participants: Set[ParticipantInfo] = set()
+        self.inner_frames: Set[FrameInfo] = set()
 
 
 class Layouter:
@@ -34,7 +39,8 @@ class Layouter:
         self.description = description
         self.participant_info: Dict[str, ParticipantInfo] = {}
         self.last_offset_per_gap: Dict[int, int] = {i: 0 for i in range(len(description.participants) - 1)}
-        self.current_position_y = START_POSITION_Y
+        self.frame_stack: List[FrameInfo] = []
+        self.current_position_y = LIFELINE_HEIGHT + (2 * STATEMENT_OFFSET_Y)
 
         self.file = drawio.File()
         self.page = drawio.Page(self.file, 'Diagram')
@@ -48,7 +54,8 @@ class Layouter:
 
         self.setup_participants()
         self.setup_title_frame()
-        self.process_statements()
+
+        self.process_statements(self.description.statements)
 
         self.finalize_participants()
         self.finalize_title_frame()
@@ -65,6 +72,7 @@ class Layouter:
                 lifeline = drawio.Lifeline(self.page, declaration.text)
                 lifeline.x = end_x + lifeline_spacing if end_x else 0
                 lifeline.width = lifeline_width
+                lifeline.height = LIFELINE_HEIGHT
                 end_x = lifeline_width + lifeline.x
 
                 self.participant_info[declaration.name] = ParticipantInfo(index, lifeline)
@@ -77,7 +85,6 @@ class Layouter:
 
             else:
                 raise NotImplementedError()
-
 
     def setup_title_frame(self):
         if title_decl := self.description.title:
@@ -95,9 +102,8 @@ class Layouter:
         participants_width = max(p.lifeline.x + p.lifeline.width for p in self.participant_info.values())
         self.title_frame.width = participants_width + (2 * TITLE_FRAME_PADDING)
 
-
     def finalize_participants(self):
-        self.current_position_y += END_OFFSET_Y
+        self.current_position_y += (2 * STATEMENT_OFFSET_Y)
 
         for participant in self.participant_info.values():
             participant.lifeline.height = self.current_position_y
@@ -105,16 +111,17 @@ class Layouter:
     def finalize_title_frame(self):
         self.title_frame.height = (self.current_position_y - self.title_frame.y) + TITLE_FRAME_PADDING
 
-    def process_statements(self):
+    def process_statements(self, statements: List[seqast.Statement]):
         handlers = {
             seqast.ActivateStatement: self.handle_activate,
             seqast.DeactivateStatement: self.handle_deactivate,
             seqast.MessageStatement: self.handle_message,
             seqast.SelfCallStatement: self.handle_self_call,
             seqast.SpacingStatement: self.handle_spacing,
+            seqast.OptionStatement: self.handle_option,
         }
 
-        for statement in self.description.statements:
+        for statement in statements:
             # noinspection PyTypeChecker
             handlers[type(statement)](statement)
 
@@ -122,7 +129,7 @@ class Layouter:
         participant = self.participant_info[statement.name]
 
         self.activate_participant(participant)
-
+        self.add_frame_participants(participant)
         self.current_position_y += STATEMENT_OFFSET_Y
 
     def handle_deactivate(self, statement: seqast.DeactivateStatement):
@@ -130,7 +137,7 @@ class Layouter:
         assert participant.activation_stack, "deactivation not possible, participant is inactive"
 
         self.deactivate_participant(participant)
-
+        self.add_frame_participants(participant)
         self.current_position_y += STATEMENT_OFFSET_Y
 
     def handle_message(self, statement: seqast.MessageStatement):
@@ -145,8 +152,6 @@ class Layouter:
 
         # noinspection PyArgumentList
         handlers[statement.activation](statement)
-
-        self.current_position_y += STATEMENT_OFFSET_Y
 
     def handle_message_regular(self, statement: seqast.MessageStatement):
         sender = self.participant_info[statement.sender]
@@ -163,6 +168,9 @@ class Layouter:
             y=self.current_position_y
         ))
 
+        self.add_frame_participants(sender, receiver)
+        self.current_position_y += STATEMENT_OFFSET_Y
+
     def handle_message_activate(self, statement: seqast.MessageStatement):
         sender = self.participant_info[statement.sender]
         receiver = self.participant_info[statement.receiver]
@@ -177,6 +185,9 @@ class Layouter:
             message.type = drawio.MessageAnchor.TOP_LEFT
         else:
             message.type = drawio.MessageAnchor.TOP_RIGHT
+
+        self.add_frame_participants(sender, receiver)
+        self.current_position_y += STATEMENT_OFFSET_Y
 
     def handle_message_deactivate(self, statement: seqast.MessageStatement):
         sender = self.participant_info[statement.sender]
@@ -194,6 +205,9 @@ class Layouter:
             message.type = drawio.MessageAnchor.BOTTOM_LEFT
 
         self.deactivate_participant(sender)
+
+        self.add_frame_participants(sender, receiver)
+        self.current_position_y += STATEMENT_OFFSET_Y
 
     def handle_message_fireforget(self, statement: seqast.MessageStatement):
         sender = self.participant_info[statement.sender]
@@ -215,32 +229,8 @@ class Layouter:
         self.current_position_y += STATEMENT_OFFSET_Y
         self.deactivate_participant(receiver)
 
-    def ensure_message_spacing(self, part1: ParticipantInfo, part2: ParticipantInfo, message_dy: int):
-        start_gap = min(part1.index, part2.index)
-        end_gap = max(part1.index, part2.index)
-
-        max_offset = max(self.last_offset_per_gap[gap] for gap in range(start_gap, end_gap))
-        current_spacing = self.current_position_y - max_offset
-        required_spacing = MESSAGE_MIN_SPACING - message_dy
-
-        if current_spacing < required_spacing:
-            self.current_position_y += required_spacing - current_spacing
-
-            # round up to the next statement offset
-            self.current_position_y = ((self.current_position_y + STATEMENT_OFFSET_Y - 1) // STATEMENT_OFFSET_Y) * STATEMENT_OFFSET_Y
-
-        for gap in range(start_gap, end_gap):
-            self.last_offset_per_gap[gap] = self.current_position_y + message_dy
-
-    @staticmethod
-    def create_message(sender: ParticipantInfo,
-                       receiver: ParticipantInfo,
-                       statement: seqast.MessageStatement) -> drawio.Message:
-        message = drawio.Message(sender.activation_stack[-1], receiver.activation_stack[-1], statement.text)
-        message.line = statement.line
-        message.arrow = statement.arrow
-        message.type = drawio.MessageAnchor.NONE
-        return message
+        self.add_frame_participants(sender, receiver)
+        self.current_position_y += STATEMENT_OFFSET_Y
 
     def handle_self_call(self, statement: seqast.SelfCallStatement):
         participant = self.participant_info[statement.name]
@@ -273,7 +263,96 @@ class Layouter:
         self.current_position_y += 2 * STATEMENT_OFFSET_Y
         self.deactivate_participant(participant)
 
+        self.add_frame_participants(participant)
         self.current_position_y += STATEMENT_OFFSET_Y
+
+    def handle_option(self, statement: seqast.OptionStatement):
+        # create frame
+        self.current_position_y += STATEMENT_OFFSET_Y
+
+        frame = drawio.Frame(self.page, 'opt')
+        frame.y = self.current_position_y
+        frame.box_width = CONTROL_FRAME_BOX_WIDTH
+        frame.box_height = CONTROL_FRAME_BOX_HEIGHT
+
+        # push frame stack
+        frame_info = FrameInfo(frame)
+
+        if self.frame_stack:
+            self.frame_stack[-1].inner_frames.add(frame_info)
+
+        self.frame_stack.append(frame_info)
+
+        # positioning on frame begin
+        self.current_position_y += CONTROL_FRAME_BOX_HEIGHT
+        self.reset_offset_per_gap()
+        self.current_position_y += STATEMENT_OFFSET_Y
+
+        # process inner statements
+        self.process_statements(statement.inner)
+
+        # set frame height
+        self.current_position_y += STATEMENT_OFFSET_Y
+        frame.height = self.current_position_y - frame.y
+
+        # positioning on frame end
+        self.reset_offset_per_gap()
+        self.current_position_y += STATEMENT_OFFSET_Y
+
+        # set frame width
+        min_x = min(p.lifeline.center_x() for p in frame_info.participants) - CONTROL_FRAME_SPACING
+        max_x = max(p.lifeline.center_x() for p in frame_info.participants) + CONTROL_FRAME_SPACING
+
+        if frame_info.inner_frames:
+            inner_frame_min_x = min(f.frame.x for f in frame_info.inner_frames) - CONTROL_FRAME_SPACING
+            inner_frame_max_x = max(f.frame.x + f.frame.width for f in frame_info.inner_frames) + CONTROL_FRAME_SPACING
+
+            min_x = min(min_x, inner_frame_min_x)
+            max_x = max(max_x, inner_frame_max_x)
+
+        frame.x = min_x
+        frame.width = max_x - min_x
+
+        # pop frame stack
+        self.frame_stack.pop()
+
+    def handle_spacing(self, statement: seqast.SpacingStatement):
+        self.current_position_y += statement.spacing
+
+    def reset_offset_per_gap(self):
+        self.last_offset_per_gap = {k: self.current_position_y for k in self.last_offset_per_gap}
+
+    def ensure_message_spacing(self, part1: ParticipantInfo, part2: ParticipantInfo, message_dy: int):
+        start_gap = min(part1.index, part2.index)
+        end_gap = max(part1.index, part2.index)
+
+        max_offset = max(self.last_offset_per_gap[gap] for gap in range(start_gap, end_gap))
+        current_spacing = self.current_position_y - max_offset
+        required_spacing = MESSAGE_MIN_SPACING - message_dy
+
+        if current_spacing < required_spacing:
+            self.current_position_y += required_spacing - current_spacing
+
+            # round up to the next statement offset
+            self.current_position_y = ((
+                                               self.current_position_y + STATEMENT_OFFSET_Y - 1) // STATEMENT_OFFSET_Y) * STATEMENT_OFFSET_Y
+
+        for gap in range(start_gap, end_gap):
+            self.last_offset_per_gap[gap] = self.current_position_y + message_dy
+
+    @staticmethod
+    def create_message(sender: ParticipantInfo,
+                       receiver: ParticipantInfo,
+                       statement: seqast.MessageStatement) -> drawio.Message:
+        message = drawio.Message(sender.activation_stack[-1], receiver.activation_stack[-1], statement.text)
+        message.line = statement.line
+        message.arrow = statement.arrow
+        message.type = drawio.MessageAnchor.NONE
+        return message
+
+    def add_frame_participants(self, *args):
+        if self.frame_stack:
+            self.frame_stack[-1].participants.update(args)
 
     def activate_participant(self, participant: ParticipantInfo, activator: Optional[ParticipantInfo] = None):
         activation = drawio.Activation(participant.lifeline)
@@ -306,6 +385,3 @@ class Layouter:
     def deactivate_participant(self, participant: ParticipantInfo):
         activation = participant.activation_stack.pop()
         activation.height = self.current_position_y - activation.y
-
-    def handle_spacing(self, statement: seqast.SpacingStatement):
-        self.current_position_y += statement.spacing
