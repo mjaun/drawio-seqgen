@@ -15,14 +15,30 @@ END_OFFSET = 20
 STATEMENT_OFFSET = 10
 MESSAGE_MIN_SPACING = 20
 
+
+@dataclass
+class ParticipantInfo:
+    index: int
+    participant: model.ParticipantDeclaration
+    lifeline: output.Lifeline
+    activation_stack: List[output.Activation] = None
+
+    def __post_init__(self):
+        if not self.activation_stack:
+            self.activation_stack = []
+
+
 class Layouter:
     def __init__(self, description: model.SequenceDiagramDescription):
         self.description = description
         self.participant_info: Dict[str, ParticipantInfo] = {}
-        self.current_y = START_OFFSET
+        self.last_offset_per_gap: Dict[int, int] = {i: 0 for i in range(len(description.participants) - 1)}
+        self.current_offset = START_OFFSET
+
         self.file = output.File()
         self.page = output.Page(self.file, 'Diagram')
         self.frame = output.Frame(self.page, '')
+
         self.executed = False
 
     def layout(self) -> output.File:
@@ -46,7 +62,7 @@ class Layouter:
 
             end_x = lifeline.x + LIFELINE_WIDTH
 
-            self.participant_info[participant.alias] = ParticipantInfo(participant, lifeline)
+            self.participant_info[participant.alias] = ParticipantInfo(index, participant, lifeline)
 
         self.frame.value = self.description.title
         self.frame.x = -TITLE_FRAME_PADDING
@@ -54,12 +70,12 @@ class Layouter:
         self.frame.width = end_x + (2 * TITLE_FRAME_PADDING)
 
     def finalize(self):
-        self.current_y += END_OFFSET
+        self.current_offset += END_OFFSET
 
         for participant in self.participant_info.values():
-            participant.lifeline.height = self.current_y
+            participant.lifeline.height = self.current_offset
 
-        self.frame.height = (self.current_y - self.frame.y) + TITLE_FRAME_PADDING
+        self.frame.height = (self.current_offset - self.frame.y) + TITLE_FRAME_PADDING
 
     def process_statements(self):
         handlers = {
@@ -80,15 +96,19 @@ class Layouter:
         assert not info.activation_stack, "explicit activation allowed only if object is inactive"
 
         activation = output.Activation(info.lifeline)
-        activation.y = self.current_y
+        activation.y = self.current_offset
         info.activation_stack.append(activation)
+
+        self.current_offset += STATEMENT_OFFSET
 
     def handle_deactivation(self, statement: model.DeactivateStatement):
         info = self.participant_info[statement.name]
         assert info.activation_stack, "deactivation not possible, participant is inactive"
 
         activation = info.activation_stack.pop()
-        activation.height = self.current_y - activation.y
+        activation.height = self.current_offset - activation.y
+
+        self.current_offset += STATEMENT_OFFSET
 
     def handle_message(self, statement: model.MessageStatement):
         assert statement.sender != statement.receiver, "use self call syntax"
@@ -96,40 +116,49 @@ class Layouter:
         receiver_info = self.participant_info[statement.receiver]
 
         if statement.activation == model.MessageActivationType.ACTIVATE:
-            self.current_y += MESSAGE_MIN_SPACING
-
-            activation = output.Activation(receiver_info.lifeline)
-            activation.y = self.current_y
-            receiver_info.activation_stack.append(activation)
-
             assert sender_info.activation_stack, "sender must be active to send a message"
-            message = output.Message(sender_info.activation_stack[-1], activation, statement.text)
+
+            self.ensure_message_spacing(sender_info, receiver_info, output.ACTIVATION_MESSAGE_DY)
+
+            receiver_activation = output.Activation(receiver_info.lifeline)
+            receiver_activation.y = self.current_offset
+            receiver_info.activation_stack.append(receiver_activation)
+
+            message = output.Message(sender_info.activation_stack[-1], receiver_activation, statement.text)
             message.line = statement.line
             message.arrow = statement.arrow
             message.type = output.MessageType.ACTIVATE_FROM_LEFT
 
+            self.current_offset += STATEMENT_OFFSET
+
         elif statement.activation == model.MessageActivationType.DEACTIVATE:
-            self.current_y += MESSAGE_MIN_SPACING
-
-            activation = sender_info.activation_stack.pop()
-            activation.height = self.current_y - activation.y
-
             assert receiver_info.activation_stack, "receiver must be active to deactivate"
-            message = output.Message(activation, receiver_info.activation_stack[-1], statement.text)
+
+            self.ensure_message_spacing(sender_info, receiver_info, -output.ACTIVATION_MESSAGE_DY)
+
+            sender_activation = sender_info.activation_stack.pop()
+            sender_activation.height = self.current_offset - sender_activation.y
+
+            message = output.Message(sender_activation, receiver_info.activation_stack[-1], statement.text)
             message.line = statement.line
             message.arrow = statement.arrow
             message.type = output.MessageType.DEACTIVATE_FROM_LEFT
 
+            self.current_offset += STATEMENT_OFFSET
+
         else:
             raise NotImplementedError()
 
+    def ensure_message_spacing(self, part1: ParticipantInfo, part2: ParticipantInfo, message_dy: int):
+        start_gap = min(part1.index, part2.index)
+        end_gap = max(part1.index, part2.index)
 
-@dataclass
-class ParticipantInfo:
-    participant: model.ParticipantDeclaration
-    lifeline: output.Lifeline
-    activation_stack: List[output.Activation] = None
+        max_offset = max(self.last_offset_per_gap[gap] for gap in range(start_gap, end_gap))
+        current_spacing = self.current_offset - max_offset
+        required_spacing = MESSAGE_MIN_SPACING - message_dy
 
-    def __post_init__(self):
-        if not self.activation_stack:
-            self.activation_stack = []
+        if current_spacing < required_spacing:
+            self.current_offset += required_spacing - current_spacing
+
+        for gap in range(start_gap, end_gap):
+            self.last_offset_per_gap[gap] = self.current_offset + message_dy
