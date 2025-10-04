@@ -217,8 +217,10 @@ class Activation(Object):
 
 
 class MessageType(Enum):
-    ACTIVATE_FROM_LEFT = auto()
-    DEACTIVATE_FROM_LEFT = auto()
+    ACTIVATE_LEFT = auto()
+    ACTIVATE_RIGHT = auto()
+    DEACTIVATE_LEFT = auto()
+    DEACTIVATE_RIGHT = auto()
 
 
 class Message(Object):
@@ -227,7 +229,7 @@ class Message(Object):
         self.source = source
         self.target = target
 
-        self.type = MessageType.ACTIVATE_FROM_LEFT
+        self.type = MessageType.ACTIVATE_LEFT
         self.line = MessageLineStyle.SOLID
         self.arrow = MessageArrowStyle.BLOCK
 
@@ -270,14 +272,26 @@ class Message(Object):
         }
 
         type_map = {
-            MessageType.ACTIVATE_FROM_LEFT: {
+            MessageType.ACTIVATE_LEFT: {
                 'entryX': '0',
                 'entryY': '0',
                 'entryDx': '0',
                 'entryDy': str(ACTIVATION_MESSAGE_DY),
             },
-            MessageType.DEACTIVATE_FROM_LEFT: {
+            MessageType.ACTIVATE_RIGHT: {
+                'entryX': '1',
+                'entryY': '0',
+                'entryDx': '0',
+                'entryDy': str(ACTIVATION_MESSAGE_DY),
+            },
+            MessageType.DEACTIVATE_LEFT: {
                 'exitX': '0',
+                'exitY': '1',
+                'exitDx': '0',
+                'exitDy': str(-ACTIVATION_MESSAGE_DY),
+            },
+            MessageType.DEACTIVATE_RIGHT: {
+                'exitX': '1',
                 'exitY': '1',
                 'exitDx': '0',
                 'exitDy': str(-ACTIVATION_MESSAGE_DY),
@@ -299,8 +313,10 @@ class Message(Object):
         })
 
         as_map = {
-            MessageType.ACTIVATE_FROM_LEFT: 'sourcePoint',
-            MessageType.DEACTIVATE_FROM_LEFT: 'targetPoint',
+            MessageType.ACTIVATE_LEFT: 'sourcePoint',
+            MessageType.ACTIVATE_RIGHT: 'sourcePoint',
+            MessageType.DEACTIVATE_LEFT: 'targetPoint',
+            MessageType.DEACTIVATE_RIGHT: 'targetPoint',
         }
 
         ET.SubElement(geometry, 'mxPoint', attrib={

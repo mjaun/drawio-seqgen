@@ -124,10 +124,16 @@ class Layouter:
             sender_activation = sender_info.activation_stack[-1]
             receiver_activation = receiver_info.activation_stack[-1]
 
+            if sender_info.index < receiver_info.index:
+                message_type = output.MessageType.ACTIVATE_LEFT
+            else:
+                message_type = output.MessageType.ACTIVATE_RIGHT
+
+
             message = output.Message(sender_activation, receiver_activation, statement.text)
             message.line = statement.line
             message.arrow = statement.arrow
-            message.type = output.MessageType.ACTIVATE_FROM_LEFT
+            message.type = message_type
 
         elif statement.activation == model.MessageActivationType.DEACTIVATE:
             assert sender_info.activation_stack, "sender must be active to deactivate"
@@ -138,10 +144,15 @@ class Layouter:
             sender_activation = sender_info.activation_stack[-1]
             receiver_activation = receiver_info.activation_stack[-1]
 
+            if sender_info.index < receiver_info.index:
+                message_type = output.MessageType.DEACTIVATE_RIGHT
+            else:
+                message_type = output.MessageType.DEACTIVATE_LEFT
+
             message = output.Message(sender_activation, receiver_activation, statement.text)
             message.line = statement.line
             message.arrow = statement.arrow
-            message.type = output.MessageType.DEACTIVATE_FROM_LEFT
+            message.type = message_type
 
             self.deactivate_participant(sender_info)
         else:
