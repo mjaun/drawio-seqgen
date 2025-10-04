@@ -82,11 +82,19 @@ class Object:
         page.objects.append(self)
 
     def xml(self, xml_parent: ET.Element) -> ET.Element:
+        style = ''
+
+        for key, value in self.style().items():
+            if value is not None:
+                style += f'{key}={value};'
+            else:
+                style += f'{key};'
+
         attr = {
             'id': self.id,
             'value': self.value,
             'parent': self.parent.id if self.parent else '1',
-            'style': ';'.join(f'{key}={value}' for key, value in self.style().items()) + ';',
+            'style': style,
         }
 
         attr.update(self.attr())
@@ -94,7 +102,7 @@ class Object:
         cell = ET.SubElement(xml_parent, 'mxCell', attrib=attr)
         return cell
 
-    def style(self) -> Dict[str, str]:
+    def style(self) -> Dict[str, Optional[str]]:
         return {}
 
     def attr(self) -> Dict[str, str]:
@@ -127,6 +135,31 @@ class ObjectWithAbsoluteGeometry(Object):
         return cell
 
 
+class Text(ObjectWithAbsoluteGeometry):
+    def __init__(self, page: Page, parent: Optional['Object'], value: str):
+        super().__init__(page, parent, value)
+
+        self.width = 100
+        self.height = 20
+
+    def attr(self) -> Dict[str, str]:
+        return {
+            'vertex': '1'
+        }
+
+    def style(self) -> Dict[str, Optional[str]]:
+        return {
+            'text': None,
+            'html': '1',
+            'align': 'left',
+            'verticalAlign': 'middle',
+            'rounded': '0',
+            'labelPosition': 'center',
+            'verticalLabelPosition': 'middle',
+            'labelBackgroundColor': 'default',
+        }
+
+
 class Frame(ObjectWithAbsoluteGeometry):
     def __init__(self, page: Page, value: str):
         super().__init__(page, None, value)
@@ -139,7 +172,7 @@ class Frame(ObjectWithAbsoluteGeometry):
             'vertex': '1'
         }
 
-    def style(self) -> Dict[str, str]:
+    def style(self) -> Dict[str, Optional[str]]:
         return {
             'shape': 'umlFrame',
             'whiteSpace': 'wrap',
@@ -162,7 +195,7 @@ class Lifeline(ObjectWithAbsoluteGeometry):
             'vertex': '1'
         }
 
-    def style(self) -> Dict[str, str]:
+    def style(self) -> Dict[str, Optional[str]]:
         return {
             'shape': 'umlLifeline',
             'perimeter': 'lifelinePerimeter',
@@ -187,12 +220,12 @@ class Activation(Object):
         self.y = 90
         self.height = 100
 
-    def attr(self):
+    def attr(self) -> Dict[str, str]:
         return {
             'vertex': '1'
         }
 
-    def style(self):
+    def style(self) -> Dict[str, Optional[str]]:
         return {
             'html': '1',
             'points': '[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]]',
@@ -250,14 +283,14 @@ class Message(Object):
         self.alignment = TextAlignment.TOP_CENTER
         self.points: List[Point] = []
 
-    def attr(self):
+    def attr(self) -> Dict[str, str]:
         return {
             'edge': '1',
             'source': self.source.id,
             'target': self.target.id,
         }
 
-    def style(self):
+    def style(self) -> Dict[str, Optional[str]]:
         style = {
             'html': '1',
             'curved': '0',

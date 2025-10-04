@@ -283,12 +283,16 @@ class Layouter:
         frame.box_width = CONTROL_FRAME_BOX_WIDTH
         frame.box_height = CONTROL_FRAME_BOX_HEIGHT
 
+        text = drawio.Text(self.page, frame, f'[{statement.text}]')
+        text.y = 5
+        text.x = CONTROL_FRAME_BOX_WIDTH + 10
+
         # push frame stack
         dimension = FrameDimension()
         self.frame_dimension_stack.append(dimension)
 
         # positioning on frame begin
-        self.current_position_y += CONTROL_FRAME_BOX_HEIGHT
+        self.current_position_y += CONTROL_FRAME_BOX_HEIGHT + 10
         self.reset_offset_per_gap()
         self.current_position_y += STATEMENT_OFFSET_Y
 
