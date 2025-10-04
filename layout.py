@@ -106,6 +106,7 @@ class Layouter:
         self.current_position_y += (2 * STATEMENT_OFFSET_Y)
 
         for participant in self.participant_info.values():
+            assert not participant.activation_stack, "participants must be inactive at end"
             participant.lifeline.height = self.current_position_y
 
     def finalize_title_frame(self):

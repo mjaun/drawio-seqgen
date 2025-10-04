@@ -23,6 +23,11 @@ J ->> A: yield
 
 opt nested happenings
 J ->| G : hello
+
+J ->+ G: dummy
+G: self call
+deactivate G
+
 end
 
 end
