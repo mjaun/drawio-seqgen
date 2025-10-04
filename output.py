@@ -111,6 +111,9 @@ class ObjectWithAbsoluteGeometry(Object):
         self.width = 0
         self.height = 0
 
+    def center_x(self):
+        return self.x + (self.width / 2)
+
     def xml(self, xml_parent: ET.Element) -> ET.Element:
         cell = super().xml(xml_parent)
 
@@ -180,6 +183,7 @@ class Activation(Object):
     def __init__(self, parent: Lifeline):
         super().__init__(parent.page, parent, '')
 
+        self.parent = parent
         self.dx = 0
         self.y = 90
         self.height = 100
@@ -217,6 +221,7 @@ class Activation(Object):
 
 
 class MessageType(Enum):
+    REGULAR = auto()
     ACTIVATE_LEFT = auto()
     ACTIVATE_RIGHT = auto()
     DEACTIVATE_LEFT = auto()
@@ -224,7 +229,7 @@ class MessageType(Enum):
 
 
 class Message(Object):
-    def __init__(self, source: Object, target: Object, value: str):
+    def __init__(self, source: Activation, target: Activation, value: str):
         super().__init__(source.page, None, value)
         self.source = source
         self.target = target
@@ -232,6 +237,7 @@ class Message(Object):
         self.type = MessageType.ACTIVATE_LEFT
         self.line = MessageLineStyle.SOLID
         self.arrow = MessageArrowStyle.BLOCK
+        self.y = 0
 
     def attr(self):
         return {
@@ -272,6 +278,7 @@ class Message(Object):
         }
 
         type_map = {
+            MessageType.REGULAR: {},
             MessageType.ACTIVATE_LEFT: {
                 'entryX': '0',
                 'entryY': '0',
@@ -312,15 +319,20 @@ class Message(Object):
             'as': 'geometry'
         })
 
-        as_map = {
-            MessageType.ACTIVATE_LEFT: 'sourcePoint',
-            MessageType.ACTIVATE_RIGHT: 'sourcePoint',
-            MessageType.DEACTIVATE_LEFT: 'targetPoint',
-            MessageType.DEACTIVATE_RIGHT: 'targetPoint',
-        }
+        if self.type in (MessageType.ACTIVATE_LEFT, MessageType.ACTIVATE_RIGHT):
+            ET.SubElement(geometry, 'mxPoint', attrib={'as': 'sourcePoint'})
+        elif self.type in (MessageType.DEACTIVATE_LEFT, MessageType.DEACTIVATE_RIGHT):
+            ET.SubElement(geometry, 'mxPoint', attrib={'as': 'targetPoint'})
+        elif self.type == MessageType.REGULAR:
+            ET.SubElement(geometry, 'mxPoint', attrib={'as': 'targetPoint'})
+            ET.SubElement(geometry, 'mxPoint', attrib={'as': 'sourcePoint'})
 
-        ET.SubElement(geometry, 'mxPoint', attrib={
-            'as': as_map[self.type],
-        })
+            source_lifeline = self.source.parent
+            target_lifeline = self.target.parent
+            x = (source_lifeline.center_x() + target_lifeline.center_x()) / 2
+            array = ET.SubElement(geometry, 'Array', attrib={'as': 'points'})
+            ET.SubElement(array, 'mxPoint', attrib={'x': str(x), 'y': str(self.y)})
+        else:
+            raise NotImplementedError()
 
         return cell
