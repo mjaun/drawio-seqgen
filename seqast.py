@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import List
 
-from output import MessageLineStyle, MessageArrowStyle
+from drawio import MessageLineStyle, MessageArrowStyle
 
 
 @dataclass
@@ -68,14 +68,14 @@ class SpacingStatement(Statement):
     spacing: int
 
 
-class SequenceDiagramDescription:
+class SeqDescription:
     def __init__(self, declarations, statements: List[Statement]):
         self.statements: List[Statement] = statements
         self.participants: List[ParticipantDeclaration] = all_of_type(ParticipantDeclaration, declarations)
         self.title = 'Sequence Diagram'
 
-        if declaration := last_of_type(TitleDeclaration, declarations):
-            self.title = declaration.text
+        if title_declaration := last_of_type(TitleDeclaration, declarations):
+            self.title = title_declaration.text
 
 
 def last_of_type(type, items):

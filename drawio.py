@@ -5,7 +5,7 @@ from enum import auto, Enum
 from typing import List, Dict, Optional
 
 ACTIVATION_WIDTH = 10
-ACTIVATION_MESSAGE_DY = 5
+MESSAGE_ANCHOR_DY = 5
 
 
 class File:
@@ -219,12 +219,12 @@ class Activation(Object):
         return cell
 
 
-class MessageType(Enum):
-    REGULAR = auto()
-    ACTIVATE_LEFT = auto()
-    ACTIVATE_RIGHT = auto()
-    DEACTIVATE_LEFT = auto()
-    DEACTIVATE_RIGHT = auto()
+class MessageAnchor(Enum):
+    NONE = auto()
+    TOP_LEFT = auto()
+    TOP_RIGHT = auto()
+    BOTTOM_LEFT = auto()
+    BOTTOM_RIGHT = auto()
 
 
 class TextAlignment(Enum):
@@ -244,7 +244,7 @@ class Message(Object):
         self.source = source
         self.target = target
 
-        self.type = MessageType.REGULAR
+        self.type = MessageAnchor.NONE
         self.line = MessageLineStyle.SOLID
         self.arrow = MessageArrowStyle.BLOCK
         self.alignment = TextAlignment.TOP_CENTER
@@ -293,30 +293,30 @@ class Message(Object):
         }
 
         type_map = {
-            MessageType.REGULAR: {},
-            MessageType.ACTIVATE_LEFT: {
+            MessageAnchor.NONE: {},
+            MessageAnchor.TOP_LEFT: {
                 'entryX': '0',
                 'entryY': '0',
                 'entryDx': '0',
-                'entryDy': str(ACTIVATION_MESSAGE_DY),
+                'entryDy': str(MESSAGE_ANCHOR_DY),
             },
-            MessageType.ACTIVATE_RIGHT: {
+            MessageAnchor.TOP_RIGHT: {
                 'entryX': '1',
                 'entryY': '0',
                 'entryDx': '0',
-                'entryDy': str(ACTIVATION_MESSAGE_DY),
+                'entryDy': str(MESSAGE_ANCHOR_DY),
             },
-            MessageType.DEACTIVATE_LEFT: {
+            MessageAnchor.BOTTOM_LEFT: {
                 'exitX': '0',
                 'exitY': '1',
                 'exitDx': '0',
-                'exitDy': str(-ACTIVATION_MESSAGE_DY),
+                'exitDy': str(-MESSAGE_ANCHOR_DY),
             },
-            MessageType.DEACTIVATE_RIGHT: {
+            MessageAnchor.BOTTOM_RIGHT: {
                 'exitX': '1',
                 'exitY': '1',
                 'exitDx': '0',
-                'exitDy': str(-ACTIVATION_MESSAGE_DY),
+                'exitDy': str(-MESSAGE_ANCHOR_DY),
             },
         }
 
@@ -335,12 +335,12 @@ class Message(Object):
             'as': 'geometry'
         })
 
-        if self.type == MessageType.REGULAR:
+        if self.type == MessageAnchor.NONE:
             ET.SubElement(geometry, 'mxPoint', attrib={'as': 'targetPoint'})
             ET.SubElement(geometry, 'mxPoint', attrib={'as': 'sourcePoint'})
-        elif self.type in (MessageType.ACTIVATE_LEFT, MessageType.ACTIVATE_RIGHT):
+        elif self.type in (MessageAnchor.TOP_LEFT, MessageAnchor.TOP_RIGHT):
             ET.SubElement(geometry, 'mxPoint', attrib={'as': 'sourcePoint'})
-        elif self.type in (MessageType.DEACTIVATE_LEFT, MessageType.DEACTIVATE_RIGHT):
+        elif self.type in (MessageAnchor.BOTTOM_LEFT, MessageAnchor.BOTTOM_RIGHT):
             ET.SubElement(geometry, 'mxPoint', attrib={'as': 'targetPoint'})
         else:
             raise NotImplementedError()

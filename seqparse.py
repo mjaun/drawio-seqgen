@@ -1,51 +1,57 @@
 from lark import Lark, Transformer
 from pathlib import Path
 
-from model import SequenceDiagramDescription, ParticipantDeclaration, ActivateStatement, DeactivateStatement, \
-    MessageActivationType, \
-    MessageStatement, TitleDeclaration, SpacingStatement, SelfCallStatement
-from output import MessageLineStyle, MessageArrowStyle
+from seqast import *
+from drawio import MessageLineStyle, MessageArrowStyle
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
 
-def parse(text) -> 'SequenceDiagramDescription':
-    with open(SCRIPT_DIR / 'syntax.lark', 'r') as f:
-        grammar = f.read()
+class Parser:
+    def __init__(self):
+        with open(SCRIPT_DIR / 'syntax.lark', 'r') as f:
+            grammar = f.read()
 
-    lark = Lark(grammar, start='start')
-    parsed = lark.parse(text)
-    transformed = SeqgenTransformer().transform(parsed)
+        self.lark = Lark(grammar, start='start')
 
-    return transformed
+    def parse(self, text) -> SeqDescription:
+        parsed = self.lark.parse(text)
+        return SeqTransformer().transform(parsed)
 
 
-class SeqgenTransformer(Transformer):
-    def start(self, items):
+class SeqTransformer(Transformer):
+    @staticmethod
+    def start(items):
         assert len(items) == 2
         declarations = list(items[0])
         statements = list(items[1])
-        return SequenceDiagramDescription(declarations, statements)
+        return SeqDescription(declarations, statements)
 
-    def declaration_list(self, items):
+    @staticmethod
+    def declaration_list(items):
         return list(items)
 
-    def statement_list(self, items):
+    @staticmethod
+    def statement_list(items):
         return list(items)
 
-    def declaration(self, items):
+    @staticmethod
+    def declaration(items):
         assert len(items) == 1
         return items[0]
 
-    def statement(self, items):
+    @staticmethod
+    def statement(items):
         assert len(items) == 1
         return items[0]
 
-    def title(self, items):
+    @staticmethod
+    def title(items):
         assert len(items) == 1
         return TitleDeclaration(str(items[0]))
 
-    def participant(self, items):
+    @staticmethod
+    def participant(items):
         if len(items) == 1:
             return ParticipantDeclaration(name=items[0])
         elif len(items) == 2:
@@ -53,19 +59,23 @@ class SeqgenTransformer(Transformer):
         else:
             raise NotImplementedError()
 
-    def participant_alias(self, items):
+    @staticmethod
+    def participant_alias(items):
         assert len(items) == 1
         return items[0]
 
-    def activation(self, items):
+    @staticmethod
+    def activation(items):
         assert len(items) == 1
         return ActivateStatement(items[0])
 
-    def deactivation(self, items):
+    @staticmethod
+    def deactivation(items):
         assert len(items) == 1
         return DeactivateStatement(items[0])
 
-    def message(self, items):
+    @staticmethod
+    def message(items):
         assert len(items) == 4
 
         sender = items[0]
@@ -75,11 +85,13 @@ class SeqgenTransformer(Transformer):
 
         return MessageStatement(sender, receiver, text, activation, line, arrow)
 
-    def self_call(self, items):
+    @staticmethod
+    def self_call(items):
         assert len(items) == 2
         return SelfCallStatement(items[0], items[1])
 
-    def arrow(self, items):
+    @staticmethod
+    def arrow(items):
         assert len(items) in (2, 3)
 
         line_map = {
@@ -103,7 +115,8 @@ class SeqgenTransformer(Transformer):
 
         return line_map[line_str], arrow_map[arrow_str], activation_map[activation_str]
 
-    def name(self, items):
+    @staticmethod
+    def name(items):
         assert len(items) == 1
 
         if items[0].type == 'QUOTED_NAME':
@@ -113,6 +126,7 @@ class SeqgenTransformer(Transformer):
         else:
             raise NotImplementedError()
 
-    def spacing(self, items):
+    @staticmethod
+    def spacing(items):
         assert len(items) == 1
         return SpacingStatement(int(items[0]))

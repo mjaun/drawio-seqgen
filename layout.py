@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import List, Dict, Optional
 
-import model
-import output
+import seqast
+import drawio
 
 LIFELINE_WIDTH = 160
 LIFELINE_SPACING = 40
@@ -15,15 +15,15 @@ END_OFFSET = 20
 STATEMENT_OFFSET = 10
 MESSAGE_MIN_SPACING = 20
 
-ACTIVATION_STACK_OFFSET = output.ACTIVATION_WIDTH / 2
+ACTIVATION_STACK_OFFSET = drawio.ACTIVATION_WIDTH / 2
 
 
 @dataclass
 class ParticipantInfo:
     index: int
-    participant: model.ParticipantDeclaration
-    lifeline: output.Lifeline
-    activation_stack: List[output.Activation] = None
+    participant: seqast.ParticipantDeclaration
+    lifeline: drawio.Lifeline
+    activation_stack: List[drawio.Activation] = None
 
     def __post_init__(self):
         if not self.activation_stack:
@@ -31,19 +31,19 @@ class ParticipantInfo:
 
 
 class Layouter:
-    def __init__(self, description: model.SequenceDiagramDescription):
+    def __init__(self, description: seqast.SeqDescription):
         self.description = description
         self.participant_info: Dict[str, ParticipantInfo] = {}
         self.last_offset_per_gap: Dict[int, int] = {i: 0 for i in range(len(description.participants) - 1)}
         self.current_offset = START_OFFSET
 
-        self.file = output.File()
-        self.page = output.Page(self.file, 'Diagram')
-        self.frame = output.Frame(self.page, '')
+        self.file = drawio.File()
+        self.page = drawio.Page(self.file, 'Diagram')
+        self.frame = drawio.Frame(self.page, '')
 
         self.executed = False
 
-    def layout(self) -> output.File:
+    def layout(self) -> drawio.File:
         assert not self.executed, "layouter instance can only be used once"
         self.executed = True
 
@@ -57,7 +57,7 @@ class Layouter:
         end_x = 0
 
         for index, participant in enumerate(self.description.participants):
-            lifeline = output.Lifeline(self.page, participant.name)
+            lifeline = drawio.Lifeline(self.page, participant.name)
 
             lifeline.width = LIFELINE_WIDTH
             lifeline.x = index * (LIFELINE_WIDTH + LIFELINE_SPACING)
@@ -81,25 +81,25 @@ class Layouter:
 
     def process_statements(self):
         handlers = {
-            model.ActivateStatement: self.handle_activate,
-            model.DeactivateStatement: self.handle_deactivate,
-            model.MessageStatement: self.handle_message,
-            model.SelfCallStatement: self.handle_self_call,
-            model.SpacingStatement: self.handle_spacing,
+            seqast.ActivateStatement: self.handle_activate,
+            seqast.DeactivateStatement: self.handle_deactivate,
+            seqast.MessageStatement: self.handle_message,
+            seqast.SelfCallStatement: self.handle_self_call,
+            seqast.SpacingStatement: self.handle_spacing,
         }
 
         for statement in self.description.statements:
             # noinspection PyTypeChecker
             handlers[type(statement)](statement)
 
-    def handle_activate(self, statement: model.ActivateStatement):
+    def handle_activate(self, statement: seqast.ActivateStatement):
         participant = self.participant_info[statement.name]
 
         self.activate_participant(participant)
 
         self.current_offset += STATEMENT_OFFSET
 
-    def handle_deactivate(self, statement: model.DeactivateStatement):
+    def handle_deactivate(self, statement: seqast.DeactivateStatement):
         participant = self.participant_info[statement.name]
         assert participant.activation_stack, "deactivation not possible, participant is inactive"
 
@@ -107,14 +107,14 @@ class Layouter:
 
         self.current_offset += STATEMENT_OFFSET
 
-    def handle_message(self, statement: model.MessageStatement):
+    def handle_message(self, statement: seqast.MessageStatement):
         assert statement.sender != statement.receiver, "use self call syntax"
 
         handlers = {
-            model.MessageActivationType.REGULAR: self.handle_message_regular,
-            model.MessageActivationType.ACTIVATE: self.handle_message_activate,
-            model.MessageActivationType.DEACTIVATE: self.handle_message_deactivate,
-            model.MessageActivationType.FIREFORGET: self.handle_message_fireforget,
+            seqast.MessageActivationType.REGULAR: self.handle_message_regular,
+            seqast.MessageActivationType.ACTIVATE: self.handle_message_activate,
+            seqast.MessageActivationType.DEACTIVATE: self.handle_message_deactivate,
+            seqast.MessageActivationType.FIREFORGET: self.handle_message_fireforget,
         }
 
         # noinspection PyArgumentList
@@ -122,7 +122,7 @@ class Layouter:
 
         self.current_offset += STATEMENT_OFFSET
 
-    def handle_message_regular(self, statement: model.MessageStatement):
+    def handle_message_regular(self, statement: seqast.MessageStatement):
         sender = self.participant_info[statement.sender]
         receiver = self.participant_info[statement.receiver]
 
@@ -132,44 +132,44 @@ class Layouter:
         self.ensure_message_spacing(sender, receiver, 0)
         message = self.create_message(sender, receiver, statement)
 
-        message.points.append(output.Point(
+        message.points.append(drawio.Point(
             x=(sender.lifeline.center_x() + receiver.lifeline.center_x()) / 2,
             y=self.current_offset
         ))
 
-    def handle_message_activate(self, statement: model.MessageStatement):
+    def handle_message_activate(self, statement: seqast.MessageStatement):
         sender = self.participant_info[statement.sender]
         receiver = self.participant_info[statement.receiver]
 
         assert sender.activation_stack, "sender must be active to send a message"
 
-        self.ensure_message_spacing(sender, receiver, output.ACTIVATION_MESSAGE_DY)
+        self.ensure_message_spacing(sender, receiver, drawio.MESSAGE_ANCHOR_DY)
         self.activate_participant(receiver, sender)
         message = self.create_message(sender, receiver, statement)
 
         if sender.index < receiver.index:
-            message.type = output.MessageType.ACTIVATE_LEFT
+            message.type = drawio.MessageAnchor.TOP_LEFT
         else:
-            message.type = output.MessageType.ACTIVATE_RIGHT
+            message.type = drawio.MessageAnchor.TOP_RIGHT
 
-    def handle_message_deactivate(self, statement: model.MessageStatement):
+    def handle_message_deactivate(self, statement: seqast.MessageStatement):
         sender = self.participant_info[statement.sender]
         receiver = self.participant_info[statement.receiver]
 
         assert sender.activation_stack, "sender must be active to send a message"
         assert receiver.activation_stack, "deactivation not possible, participant is inactive"
 
-        self.ensure_message_spacing(sender, receiver, -output.ACTIVATION_MESSAGE_DY)
+        self.ensure_message_spacing(sender, receiver, -drawio.MESSAGE_ANCHOR_DY)
         message = self.create_message(sender, receiver, statement)
 
         if sender.index < receiver.index:
-            message.type = output.MessageType.DEACTIVATE_RIGHT
+            message.type = drawio.MessageAnchor.BOTTOM_RIGHT
         else:
-            message.type = output.MessageType.DEACTIVATE_LEFT
+            message.type = drawio.MessageAnchor.BOTTOM_LEFT
 
         self.deactivate_participant(sender)
 
-    def handle_message_fireforget(self, statement: model.MessageStatement):
+    def handle_message_fireforget(self, statement: seqast.MessageStatement):
         sender = self.participant_info[statement.sender]
         receiver = self.participant_info[statement.receiver]
 
@@ -181,7 +181,7 @@ class Layouter:
         self.ensure_message_spacing(sender, receiver, STATEMENT_OFFSET)
         message = self.create_message(sender, receiver, statement)
 
-        message.points.append(output.Point(
+        message.points.append(drawio.Point(
             x=(sender.lifeline.center_x() + receiver.lifeline.center_x()) / 2,
             y=self.current_offset
         ))
@@ -206,16 +206,17 @@ class Layouter:
         for gap in range(start_gap, end_gap):
             self.last_offset_per_gap[gap] = self.current_offset + message_dy
 
-    def create_message(self, sender: ParticipantInfo,
+    @staticmethod
+    def create_message(sender: ParticipantInfo,
                        receiver: ParticipantInfo,
-                       statement: model.MessageStatement) -> output.Message:
-        message = output.Message(sender.activation_stack[-1], receiver.activation_stack[-1], statement.text)
+                       statement: seqast.MessageStatement) -> drawio.Message:
+        message = drawio.Message(sender.activation_stack[-1], receiver.activation_stack[-1], statement.text)
         message.line = statement.line
         message.arrow = statement.arrow
-        message.type = output.MessageType.REGULAR
+        message.type = drawio.MessageAnchor.NONE
         return message
 
-    def handle_self_call(self, statement: model.SelfCallStatement):
+    def handle_self_call(self, statement: seqast.SelfCallStatement):
         participant = self.participant_info[statement.name]
 
         assert participant.activation_stack, "participant must be active for self call"
@@ -227,16 +228,18 @@ class Layouter:
         # create self call message
         regular_activation = participant.activation_stack[-2]
         self_call_activation = participant.activation_stack[-1]
-        message = output.Message(regular_activation, self_call_activation, statement.text)
-        message.alignment = output.TextAlignment.MIDDLE_RIGHT
+        message = drawio.Message(regular_activation, self_call_activation, statement.text)
+        message.alignment = drawio.TextAlignment.MIDDLE_RIGHT
 
-        message.points.append(output.Point(
-            x=participant.lifeline.center_x() + self_call_activation.dx + 25,
+        self_call_x = participant.lifeline.center_x() + self_call_activation.dx + 25
+
+        message.points.append(drawio.Point(
+            x=self_call_x,
             y=self.current_offset - STATEMENT_OFFSET,
         ))
 
-        message.points.append(output.Point(
-            x=participant.lifeline.center_x() + self_call_activation.dx + 25,
+        message.points.append(drawio.Point(
+            x=self_call_x,
             y=self.current_offset + STATEMENT_OFFSET,
         ))
 
@@ -247,7 +250,7 @@ class Layouter:
         self.current_offset += STATEMENT_OFFSET
 
     def activate_participant(self, participant: ParticipantInfo, activator: Optional[ParticipantInfo] = None):
-        activation = output.Activation(participant.lifeline)
+        activation = drawio.Activation(participant.lifeline)
         activation.y = self.current_offset
 
         if not participant.activation_stack:
@@ -278,5 +281,5 @@ class Layouter:
         activation = participant.activation_stack.pop()
         activation.height = self.current_offset - activation.y
 
-    def handle_spacing(self, statement: model.SpacingStatement):
+    def handle_spacing(self, statement: seqast.SpacingStatement):
         self.current_offset += statement.spacing
