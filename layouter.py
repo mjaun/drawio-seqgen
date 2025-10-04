@@ -188,6 +188,9 @@ class Layouter:
         if current_spacing < required_spacing:
             self.current_offset += required_spacing - current_spacing
 
+            # round up to the next statement offset
+            self.current_offset = ((self.current_offset + STATEMENT_OFFSET - 1) // STATEMENT_OFFSET) * STATEMENT_OFFSET
+
         for gap in range(start_gap, end_gap):
             self.last_offset_per_gap[gap] = self.current_offset + message_dy
 
