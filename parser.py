@@ -87,9 +87,10 @@ class SeqgenTransformer(Transformer):
             '>>': MessageArrowStyle.OPEN,
         }
         activation_map = {
-            '': MessageActivationType.NONE,
+            '': MessageActivationType.REGULAR,
             '+': MessageActivationType.ACTIVATE,
             '-': MessageActivationType.DEACTIVATE,
+            '|': MessageActivationType.FIREFORGET,
         }
 
         line_str = str(items[0])

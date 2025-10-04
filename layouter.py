@@ -86,9 +86,6 @@ class Layouter:
         }
 
         for statement in self.description.statements:
-            if type(statement) not in handlers:
-                raise NotImplementedError()
-
             # noinspection PyTypeChecker
             handlers[type(statement)](statement)
 
@@ -96,9 +93,7 @@ class Layouter:
         info = self.participant_info[statement.name]
         assert not info.activation_stack, "explicit activation allowed only if object is inactive"
 
-        activation = output.Activation(info.lifeline)
-        activation.y = self.current_offset
-        info.activation_stack.append(activation)
+        self.activate_participant(info)
 
         self.current_offset += STATEMENT_OFFSET
 
@@ -106,27 +101,39 @@ class Layouter:
         info = self.participant_info[statement.name]
         assert info.activation_stack, "explicit deactivation not possible, participant is inactive"
 
-        activation = info.activation_stack.pop()
-        activation.height = self.current_offset - activation.y
+        self.deactivate_participant(info)
 
         self.current_offset += STATEMENT_OFFSET
 
     def handle_message(self, statement: model.MessageStatement):
         assert statement.sender != statement.receiver, "use self call syntax"
 
-        if statement.activation == model.MessageActivationType.ACTIVATE:
-            self.handle_message_activation(statement)
+        handlers = {
+            model.MessageActivationType.REGULAR: self.handle_message_regular,
+            model.MessageActivationType.ACTIVATE: self.handle_message_activate,
+            model.MessageActivationType.DEACTIVATE: self.handle_message_deactivate,
+            model.MessageActivationType.FIREFORGET: self.handle_message_fireforget,
+        }
 
-        elif statement.activation == model.MessageActivationType.DEACTIVATE:
-            self.handle_message_deactivation(statement)
+        # noinspection PyArgumentList
+        handlers[statement.activation](statement)
 
-        elif statement.activation == model.MessageActivationType.NONE:
-            self.handle_message_regular(statement)
+        self.current_offset += STATEMENT_OFFSET
 
-        else:
-            raise NotImplementedError()
+    def handle_message_regular(self, statement: model.MessageStatement):
+        sender = self.participant_info[statement.sender]
+        receiver = self.participant_info[statement.receiver]
 
-    def handle_message_activation(self, statement: model.MessageStatement):
+        assert sender.activation_stack, "sender must be active to send a message"
+        assert receiver.activation_stack, "receiver must be active to receive a message"
+
+        self.ensure_message_spacing(sender, receiver, 0)
+
+        message = self.create_message(sender, receiver, statement)
+        message.type = output.MessageType.REGULAR
+        message.y = self.current_offset
+
+    def handle_message_activate(self, statement: model.MessageStatement):
         sender = self.participant_info[statement.sender]
         receiver = self.participant_info[statement.receiver]
 
@@ -143,11 +150,11 @@ class Layouter:
         message = self.create_message(sender, receiver, statement)
         message.type = message_type
 
-    def handle_message_deactivation(self, statement: model.MessageStatement):
+    def handle_message_deactivate(self, statement: model.MessageStatement):
         sender = self.participant_info[statement.sender]
         receiver = self.participant_info[statement.receiver]
 
-        assert sender.activation_stack, "sender must be active to deactivate"
+        assert sender.activation_stack, "sender must be active to send a message"
         assert receiver.activation_stack, "receiver must be active to receive a message"
 
         self.ensure_message_spacing(sender, receiver, -output.ACTIVATION_MESSAGE_DY)
@@ -162,20 +169,25 @@ class Layouter:
 
         self.deactivate_participant(sender)
 
-    def handle_message_regular(self, statement: model.MessageStatement):
+    def handle_message_fireforget(self, statement: model.MessageStatement):
         sender = self.participant_info[statement.sender]
         receiver = self.participant_info[statement.receiver]
 
         assert sender.activation_stack, "sender must be active to send a message"
-        assert receiver.activation_stack, "receiver must be active to receive a message"
 
-        self.ensure_message_spacing(sender, receiver, 0)
+        self.activate_participant(receiver, sender)
+
+        self.current_offset += STATEMENT_OFFSET
+
+        self.ensure_message_spacing(sender, receiver, STATEMENT_OFFSET)
 
         message = self.create_message(sender, receiver, statement)
         message.type = output.MessageType.REGULAR
         message.y = self.current_offset
 
         self.current_offset += STATEMENT_OFFSET
+
+        self.deactivate_participant(receiver)
 
     def ensure_message_spacing(self, part1: ParticipantInfo, part2: ParticipantInfo, message_dy: int):
         start_gap = min(part1.index, part2.index)
@@ -203,7 +215,7 @@ class Layouter:
         message.arrow = statement.arrow
         return message
 
-    def activate_participant(self, participant: ParticipantInfo, activator: Optional[ParticipantInfo]):
+    def activate_participant(self, participant: ParticipantInfo, activator: Optional[ParticipantInfo] = None):
         activation = output.Activation(participant.lifeline)
         activation.y = self.current_offset
 
@@ -219,13 +231,9 @@ class Layouter:
 
         participant.activation_stack.append(activation)
 
-        self.current_offset += STATEMENT_OFFSET
-
     def deactivate_participant(self, participant: ParticipantInfo):
         activation = participant.activation_stack.pop()
         activation.height = self.current_offset - activation.y
-
-        self.current_offset += STATEMENT_OFFSET
 
     def handle_spacing(self, statement: model.SpacingStatement):
         self.current_offset += statement.spacing

@@ -21,3 +21,7 @@ A ->> J: yield
 deactivate A
 spacing -10
 deactivate J
+
+activate A
+A ->>| J: fire and forget
+deactivate A

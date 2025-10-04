@@ -40,9 +40,10 @@ class DeactivateStatement(Statement):
 
 
 class MessageActivationType(Enum):
-    NONE = auto()
+    REGULAR = auto()
     ACTIVATE = auto()
     DEACTIVATE = auto()
+    FIREFORGET = auto()
 
 
 class MessageLineStyle(Enum):
