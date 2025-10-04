@@ -13,3 +13,11 @@ J ->+ A: dispatch
 A -->>- J: return
 J -->>- A: return
 deactivate A
+
+activate A
+spacing -10
+activate J
+A ->> J: yield
+deactivate A
+spacing -10
+deactivate J

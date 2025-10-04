@@ -4,7 +4,7 @@ from pathlib import Path
 from model import SequenceDiagramDescription, ParticipantDeclaration, ActivateStatement, DeactivateStatement, \
     MessageLineStyle, MessageArrowStyle, \
     MessageActivationType, \
-    MessageStatement, TitleDeclaration
+    MessageStatement, TitleDeclaration, SpacingStatement
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
@@ -107,3 +107,7 @@ class SeqgenTransformer(Transformer):
             return str(items[0])
         else:
             raise NotImplementedError()
+
+    def spacing(self, items):
+        assert len(items) == 1
+        return SpacingStatement(int(items[0]))

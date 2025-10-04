@@ -65,6 +65,11 @@ class MessageStatement(Statement):
     arrow: MessageArrowStyle
 
 
+@dataclass
+class SpacingStatement(Statement):
+    spacing: int
+
+
 class SequenceDiagramDescription:
     def __init__(self, declarations, statements: List[Statement]):
         self.statements: List[Statement] = statements

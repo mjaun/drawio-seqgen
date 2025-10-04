@@ -82,6 +82,7 @@ class Layouter:
             model.ActivateStatement: self.handle_activate,
             model.DeactivateStatement: self.handle_deactivate,
             model.MessageStatement: self.handle_message,
+            model.SpacingStatement: self.handle_spacing,
         }
 
         for statement in self.description.statements:
@@ -222,3 +223,6 @@ class Layouter:
         activation.height = self.current_offset - activation.y
 
         self.current_offset += STATEMENT_OFFSET
+
+    def handle_spacing(self, statement: model.SpacingStatement):
+        self.current_offset += statement.spacing
