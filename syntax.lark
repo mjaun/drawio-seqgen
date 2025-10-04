@@ -4,7 +4,7 @@ declaration_list: declaration+
 statement_list: statement+
 
 declaration: title_size | title | participant_width | participant_spacing | participant
-statement: activation | deactivation | message | self_call | option | spacing
+statement: activation | deactivation | message | self_call | option | loop | spacing
 
 title: "title" _SPACE+ TEXT _NEWLINE
 title_size: "title size" _SPACE+ NUMBER "x" NUMBER _NEWLINE
@@ -26,6 +26,7 @@ self_call: name self_call_width? _SPACE* ":" _SPACE* TEXT _NEWLINE
 self_call_width: _SPACE+ "width" _SPACE+ NUMBER
 
 option: "opt" _SPACE+ TEXT _NEWLINE statement_list "end" _NEWLINE
+loop: "loop" _SPACE+ TEXT _NEWLINE statement_list "end" _NEWLINE
 
 arrow: ARROW_LINE ARROW_END ARROW_ACTIVATION?
 ARROW_LINE: /-{1,2}/

@@ -92,6 +92,12 @@ class OptionStatement(Statement):
     inner: List[Statement]
 
 
+@dataclass
+class LoopStatement(Statement):
+    text: str
+    inner: List[Statement]
+
+
 class SeqDescription:
     def __init__(self, declarations: List[Declaration], statements: List[Statement]):
         self.statements: List[Statement] = statements

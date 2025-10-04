@@ -125,6 +125,7 @@ class Layouter:
             seqast.SelfCallStatement: self.handle_self_call,
             seqast.SpacingStatement: self.handle_spacing,
             seqast.OptionStatement: self.handle_option,
+            seqast.LoopStatement: self.handle_loop,
         }
 
         for statement in statements:
@@ -275,47 +276,14 @@ class Layouter:
         self.current_position_y += STATEMENT_OFFSET_Y
 
     def handle_option(self, statement: seqast.OptionStatement):
-        # create frame
-        self.current_position_y += STATEMENT_OFFSET_Y
-
-        frame = drawio.Frame(self.page, 'opt')
-        frame.y = self.current_position_y
-        frame.box_width = CONTROL_FRAME_BOX_WIDTH
-        frame.box_height = CONTROL_FRAME_BOX_HEIGHT
-
-        text = drawio.Text(self.page, frame, f'[{statement.text}]')
-        text.y = 5
-        text.x = CONTROL_FRAME_BOX_WIDTH + 10
-
-        # push frame stack
-        dimension = FrameDimension()
-        self.frame_dimension_stack.append(dimension)
-
-        # positioning on frame begin
-        self.current_position_y += CONTROL_FRAME_BOX_HEIGHT + 10
-        self.reset_offset_per_gap()
-        self.current_position_y += STATEMENT_OFFSET_Y
-
-        # process inner statements
+        frame = self.open_frame('opt', statement.text)
         self.process_statements(statement.inner)
+        self.close_frame(frame)
 
-        # set frame height
-        self.current_position_y += STATEMENT_OFFSET_Y
-        frame.height = self.current_position_y - frame.y
-
-        # positioning on frame end
-        self.reset_offset_per_gap()
-        self.current_position_y += STATEMENT_OFFSET_Y
-
-        # set frame width
-        frame.x = dimension.min_x - CONTROL_FRAME_SPACING
-        frame.width = dimension.max_x + CONTROL_FRAME_SPACING - frame.x
-
-        # pop frame stack
-        self.frame_dimension_stack.pop()
-
-        # request dimension for parent frame
-        self.request_frame_dimensions(frame.x, frame.x + frame.width)
+    def handle_loop(self, statement: seqast.LoopStatement):
+        frame = self.open_frame('loop', statement.text)
+        self.process_statements(statement.inner)
+        self.close_frame(frame)
 
     def handle_spacing(self, statement: seqast.SpacingStatement):
         self.current_position_y += statement.spacing
@@ -360,6 +328,49 @@ class Layouter:
             dimension.max_x = max(x)
         else:
             dimension.max_x = max(dimension.max_x, max(x))
+
+    def open_frame(self, value: str, text: str) -> drawio.Frame:
+        # create frame
+        self.current_position_y += STATEMENT_OFFSET_Y
+
+        frame = drawio.Frame(self.page, value)
+        frame.y = self.current_position_y
+        frame.box_width = CONTROL_FRAME_BOX_WIDTH
+        frame.box_height = CONTROL_FRAME_BOX_HEIGHT
+
+        text = drawio.Text(self.page, frame, f'[{text}]')
+        text.y = 5
+        text.x = CONTROL_FRAME_BOX_WIDTH + 10
+
+        # push frame stack
+        dimension = FrameDimension()
+        self.frame_dimension_stack.append(dimension)
+
+        # positioning on frame begin
+        self.current_position_y += CONTROL_FRAME_BOX_HEIGHT + 10
+        self.reset_offset_per_gap()
+        self.current_position_y += STATEMENT_OFFSET_Y
+
+        return frame
+
+    def close_frame(self, frame: drawio.Frame):
+        # set frame height
+        self.current_position_y += STATEMENT_OFFSET_Y
+        frame.height = self.current_position_y - frame.y
+
+        # positioning on frame end
+        self.reset_offset_per_gap()
+        self.current_position_y += STATEMENT_OFFSET_Y
+
+        # pop frame stack
+        dimension = self.frame_dimension_stack.pop()
+
+        # set frame width
+        frame.x = dimension.min_x - CONTROL_FRAME_SPACING
+        frame.width = dimension.max_x + CONTROL_FRAME_SPACING - frame.x
+
+        # request dimension for parent frame
+        self.request_frame_dimensions(frame.x, frame.x + frame.width)
 
     def activate_participant(self, participant: ParticipantInfo, activator: Optional[ParticipantInfo] = None):
         activation = drawio.Activation(participant.lifeline)

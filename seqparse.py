@@ -118,6 +118,11 @@ class SeqTransformer(Transformer):
         return OptionStatement(str(items[0]), items[1])
 
     @staticmethod
+    def loop(items):
+        assert len(items) == 2
+        return LoopStatement(str(items[0]), items[1])
+
+    @staticmethod
     def arrow(items):
         assert len(items) in (2, 3)
 

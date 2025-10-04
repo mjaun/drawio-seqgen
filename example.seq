@@ -21,7 +21,7 @@ opt something happened
 J ->> A: yield
 J ->> A: yield
 
-opt nested happenings
+loop nested happenings
 J ->| G : hello
 
 J ->+ G: dummy
