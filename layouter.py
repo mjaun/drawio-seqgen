@@ -4,7 +4,7 @@ from typing import List, Dict, Optional
 import model
 import output
 
-LIFELINE_WIDTH = 120
+LIFELINE_WIDTH = 160
 LIFELINE_SPACING = 40
 
 TITLE_FRAME_PADDING = 30
@@ -14,6 +14,8 @@ END_OFFSET = 20
 
 STATEMENT_OFFSET = 10
 MESSAGE_MIN_SPACING = 20
+
+ACTIVATION_STACK_OFFSET = output.ACTIVATION_WIDTH / 2
 
 
 @dataclass
@@ -82,6 +84,7 @@ class Layouter:
             model.ActivateStatement: self.handle_activate,
             model.DeactivateStatement: self.handle_deactivate,
             model.MessageStatement: self.handle_message,
+            model.SelfCallStatement: self.handle_self_call,
             model.SpacingStatement: self.handle_spacing,
         }
 
@@ -90,18 +93,17 @@ class Layouter:
             handlers[type(statement)](statement)
 
     def handle_activate(self, statement: model.ActivateStatement):
-        info = self.participant_info[statement.name]
-        assert not info.activation_stack, "explicit activation allowed only if object is inactive"
+        participant = self.participant_info[statement.name]
 
-        self.activate_participant(info)
+        self.activate_participant(participant)
 
         self.current_offset += STATEMENT_OFFSET
 
     def handle_deactivate(self, statement: model.DeactivateStatement):
-        info = self.participant_info[statement.name]
-        assert info.activation_stack, "explicit deactivation not possible, participant is inactive"
+        participant = self.participant_info[statement.name]
+        assert participant.activation_stack, "deactivation not possible, participant is inactive"
 
-        self.deactivate_participant(info)
+        self.deactivate_participant(participant)
 
         self.current_offset += STATEMENT_OFFSET
 
@@ -128,10 +130,12 @@ class Layouter:
         assert receiver.activation_stack, "receiver must be active to receive a message"
 
         self.ensure_message_spacing(sender, receiver, 0)
-
         message = self.create_message(sender, receiver, statement)
-        message.type = output.MessageType.REGULAR
-        message.y = self.current_offset
+
+        message.points.append(output.Point(
+            x=(sender.lifeline.center_x() + receiver.lifeline.center_x()) / 2,
+            y=self.current_offset
+        ))
 
     def handle_message_activate(self, statement: model.MessageStatement):
         sender = self.participant_info[statement.sender]
@@ -141,31 +145,27 @@ class Layouter:
 
         self.ensure_message_spacing(sender, receiver, output.ACTIVATION_MESSAGE_DY)
         self.activate_participant(receiver, sender)
+        message = self.create_message(sender, receiver, statement)
 
         if sender.index < receiver.index:
-            message_type = output.MessageType.ACTIVATE_LEFT
+            message.type = output.MessageType.ACTIVATE_LEFT
         else:
-            message_type = output.MessageType.ACTIVATE_RIGHT
-
-        message = self.create_message(sender, receiver, statement)
-        message.type = message_type
+            message.type = output.MessageType.ACTIVATE_RIGHT
 
     def handle_message_deactivate(self, statement: model.MessageStatement):
         sender = self.participant_info[statement.sender]
         receiver = self.participant_info[statement.receiver]
 
         assert sender.activation_stack, "sender must be active to send a message"
-        assert receiver.activation_stack, "receiver must be active to receive a message"
+        assert receiver.activation_stack, "deactivation not possible, participant is inactive"
 
         self.ensure_message_spacing(sender, receiver, -output.ACTIVATION_MESSAGE_DY)
+        message = self.create_message(sender, receiver, statement)
 
         if sender.index < receiver.index:
-            message_type = output.MessageType.DEACTIVATE_RIGHT
+            message.type = output.MessageType.DEACTIVATE_RIGHT
         else:
-            message_type = output.MessageType.DEACTIVATE_LEFT
-
-        message = self.create_message(sender, receiver, statement)
-        message.type = message_type
+            message.type = output.MessageType.DEACTIVATE_LEFT
 
         self.deactivate_participant(sender)
 
@@ -176,17 +176,17 @@ class Layouter:
         assert sender.activation_stack, "sender must be active to send a message"
 
         self.activate_participant(receiver, sender)
-
         self.current_offset += STATEMENT_OFFSET
 
         self.ensure_message_spacing(sender, receiver, STATEMENT_OFFSET)
-
         message = self.create_message(sender, receiver, statement)
-        message.type = output.MessageType.REGULAR
-        message.y = self.current_offset
+
+        message.points.append(output.Point(
+            x=(sender.lifeline.center_x() + receiver.lifeline.center_x()) / 2,
+            y=self.current_offset
+        ))
 
         self.current_offset += STATEMENT_OFFSET
-
         self.deactivate_participant(receiver)
 
     def ensure_message_spacing(self, part1: ParticipantInfo, part2: ParticipantInfo, message_dy: int):
@@ -206,28 +206,71 @@ class Layouter:
         for gap in range(start_gap, end_gap):
             self.last_offset_per_gap[gap] = self.current_offset + message_dy
 
-    @staticmethod
-    def create_message(sender: ParticipantInfo,
+    def create_message(self, sender: ParticipantInfo,
                        receiver: ParticipantInfo,
                        statement: model.MessageStatement) -> output.Message:
         message = output.Message(sender.activation_stack[-1], receiver.activation_stack[-1], statement.text)
         message.line = statement.line
         message.arrow = statement.arrow
+        message.type = output.MessageType.REGULAR
         return message
+
+    def handle_self_call(self, statement: model.SelfCallStatement):
+        participant = self.participant_info[statement.name]
+
+        assert participant.activation_stack, "participant must be active for self call"
+
+        # create activation for self call
+        self.current_offset += STATEMENT_OFFSET
+        self.activate_participant(participant)
+
+        # create self call message
+        regular_activation = participant.activation_stack[-2]
+        self_call_activation = participant.activation_stack[-1]
+        message = output.Message(regular_activation, self_call_activation, statement.text)
+        message.alignment = output.TextAlignment.MIDDLE_RIGHT
+
+        message.points.append(output.Point(
+            x=participant.lifeline.center_x() + self_call_activation.dx + 25,
+            y=self.current_offset - STATEMENT_OFFSET,
+        ))
+
+        message.points.append(output.Point(
+            x=participant.lifeline.center_x() + self_call_activation.dx + 25,
+            y=self.current_offset + STATEMENT_OFFSET,
+        ))
+
+        # deactivate after self call
+        self.current_offset += 2 * STATEMENT_OFFSET
+        self.deactivate_participant(participant)
+
+        self.current_offset += STATEMENT_OFFSET
 
     def activate_participant(self, participant: ParticipantInfo, activator: Optional[ParticipantInfo] = None):
         activation = output.Activation(participant.lifeline)
         activation.y = self.current_offset
 
-        if activator and participant.activation_stack:
-            last_dx = participant.activation_stack[-1].dx
+        if not participant.activation_stack:
+            # if participant is not active we always start in the middle
+            activation.dx = 0
 
-            if activator.index > participant.index:
-                current_dx = output.ACTIVATION_WIDTH / 2
+        elif len(participant.activation_stack) == 1:
+            # if participant is activated once, we consider the location of the activator
+            if not activator or activator.index > participant.index:
+                next_dx = ACTIVATION_STACK_OFFSET
             else:
-                current_dx = -output.ACTIVATION_WIDTH / 2
+                next_dx = -ACTIVATION_STACK_OFFSET
 
-            activation.dx = last_dx + current_dx
+            activation.dx = next_dx
+
+        else:
+            # if participant is activated multiple times, we keep stacking into the same direction
+            if participant.activation_stack[-1].dx > participant.activation_stack[-2].dx:
+                next_dx = ACTIVATION_STACK_OFFSET
+            else:
+                next_dx = -ACTIVATION_STACK_OFFSET
+
+            activation.dx = participant.activation_stack[-1].dx + next_dx
 
         participant.activation_stack.append(activation)
 

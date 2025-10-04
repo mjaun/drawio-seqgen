@@ -2,9 +2,9 @@ from lark import Lark, Transformer
 from pathlib import Path
 
 from model import SequenceDiagramDescription, ParticipantDeclaration, ActivateStatement, DeactivateStatement, \
-    MessageLineStyle, MessageArrowStyle, \
     MessageActivationType, \
-    MessageStatement, TitleDeclaration, SpacingStatement
+    MessageStatement, TitleDeclaration, SpacingStatement, SelfCallStatement
+from output import MessageLineStyle, MessageArrowStyle
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
@@ -59,11 +59,11 @@ class SeqgenTransformer(Transformer):
 
     def activation(self, items):
         assert len(items) == 1
-        return ActivateStatement(str(items[0]))
+        return ActivateStatement(items[0])
 
     def deactivation(self, items):
         assert len(items) == 1
-        return DeactivateStatement(str(items[0]))
+        return DeactivateStatement(items[0])
 
     def message(self, items):
         assert len(items) == 4
@@ -74,6 +74,10 @@ class SeqgenTransformer(Transformer):
         text = items[3]
 
         return MessageStatement(sender, receiver, text, activation, line, arrow)
+
+    def self_call(self, items):
+        assert len(items) == 2
+        return SelfCallStatement(items[0], items[1])
 
     def arrow(self, items):
         assert len(items) in (2, 3)

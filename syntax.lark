@@ -4,7 +4,7 @@ declaration_list: declaration+
 statement_list: statement+
 
 declaration: title | participant
-statement: activation | deactivation | message | spacing
+statement: activation | deactivation | message | self_call | spacing
 
 title: "title" _SPACE+ TEXT _NEWLINE
 
@@ -17,6 +17,7 @@ activation: "activate" _SPACE+ name _NEWLINE
 deactivation: "deactivate" _SPACE+ name _NEWLINE
 
 message: name _SPACE+ arrow _SPACE+ name _SPACE* ":" _SPACE* TEXT _NEWLINE
+self_call: name _SPACE* ":" _SPACE* TEXT _NEWLINE
 
 arrow: ARROW_LINE ARROW_END ARROW_ACTIVATION?
 ARROW_LINE: /-{1,2}/

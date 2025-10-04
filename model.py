@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-from pydoc import describe
 from typing import List
+
+from output import MessageLineStyle, MessageArrowStyle
 
 
 @dataclass
@@ -46,16 +47,6 @@ class MessageActivationType(Enum):
     FIREFORGET = auto()
 
 
-class MessageLineStyle(Enum):
-    SOLID = auto()
-    DASHED = auto()
-
-
-class MessageArrowStyle(Enum):
-    BLOCK = auto()
-    OPEN = auto()
-
-
 @dataclass
 class MessageStatement(Statement):
     sender: str
@@ -64,6 +55,12 @@ class MessageStatement(Statement):
     activation: MessageActivationType
     line: MessageLineStyle
     arrow: MessageArrowStyle
+
+
+@dataclass
+class SelfCallStatement(Statement):
+    name: str
+    text: str
 
 
 @dataclass

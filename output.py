@@ -1,9 +1,8 @@
 import xml.etree.ElementTree as ET
 
+from dataclasses import dataclass
 from enum import auto, Enum
 from typing import List, Dict, Optional
-
-from model import MessageLineStyle, MessageArrowStyle
 
 ACTIVATION_WIDTH = 10
 ACTIVATION_MESSAGE_DY = 5
@@ -228,16 +227,28 @@ class MessageType(Enum):
     DEACTIVATE_RIGHT = auto()
 
 
+class TextAlignment(Enum):
+    TOP_CENTER = auto()
+    MIDDLE_RIGHT = auto()
+
+
+@dataclass
+class Point:
+    x: int
+    y: int
+
+
 class Message(Object):
-    def __init__(self, source: Activation, target: Activation, value: str):
+    def __init__(self, source: Object, target: Object, value: str):
         super().__init__(source.page, None, value)
         self.source = source
         self.target = target
 
-        self.type = MessageType.ACTIVATE_LEFT
+        self.type = MessageType.REGULAR
         self.line = MessageLineStyle.SOLID
         self.arrow = MessageArrowStyle.BLOCK
-        self.y = 0
+        self.alignment = TextAlignment.TOP_CENTER
+        self.points: List[Point] = []
 
     def attr(self):
         return {
@@ -247,16 +258,20 @@ class Message(Object):
         }
 
     def style(self):
-        arrow_map = {
-            MessageArrowStyle.BLOCK: 'block',
-            MessageArrowStyle.OPEN: 'open',
-        }
-
         style = {
             'html': '1',
-            'verticalAlign': 'bottom',
             'curved': '0',
             'rounded': '0',
+        }
+
+        alignment_map = {
+            TextAlignment.TOP_CENTER: {
+                'verticalAlign': 'bottom',
+            },
+            TextAlignment.MIDDLE_RIGHT: {
+                'align': 'left',
+                'spacingLeft': '2',
+            },
         }
 
         arrow_map = {
@@ -305,6 +320,7 @@ class Message(Object):
             },
         }
 
+        style.update(alignment_map[self.alignment])
         style.update(arrow_map[self.arrow])
         style.update(line_map[self.line])
         style.update(type_map[self.type])
@@ -319,20 +335,30 @@ class Message(Object):
             'as': 'geometry'
         })
 
-        if self.type in (MessageType.ACTIVATE_LEFT, MessageType.ACTIVATE_RIGHT):
+        if self.type == MessageType.REGULAR:
+            ET.SubElement(geometry, 'mxPoint', attrib={'as': 'targetPoint'})
+            ET.SubElement(geometry, 'mxPoint', attrib={'as': 'sourcePoint'})
+        elif self.type in (MessageType.ACTIVATE_LEFT, MessageType.ACTIVATE_RIGHT):
             ET.SubElement(geometry, 'mxPoint', attrib={'as': 'sourcePoint'})
         elif self.type in (MessageType.DEACTIVATE_LEFT, MessageType.DEACTIVATE_RIGHT):
             ET.SubElement(geometry, 'mxPoint', attrib={'as': 'targetPoint'})
-        elif self.type == MessageType.REGULAR:
-            ET.SubElement(geometry, 'mxPoint', attrib={'as': 'targetPoint'})
-            ET.SubElement(geometry, 'mxPoint', attrib={'as': 'sourcePoint'})
-
-            source_lifeline = self.source.parent
-            target_lifeline = self.target.parent
-            x = (source_lifeline.center_x() + target_lifeline.center_x()) / 2
-            array = ET.SubElement(geometry, 'Array', attrib={'as': 'points'})
-            ET.SubElement(array, 'mxPoint', attrib={'x': str(x), 'y': str(self.y)})
         else:
             raise NotImplementedError()
 
+        if self.points:
+            array = ET.SubElement(geometry, 'Array', attrib={'as': 'points'})
+
+            for point in self.points:
+                ET.SubElement(array, 'mxPoint', attrib={'x': str(point.x), 'y': str(point.y)})
+
         return cell
+
+
+class MessageLineStyle(Enum):
+    SOLID = auto()
+    DASHED = auto()
+
+
+class MessageArrowStyle(Enum):
+    BLOCK = auto()
+    OPEN = auto()
