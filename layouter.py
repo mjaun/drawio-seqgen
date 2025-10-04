@@ -4,23 +4,22 @@ from typing import List, Dict
 import model
 import output
 
+LIFELINE_WIDTH = 120
+LIFELINE_SPACING = 40
+
+TITLE_FRAME_PADDING = 30
+
+Y_START_OFFSET = 60
+Y_END_OFFSET = 20
+
+ACTIVATION_OFFSET = 10
+MESSAGE_OFFSET = 20
 
 class Layouter:
-    lifeline_width = 120
-    lifeline_spacing = 40
-
-    frame_padding = 30
-
-    sequence_start_offset = 60
-    sequence_end_offset = 20
-
-    activation_offset = 10
-    message_offset = 20
-
     def __init__(self, description: model.SequenceDiagramDescription):
         self.description = description
         self.participant_info: Dict[str, ParticipantInfo] = {}
-        self.current_y = self.sequence_start_offset
+        self.current_y = Y_START_OFFSET
         self.file = output.File()
         self.page = output.Page(self.file, 'Diagram')
         self.frame = output.Frame(self.page, '')
@@ -42,25 +41,25 @@ class Layouter:
         for index, participant in enumerate(self.description.participants):
             lifeline = output.Lifeline(self.page, participant.name)
 
-            lifeline.width = self.lifeline_width
-            lifeline.x = index * (self.lifeline_width + self.lifeline_spacing)
+            lifeline.width = LIFELINE_WIDTH
+            lifeline.x = index * (LIFELINE_WIDTH + LIFELINE_SPACING)
 
-            end_x = lifeline.x + self.lifeline_width
+            end_x = lifeline.x + LIFELINE_WIDTH
 
             self.participant_info[participant.alias] = ParticipantInfo(participant, lifeline)
 
         self.frame.value = self.description.title
-        self.frame.x = -self.frame_padding
-        self.frame.y = -self.frame_padding - self.frame.header_height
-        self.frame.width = end_x + 2 * self.frame_padding
+        self.frame.x = -TITLE_FRAME_PADDING
+        self.frame.y = -TITLE_FRAME_PADDING - self.frame.header_height
+        self.frame.width = end_x + (2 * TITLE_FRAME_PADDING)
 
     def finalize(self):
-        self.current_y += self.sequence_end_offset
+        self.current_y += Y_END_OFFSET
 
         for participant in self.participant_info.values():
             participant.lifeline.height = self.current_y
 
-        self.frame.height = (self.current_y - self.frame.y) + self.frame_padding
+        self.frame.height = (self.current_y - self.frame.y) + TITLE_FRAME_PADDING
 
     def process_statements(self):
         handlers = {
@@ -97,7 +96,7 @@ class Layouter:
         receiver_info = self.participant_info[statement.receiver]
 
         if statement.activation == model.MessageActivationType.ACTIVATE:
-            self.current_y += self.message_offset
+            self.current_y += MESSAGE_OFFSET
 
             activation = output.Activation(receiver_info.lifeline)
             activation.y = self.current_y
@@ -110,7 +109,7 @@ class Layouter:
             message.type = output.MessageType.ACTIVATE_FROM_LEFT
 
         elif statement.activation == model.MessageActivationType.DEACTIVATE:
-            self.current_y += self.message_offset
+            self.current_y += MESSAGE_OFFSET
 
             activation = sender_info.activation_stack.pop()
             activation.height = self.current_y - activation.y
