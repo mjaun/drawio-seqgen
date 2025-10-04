@@ -8,6 +8,35 @@ ACTIVATION_WIDTH = 10
 MESSAGE_ANCHOR_DY = 5
 
 
+class MessageAnchor(Enum):
+    NONE = auto()
+    TOP_LEFT = auto()
+    TOP_RIGHT = auto()
+    BOTTOM_LEFT = auto()
+    BOTTOM_RIGHT = auto()
+
+
+class MessageLineStyle(Enum):
+    SOLID = auto()
+    DASHED = auto()
+
+
+class MessageArrowStyle(Enum):
+    BLOCK = auto()
+    OPEN = auto()
+
+
+class TextAlignment(Enum):
+    TOP_CENTER = auto()
+    MIDDLE_RIGHT = auto()
+
+
+@dataclass
+class Point:
+    x: int
+    y: int
+
+
 class File:
     def __init__(self):
         self.pages: List[Page] = []
@@ -183,6 +212,54 @@ class Frame(ObjectWithAbsoluteGeometry):
         }
 
 
+class Separator(Object):
+    def __init__(self, frame: Frame):
+        super().__init__(frame.page, None, '')
+
+        self.frame = frame
+        self.y = 0
+
+    def attr(self) -> Dict[str, str]:
+        return {
+            'edge': '1',
+            'source': self.frame.id,
+            'target': self.frame.id,
+        }
+
+    def style(self) -> Dict[str, Optional[str]]:
+        rel_y = self.y / self.frame.height
+
+        return {
+            'html': '1',
+            'endArrow': 'none',
+            'dashed': '1',
+            'rounded': '0',
+            'entryX': '1',
+            'entryY': f"{rel_y:.3f}",
+            'entryDx': '0',
+            'entryDy': '0',
+            'entryPerimeter': '0',
+            'exitX': '0',
+            'exitY': f"{rel_y:.3f}",
+            'exitDx': '0',
+            'exitDy': '0',
+            'exitPerimeter': '0',
+        }
+
+    def xml(self, xml_parent: ET.Element) -> ET.Element:
+        cell = super().xml(xml_parent)
+
+        geometry = ET.SubElement(cell, 'mxGeometry', attrib={
+            'relative': '1',
+            'as': 'geometry'
+        })
+
+        ET.SubElement(geometry, 'mxPoint', attrib={'as': 'targetPoint'})
+        ET.SubElement(geometry, 'mxPoint', attrib={'as': 'sourcePoint'})
+
+        return cell
+
+
 class Lifeline(ObjectWithAbsoluteGeometry):
     def __init__(self, page: Page, value: str):
         super().__init__(page, None, value)
@@ -212,10 +289,10 @@ class Lifeline(ObjectWithAbsoluteGeometry):
 
 
 class Activation(Object):
-    def __init__(self, parent: Lifeline):
-        super().__init__(parent.page, parent, '')
+    def __init__(self, lifeline: Lifeline):
+        super().__init__(lifeline.page, lifeline, '')
 
-        self.parent = parent
+        self.lifeline = lifeline
         self.dx = 0
         self.y = 90
         self.height = 100
@@ -239,10 +316,8 @@ class Activation(Object):
     def xml(self, xml_parent: ET.Element) -> ET.Element:
         cell = super().xml(xml_parent)
 
-        assert isinstance(self.parent, Lifeline)
-
         ET.SubElement(cell, 'mxGeometry', attrib={
-            'x': str((self.parent.width / 2) - (ACTIVATION_WIDTH / 2) + self.dx),
+            'x': str((self.lifeline.width / 2) - (ACTIVATION_WIDTH / 2) + self.dx),
             'y': str(self.y),
             'width': str(ACTIVATION_WIDTH),
             'height': str(self.height),
@@ -250,25 +325,6 @@ class Activation(Object):
         })
 
         return cell
-
-
-class MessageAnchor(Enum):
-    NONE = auto()
-    TOP_LEFT = auto()
-    TOP_RIGHT = auto()
-    BOTTOM_LEFT = auto()
-    BOTTOM_RIGHT = auto()
-
-
-class TextAlignment(Enum):
-    TOP_CENTER = auto()
-    MIDDLE_RIGHT = auto()
-
-
-@dataclass
-class Point:
-    x: int
-    y: int
 
 
 class Message(Object):
@@ -385,13 +441,3 @@ class Message(Object):
                 ET.SubElement(array, 'mxPoint', attrib={'x': str(point.x), 'y': str(point.y)})
 
         return cell
-
-
-class MessageLineStyle(Enum):
-    SOLID = auto()
-    DASHED = auto()
-
-
-class MessageArrowStyle(Enum):
-    BLOCK = auto()
-    OPEN = auto()

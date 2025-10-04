@@ -17,20 +17,24 @@ A ->+ J: dispatch
 J ->+ G: dispatch
 G -->>- J: return
 
-opt something happened
+alt something happened
 J ->> A: yield
+else another thing happened
 J ->> A: yield
-
-loop nested happenings
-J ->| G : hello
-
-J ->+ G: dummy
-G width 60: self call
-deactivate G
-
+else otherwise
+J: do nothing
 end
 
-end
+//loop nested happenings
+//J ->| G : hello
+
+//J ->+ G: dummy
+//G: self call
+//deactivate G
+
+//end
+
+//end
 
 J ->+ A: dispatch
 A -->>- J: return

@@ -19,6 +19,7 @@ def main():
     file = Layouter(description).layout()
 
     file.write(args.output)
+    file.write('output.xml')
 
 
 if __name__ == '__main__':

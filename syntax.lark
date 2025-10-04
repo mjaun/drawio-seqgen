@@ -4,7 +4,7 @@ declaration_list: declaration+
 statement_list: statement+
 
 declaration: title_size | title | participant_width | participant_spacing | participant
-statement: activation | deactivation | message | self_call | option | loop | spacing
+statement: activation | deactivation | alternative | option | loop | spacing | message | self_call
 
 title: "title" _SPACE+ TEXT _NEWLINE
 title_size: "title size" _SPACE+ NUMBER "x" NUMBER _NEWLINE
@@ -25,6 +25,8 @@ message: name _SPACE+ arrow _SPACE+ name _SPACE* ":" _SPACE* TEXT _NEWLINE
 self_call: name self_call_width? _SPACE* ":" _SPACE* TEXT _NEWLINE
 self_call_width: _SPACE+ "width" _SPACE+ NUMBER
 
+alternative: "alt" _SPACE+ TEXT _NEWLINE statement_list alternative_else+ "end" _NEWLINE
+alternative_else: "else" _SPACE+ TEXT _NEWLINE statement_list
 option: "opt" _SPACE+ TEXT _NEWLINE statement_list "end" _NEWLINE
 loop: "loop" _SPACE+ TEXT _NEWLINE statement_list "end" _NEWLINE
 
@@ -48,4 +50,4 @@ _NEWLINE: /\r?\n/
 %ignore _BEGIN _SPACE* _NEWLINE // empty lines
 %ignore _BEGIN _SPACE+ // leading white space
 %ignore _SPACE+ _END // trailing white space
-%ignore _BEGIN _SPACE* /%%.*/ _NEWLINE // mermaid comments
+%ignore _SPACE* /\/\/.*/ _NEWLINE // comments

@@ -94,7 +94,7 @@ class SeqTransformer(Transformer):
         sender = items[0]
         line, arrow, activation = items[1]
         receiver = items[2]
-        text = items[3]
+        text = str(items[3])
 
         return MessageStatement(sender, receiver, text, activation, line, arrow)
 
@@ -111,6 +111,18 @@ class SeqTransformer(Transformer):
     def self_call_width(items):
         assert len(items) == 1
         return int(items[0])
+
+    @staticmethod
+    def alternative(items):
+        text = str(items[0])
+        inner = items[1]
+        branches = [AlternativeBranch(item[0], item[1]) for item in items[2:]]
+        return AlternativeStatement(text, inner, branches)
+
+    @staticmethod
+    def alternative_else(items):
+        assert len(items) == 2
+        return str(items[0]), items[1]
 
     @staticmethod
     def option(items):

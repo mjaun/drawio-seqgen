@@ -87,6 +87,19 @@ class SpacingStatement(Statement):
 
 
 @dataclass
+class AlternativeBranch:
+    text: str
+    inner: List[Statement]
+
+
+@dataclass
+class AlternativeStatement(Statement):
+    text: str
+    inner: List[Statement]
+    branches: List[AlternativeBranch]
+
+
+@dataclass
 class OptionStatement(Statement):
     text: str
     inner: List[Statement]

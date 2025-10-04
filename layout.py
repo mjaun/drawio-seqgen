@@ -124,6 +124,7 @@ class Layouter:
             seqast.MessageStatement: self.handle_message,
             seqast.SelfCallStatement: self.handle_self_call,
             seqast.SpacingStatement: self.handle_spacing,
+            seqast.AlternativeStatement: self.handle_alternative,
             seqast.OptionStatement: self.handle_option,
             seqast.LoopStatement: self.handle_loop,
         }
@@ -274,6 +275,27 @@ class Layouter:
         self.request_frame_dimensions(lifeline_x, lifeline_x + self_call_width)
 
         self.current_position_y += STATEMENT_OFFSET_Y
+
+    def handle_alternative(self, statement: seqast.AlternativeStatement):
+        frame = self.open_frame('alt', statement.text)
+        self.process_statements(statement.inner)
+
+        for branch in statement.branches:
+            self.current_position_y += STATEMENT_OFFSET_Y
+
+            separator = drawio.Separator(frame)
+            separator.y = self.current_position_y - frame.y
+
+            text = drawio.Text(self.page, frame, f'[{branch.text}]')
+            text.y = separator.y + 5
+            text.x = 10
+
+            self.current_position_y += 30
+            self.reset_offset_per_gap()
+
+            self.process_statements(branch.inner)
+
+        self.close_frame(frame)
 
     def handle_option(self, statement: seqast.OptionStatement):
         frame = self.open_frame('opt', statement.text)
