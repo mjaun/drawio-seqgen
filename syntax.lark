@@ -1,6 +1,10 @@
-start: statement*
+start: declaration_list statement_list
 
-statement: title | participant | activation | deactivation | message
+declaration_list: declaration+
+statement_list: statement+
+
+declaration: title | participant
+statement: activation | deactivation | message
 
 title: "title" _SPACE+ TEXT _NEWLINE
 

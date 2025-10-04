@@ -3,7 +3,6 @@ from typing import List, Dict
 
 import model
 import output
-from output import MessageType
 
 
 class Layouter:

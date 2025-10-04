@@ -1,15 +1,21 @@
 from dataclasses import dataclass
 from enum import Enum, auto
+from pydoc import describe
 from typing import List
 
 
 @dataclass
-class TitleDeclaration:
+class Declaration:
+    pass
+
+
+@dataclass
+class TitleDeclaration(Declaration):
     text: str
 
 
 @dataclass
-class ParticipantDeclaration:
+class ParticipantDeclaration(Declaration):
     name: str
     alias: str = None
 
@@ -60,15 +66,18 @@ class MessageStatement(Statement):
 
 
 class SequenceDiagramDescription:
-    def __init__(self, items):
-        self.participants: List[ParticipantDeclaration] = []
-        self.statements: List[Statement] = []
+    def __init__(self, declarations, statements: List[Statement]):
+        self.statements: List[Statement] = statements
+        self.participants: List[ParticipantDeclaration] = all_of_type(ParticipantDeclaration, declarations)
         self.title = 'Sequence Diagram'
 
-        for item in items:
-            if isinstance(item, ParticipantDeclaration):
-                self.participants.append(item)
-            if isinstance(item, Statement):
-                self.statements.append(item)
-            if isinstance(item, TitleDeclaration):
-                self.title = item.text
+        if declaration := first_of_type(TitleDeclaration, declarations):
+            self.title = declaration.text
+
+
+def first_of_type(type, items):
+    return next((item for item in items if isinstance(item, type)), None)
+
+
+def all_of_type(type, items):
+    return [item for item in items if isinstance(item, type)]

@@ -1,7 +1,8 @@
 from lark import Lark, Transformer
 from pathlib import Path
 
-from model import SequenceDiagramDescription, ParticipantDeclaration, ActivateStatement, DeactivateStatement, MessageLineStyle, MessageArrowStyle, \
+from model import SequenceDiagramDescription, ParticipantDeclaration, ActivateStatement, DeactivateStatement, \
+    MessageLineStyle, MessageArrowStyle, \
     MessageActivationType, \
     MessageStatement, TitleDeclaration
 
@@ -21,7 +22,20 @@ def parse(text) -> 'SequenceDiagramDescription':
 
 class SeqgenTransformer(Transformer):
     def start(self, items):
-        return SequenceDiagramDescription(items)
+        assert len(items) == 2
+        declarations = list(items[0])
+        statements = list(items[1])
+        return SequenceDiagramDescription(declarations, statements)
+
+    def declaration_list(self, items):
+        return list(items)
+
+    def statement_list(self, items):
+        return list(items)
+
+    def declaration(self, items):
+        assert len(items) == 1
+        return items[0]
 
     def statement(self, items):
         assert len(items) == 1
