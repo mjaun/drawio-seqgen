@@ -9,17 +9,17 @@ LIFELINE_SPACING = 40
 
 TITLE_FRAME_PADDING = 30
 
-Y_START_OFFSET = 60
-Y_END_OFFSET = 20
+START_OFFSET = 60
+END_OFFSET = 20
 
-ACTIVATION_OFFSET = 10
-MESSAGE_OFFSET = 20
+STATEMENT_OFFSET = 10
+MESSAGE_MIN_SPACING = 20
 
 class Layouter:
     def __init__(self, description: model.SequenceDiagramDescription):
         self.description = description
         self.participant_info: Dict[str, ParticipantInfo] = {}
-        self.current_y = Y_START_OFFSET
+        self.current_y = START_OFFSET
         self.file = output.File()
         self.page = output.Page(self.file, 'Diagram')
         self.frame = output.Frame(self.page, '')
@@ -54,7 +54,7 @@ class Layouter:
         self.frame.width = end_x + (2 * TITLE_FRAME_PADDING)
 
     def finalize(self):
-        self.current_y += Y_END_OFFSET
+        self.current_y += END_OFFSET
 
         for participant in self.participant_info.values():
             participant.lifeline.height = self.current_y
@@ -96,7 +96,7 @@ class Layouter:
         receiver_info = self.participant_info[statement.receiver]
 
         if statement.activation == model.MessageActivationType.ACTIVATE:
-            self.current_y += MESSAGE_OFFSET
+            self.current_y += MESSAGE_MIN_SPACING
 
             activation = output.Activation(receiver_info.lifeline)
             activation.y = self.current_y
@@ -109,7 +109,7 @@ class Layouter:
             message.type = output.MessageType.ACTIVATE_FROM_LEFT
 
         elif statement.activation == model.MessageActivationType.DEACTIVATE:
-            self.current_y += MESSAGE_OFFSET
+            self.current_y += MESSAGE_MIN_SPACING
 
             activation = sender_info.activation_stack.pop()
             activation.height = self.current_y - activation.y

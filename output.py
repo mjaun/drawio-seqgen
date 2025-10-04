@@ -6,6 +6,7 @@ from typing import List, Dict, Optional
 from model import MessageLineStyle, MessageArrowStyle
 
 ACTIVATION_WIDTH = 10
+ACTIVATION_MESSAGE_DY = 5
 
 
 class File:
@@ -245,26 +246,46 @@ class Message(Object):
         style = {
             'html': '1',
             'verticalAlign': 'bottom',
-            'endArrow': arrow_map[self.arrow],
-            'dashed': '0' if self.line == MessageLineStyle.SOLID else '1',
             'curved': '0',
             'rounded': '0',
         }
 
-        if self.type == MessageType.ACTIVATE_FROM_LEFT:
-            style.update({
+        arrow_map = {
+            MessageArrowStyle.BLOCK: {
+                'endArrow': 'block',
+            },
+            MessageArrowStyle.OPEN: {
+                'endArrow': 'open',
+            },
+        }
+
+        line_map = {
+            MessageLineStyle.SOLID: {
+                'dashed': '0',
+            },
+            MessageLineStyle.DASHED: {
+                'dashed': '1',
+            },
+        }
+
+        type_map = {
+            MessageType.ACTIVATE_FROM_LEFT: {
                 'entryX': '0',
                 'entryY': '0',
                 'entryDx': '0',
-                'entryDy': '5',
-            })
-        if self.type == MessageType.DEACTIVATE_FROM_LEFT:
-            style.update({
+                'entryDy': str(ACTIVATION_MESSAGE_DY),
+            },
+            MessageType.DEACTIVATE_FROM_LEFT: {
                 'exitX': '0',
                 'exitY': '1',
                 'exitDx': '0',
-                'exitDy': '-5',
-            })
+                'exitDy': str(-ACTIVATION_MESSAGE_DY),
+            },
+        }
+
+        style.update(arrow_map[self.arrow])
+        style.update(line_map[self.line])
+        style.update(type_map[self.type])
 
         return style
 
