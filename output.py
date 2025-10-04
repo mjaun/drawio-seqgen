@@ -180,6 +180,7 @@ class Activation(Object):
     def __init__(self, parent: Lifeline):
         super().__init__(parent.page, parent, '')
 
+        self.dx = 0
         self.y = 90
         self.height = 100
 
@@ -205,7 +206,7 @@ class Activation(Object):
         assert isinstance(self.parent, Lifeline)
 
         ET.SubElement(cell, 'mxGeometry', attrib={
-            'x': str((self.parent.width / 2) - (ACTIVATION_WIDTH / 2)),
+            'x': str((self.parent.width / 2) - (ACTIVATION_WIDTH / 2) + self.dx),
             'y': str(self.y),
             'width': str(ACTIVATION_WIDTH),
             'height': str(self.height),

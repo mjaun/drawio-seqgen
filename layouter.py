@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 import model
 import output
@@ -119,33 +119,31 @@ class Layouter:
             assert sender_info.activation_stack, "sender must be active to send a message"
 
             self.ensure_message_spacing(sender_info, receiver_info, output.ACTIVATION_MESSAGE_DY)
+            self.activate_participant(receiver_info, sender_info)
 
-            receiver_activation = output.Activation(receiver_info.lifeline)
-            receiver_activation.y = self.current_offset
-            receiver_info.activation_stack.append(receiver_activation)
+            sender_activation = sender_info.activation_stack[-1]
+            receiver_activation = receiver_info.activation_stack[-1]
 
-            message = output.Message(sender_info.activation_stack[-1], receiver_activation, statement.text)
+            message = output.Message(sender_activation, receiver_activation, statement.text)
             message.line = statement.line
             message.arrow = statement.arrow
             message.type = output.MessageType.ACTIVATE_FROM_LEFT
 
-            self.current_offset += STATEMENT_OFFSET
-
         elif statement.activation == model.MessageActivationType.DEACTIVATE:
-            assert receiver_info.activation_stack, "receiver must be active to deactivate"
+            assert sender_info.activation_stack, "sender must be active to deactivate"
+            assert receiver_info.activation_stack, "receiver must be active to receive a message"
 
             self.ensure_message_spacing(sender_info, receiver_info, -output.ACTIVATION_MESSAGE_DY)
 
-            sender_activation = sender_info.activation_stack.pop()
-            sender_activation.height = self.current_offset - sender_activation.y
+            sender_activation = sender_info.activation_stack[-1]
+            receiver_activation = receiver_info.activation_stack[-1]
 
-            message = output.Message(sender_activation, receiver_info.activation_stack[-1], statement.text)
+            message = output.Message(sender_activation, receiver_activation, statement.text)
             message.line = statement.line
             message.arrow = statement.arrow
             message.type = output.MessageType.DEACTIVATE_FROM_LEFT
 
-            self.current_offset += STATEMENT_OFFSET
-
+            self.deactivate_participant(sender_info)
         else:
             raise NotImplementedError()
 
@@ -162,3 +160,27 @@ class Layouter:
 
         for gap in range(start_gap, end_gap):
             self.last_offset_per_gap[gap] = self.current_offset + message_dy
+
+    def activate_participant(self, participant: ParticipantInfo, activator: Optional[ParticipantInfo]):
+        activation = output.Activation(participant.lifeline)
+        activation.y = self.current_offset
+
+        if activator and participant.activation_stack:
+            last_dx = participant.activation_stack[-1].dx
+
+            if activator.index > participant.index:
+                current_dx = output.ACTIVATION_WIDTH / 2
+            else:
+                current_dx = -output.ACTIVATION_WIDTH / 2
+
+            activation.dx = last_dx + current_dx
+
+        participant.activation_stack.append(activation)
+
+        self.current_offset += STATEMENT_OFFSET
+
+    def deactivate_participant(self, participant: ParticipantInfo):
+        activation = participant.activation_stack.pop()
+        activation.height = self.current_offset - activation.y
+
+        self.current_offset += STATEMENT_OFFSET

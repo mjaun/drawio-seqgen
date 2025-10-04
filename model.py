@@ -71,13 +71,13 @@ class SequenceDiagramDescription:
         self.participants: List[ParticipantDeclaration] = all_of_type(ParticipantDeclaration, declarations)
         self.title = 'Sequence Diagram'
 
-        if declaration := first_of_type(TitleDeclaration, declarations):
+        if declaration := last_of_type(TitleDeclaration, declarations):
             self.title = declaration.text
 
 
-def first_of_type(type, items):
-    return next((item for item in items if isinstance(item, type)), None)
+def last_of_type(type, items):
+    return next((item for item in reversed(items) if isinstance(item, type)), None)
 
 
 def all_of_type(type, items):
-    return [item for item in items if isinstance(item, type)]
+    return list(filter(lambda item: isinstance(item, type), items))
