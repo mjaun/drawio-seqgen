@@ -25,16 +25,14 @@ else otherwise
 J: do nothing
 end
 
-//loop nested happenings
-//J ->| G : hello
+loop nested happenings
+J ->| G : hello
 
-//J ->+ G: dummy
-//G: self call
-//deactivate G
-
-//end
-
-//end
+J ->+ G: dummy
+frame dimension for G dx 100
+G: self call
+deactivate G
+end
 
 J ->+ A: dispatch
 A -->>- J: return
@@ -42,18 +40,18 @@ J -->>- A: return
 deactivate A
 
 activate A
-spacing -10
+vertical offset -10
 activate J
 A ->> J: yield
 deactivate A
-spacing -10
+vertical offset -10
 deactivate J
 
 activate A
 A ->>| J: fire and forget
 deactivate A
 
-spacing -50
+vertical offset -50
 activate G
 G: self call
 deactivate G

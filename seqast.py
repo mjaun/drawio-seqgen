@@ -49,12 +49,12 @@ class Statement:
 
 @dataclass
 class ActivateStatement(Statement):
-    name: str
+    target: str
 
 
 @dataclass
 class DeactivateStatement(Statement):
-    name: str
+    target: str
 
 
 class MessageActivationType(Enum):
@@ -76,14 +76,8 @@ class MessageStatement(Statement):
 
 @dataclass
 class SelfCallStatement(Statement):
-    name: str
+    target: str
     text: str
-    width: Optional[int] = None
-
-
-@dataclass
-class SpacingStatement(Statement):
-    spacing: int
 
 
 @dataclass
@@ -109,6 +103,17 @@ class OptionStatement(Statement):
 class LoopStatement(Statement):
     text: str
     inner: List[Statement]
+
+
+@dataclass
+class VerticalOffsetStatement(Statement):
+    spacing: int
+
+
+@dataclass
+class FrameDimensionStatement(Statement):
+    target: str
+    dx: int
 
 
 class SeqDescription:

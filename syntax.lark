@@ -3,8 +3,21 @@ start: declaration_list statement_list
 declaration_list: declaration+
 statement_list: statement+
 
-declaration: title_size | title | participant_width | participant_spacing | participant
-statement: activation | deactivation | alternative | option | loop | spacing | message | self_call
+declaration: title_size
+           | title
+           | participant_width
+           | participant_spacing
+           | participant
+
+statement: activation
+         | deactivation
+         | alternative
+         | option
+         | loop
+         | vertical_offset
+         | frame_dimension
+         | message
+         | self_call
 
 title: "title" _SPACE+ TEXT _NEWLINE
 title_size: "title size" _SPACE+ NUMBER "x" NUMBER _NEWLINE
@@ -15,15 +28,14 @@ participant_alias: _SPACE+ "as" _SPACE+ name
 participant_width: "participant width" _SPACE+ NUMBER _NEWLINE
 participant_spacing: "participant spacing" _SPACE+ NUMBER _NEWLINE
 
-spacing: "spacing" _SPACE+ NUMBER _NEWLINE
+vertical_offset: "vertical offset" _SPACE+ NUMBER _NEWLINE
+frame_dimension: "frame dimension for" _SPACE+ name _SPACE+ "dx" _SPACE+ NUMBER _NEWLINE
 
 activation: "activate" _SPACE+ name _NEWLINE
 deactivation: "deactivate" _SPACE+ name _NEWLINE
 
 message: name _SPACE+ arrow _SPACE+ name _SPACE* ":" _SPACE* TEXT _NEWLINE
-
-self_call: name self_call_width? _SPACE* ":" _SPACE* TEXT _NEWLINE
-self_call_width: _SPACE+ "width" _SPACE+ NUMBER
+self_call: name _SPACE* ":" _SPACE* TEXT _NEWLINE
 
 alternative: "alt" _SPACE+ TEXT _NEWLINE statement_list alternative_else+ "end" _NEWLINE
 alternative_else: "else" _SPACE+ TEXT _NEWLINE statement_list
