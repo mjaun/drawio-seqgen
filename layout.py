@@ -335,8 +335,8 @@ class Layouter:
                        receiver: ParticipantInfo,
                        statement: seqast.MessageStatement) -> drawio.Message:
         message = drawio.Message(sender.activation_stack[-1], receiver.activation_stack[-1], statement.text)
-        message.line = statement.line
-        message.arrow = statement.arrow
+        message.line = statement.line_style
+        message.arrow = statement.arrow_style
         message.type = drawio.MessageAnchor.NONE
         return message
 

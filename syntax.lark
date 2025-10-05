@@ -1,4 +1,4 @@
-start: header_statement+ statement+
+start: header_statement+ body_statement+
 
 header_statement: title_size
                 | title
@@ -6,16 +6,18 @@ header_statement: title_size
                 | participant_spacing
                 | participant
 
-statement: activation
-         | deactivation
-         | alternative
-         | option
-         | loop
-         | vertical_offset
-         | frame_dimension
-         | note
-         | message
-         | self_call
+body_statement: activation
+              | deactivation
+              | alternative
+              | option
+              | loop
+              | vertical_offset
+              | frame_dimension
+              | note
+              | message
+              | self_call
+
+inner_statements: body_statement+
 
 title: "title" _SPACE+ TEXT _NEWLINE
 title_size: "title size" _SPACE+ NUMBER "x" NUMBER _NEWLINE
@@ -32,14 +34,15 @@ deactivation: "deactivate" _SPACE+ name _NEWLINE
 message: name _SPACE+ arrow _SPACE+ name _SPACE* ":" _SPACE* TEXT _NEWLINE
 self_call: name _SPACE* ":" _SPACE* TEXT _NEWLINE
 
-alternative: "alt" _SPACE+ TEXT _NEWLINE statement_list alternative_else+ "end" _NEWLINE
-alternative_else: "else" _SPACE+ TEXT _NEWLINE statement_list
-option: "opt" _SPACE+ TEXT _NEWLINE statement_list "end" _NEWLINE
-loop: "loop" _SPACE+ TEXT _NEWLINE statement_list "end" _NEWLINE
-statement_list: statement+
+alternative: "alt" _SPACE+ TEXT _NEWLINE inner_statements alternative_branches "end" _NEWLINE
+alternative_branches: alternative_branch*
+alternative_branch: "else" _SPACE+ TEXT _NEWLINE inner_statements
 
-note: "note on" _SPACE+ name note_attr _SPACE* ":" _SPACE* TEXT _NEWLINE
-note_attr: (note_dx | note_dy | note_width | note_height)*
+option: "opt" _SPACE+ TEXT _NEWLINE inner_statements "end" _NEWLINE
+loop: "loop" _SPACE+ TEXT _NEWLINE inner_statements "end" _NEWLINE
+
+note: "note on" _SPACE+ name note_attrs _SPACE* ":" _SPACE* TEXT _NEWLINE
+note_attrs: (note_dx | note_dy | note_width | note_height)*
 note_dx: _SPACE+ "dx" _SPACE+ NUMBER
 note_dy: _SPACE+ "dy" _SPACE+ NUMBER
 note_width: _SPACE+ "width" _SPACE+ NUMBER

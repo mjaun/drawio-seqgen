@@ -7,7 +7,8 @@ from drawio import MessageLineStyle, MessageArrowStyle
 
 @dataclass
 class Statement:
-    pass
+    def __init__(self):
+        self.line_number = 0
 
 
 @dataclass
@@ -60,8 +61,8 @@ class MessageStatement(Statement):
     receiver: str
     text: str
     activation: MessageActivationType
-    line: MessageLineStyle
-    arrow: MessageArrowStyle
+    line_style: MessageLineStyle
+    arrow_style: MessageArrowStyle
 
 
 @dataclass
@@ -94,6 +95,7 @@ class LoopStatement(Statement):
     text: str
     inner: List[Statement]
 
+
 @dataclass
 class NoteStatement(Statement):
     target: str
@@ -102,6 +104,7 @@ class NoteStatement(Statement):
     dy: Optional[int] = None
     width: Optional[int] = None
     height: Optional[int] = None
+
 
 @dataclass
 class VerticalOffsetStatement(Statement):

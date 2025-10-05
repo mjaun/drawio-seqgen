@@ -25,50 +25,47 @@ class SeqTransformer(Transformer):
         return list(items)
 
     @staticmethod
-    def statement_list(items):
-        return list(items)
-
-    @staticmethod
     def header_statement(items):
         assert len(items) == 1
         return items[0]
 
     @staticmethod
-    def statement(items):
+    def body_statement(items):
         assert len(items) == 1
         return items[0]
+
+    @staticmethod
+    def inner_statements(items):
+        return list(items)
 
     @staticmethod
     def title(items):
         assert len(items) == 1
-        return TitleStatement(str(items[0]))
+        return TitleStatement(items[0])
 
     @staticmethod
     def title_size(items):
         assert len(items) == 2
-        return TitleSizeStatement(int(items[0]), int(items[1]))
+        return TitleSizeStatement(items[0], items[1])
 
     @staticmethod
     def participant(items):
         assert len(items) in (1, 2)
-        text = items[0]
-        name = items[1] if len(items) == 2 else text
-        return ParticipantStatement(text, name)
-
-    @staticmethod
-    def participant_alias(items):
-        assert len(items) == 1
-        return items[0]
+        if len(items) == 1:
+            return ParticipantStatement(items[0], items[0])
+        else:
+            assert len(items[1].children) == 1
+            return ParticipantStatement(items[0], items[1].children[0])
 
     @staticmethod
     def participant_spacing(items):
         assert len(items) == 1
-        return ParticipantSpacingStatement(int(items[0]))
+        return ParticipantSpacingStatement(items[0])
 
     @staticmethod
     def participant_width(items):
         assert len(items) == 1
-        return ParticipantWidthStatement(int(items[0]))
+        return ParticipantWidthStatement(items[0])
 
     @staticmethod
     def activation(items):
@@ -83,13 +80,8 @@ class SeqTransformer(Transformer):
     @staticmethod
     def message(items):
         assert len(items) == 4
-
-        sender = items[0]
         line, arrow, activation = items[1]
-        receiver = items[2]
-        text = str(items[3])
-
-        return MessageStatement(sender, receiver, text, activation, line, arrow)
+        return MessageStatement(items[0], items[2], items[3], activation, line, arrow)
 
     @staticmethod
     def self_call(items):
@@ -97,50 +89,40 @@ class SeqTransformer(Transformer):
         return SelfCallStatement(items[0], items[1])
 
     @staticmethod
-    def self_call_width(items):
-        assert len(items) == 1
-        return int(items[0])
-
-    @staticmethod
     def alternative(items):
-        text = str(items[0])
-        inner = items[1]
-        branches = [AlternativeBranch(item[0], item[1]) for item in items[2:]]
-        return AlternativeStatement(text, inner, branches)
+        assert len(items) == 3
+        alternative = AlternativeStatement(items[0], items[1], [])
 
-    @staticmethod
-    def alternative_else(items):
-        assert len(items) == 2
-        return str(items[0]), items[1]
+        for branch in items[2].children:
+            assert len(branch.children) == 2
+            alternative.branches.append(AlternativeBranch(branch.children[0], branch.children[1]))
+
+        return alternative
 
     @staticmethod
     def option(items):
         assert len(items) == 2
-        return OptionStatement(str(items[0]), items[1])
+        return OptionStatement(items[0], items[1])
 
     @staticmethod
     def loop(items):
         assert len(items) == 2
-        return LoopStatement(str(items[0]), items[1])
+        return LoopStatement(items[0], items[1])
 
     @staticmethod
     def note(items):
         assert len(items) == 3
-        name = items[0]
-        attr = items[1]
-        text = str(items[2])
+        note = NoteStatement(items[0], items[2])
 
-        note = NoteStatement(name, text)
-
-        for item in attr.children:
-            if item.data == 'note_dx':
-                note.dx = int(item.children[0])
-            elif item.data == 'note_dy':
-                note.dy = int(item.children[0])
-            elif item.data == 'note_width':
-                note.width = int(item.children[0])
-            elif item.data == 'note_height':
-                note.height = int(item.children[0])
+        for attr in items[1].children:
+            if attr.data == 'note_dx':
+                note.dx = int(attr.children[0])
+            elif attr.data == 'note_dy':
+                note.dy = int(attr.children[0])
+            elif attr.data == 'note_width':
+                note.width = int(attr.children[0])
+            elif attr.data == 'note_height':
+                note.height = int(attr.children[0])
             else:
                 raise NotImplementedError()
 
@@ -149,12 +131,12 @@ class SeqTransformer(Transformer):
     @staticmethod
     def vertical_offset(items):
         assert len(items) == 1
-        return VerticalOffsetStatement(int(items[0]))
+        return VerticalOffsetStatement(items[0])
 
     @staticmethod
     def frame_dimension(items):
         assert len(items) == 2
-        return FrameDimensionStatement(items[0], int(items[1]))
+        return FrameDimensionStatement(items[0], items[1])
 
     @staticmethod
     def arrow(items):
@@ -191,3 +173,11 @@ class SeqTransformer(Transformer):
             return str(items[0])
         else:
             raise NotImplementedError()
+
+    @staticmethod
+    def TEXT(token):
+        return str(token)
+
+    @staticmethod
+    def NUMBER(token):
+        return int(token)
