@@ -12,7 +12,7 @@ class Parser:
         with open(SCRIPT_DIR / 'syntax.lark', 'r') as f:
             grammar = f.read()
 
-        self.lark = Lark(grammar, start='start')
+        self.lark = Lark(grammar, start='start', propagate_positions=True)
 
     def parse(self, text) -> List[Statement]:
         parsed = self.lark.parse(text)
@@ -22,21 +22,19 @@ class Parser:
 class SeqTransformer(Transformer):
     @staticmethod
     def start(items):
-        return list(items)
-
-    @staticmethod
-    def header_statement(items):
-        assert len(items) == 1
-        return items[0]
-
-    @staticmethod
-    def body_statement(items):
-        assert len(items) == 1
-        return items[0]
+        return SeqTransformer.inner_statements(items)
 
     @staticmethod
     def inner_statements(items):
-        return list(items)
+        statements = []
+
+        for item in items:
+            assert len(item.children) == 1
+            statement = item.children[0]
+            statement.line_number = item.meta.line
+            statements.append(statement)
+
+        return statements
 
     @staticmethod
     def title(items):

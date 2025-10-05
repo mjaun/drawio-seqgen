@@ -111,8 +111,11 @@ class Layouter:
         }
 
         for statement in statements:
-            # noinspection PyTypeChecker
-            handlers[type(statement)](statement)
+            try:
+                # noinspection PyTypeChecker
+                handlers[type(statement)](statement)
+            except:
+                raise RuntimeError(f'error processing statement on line {statement.line_number}')
 
     def handle_title(self, statement: seqast.TitleStatement):
         self.title_frame.value = statement.text
