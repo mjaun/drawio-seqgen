@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import List
+from typing import List, Optional
 
 from drawio import MessageLineStyle, MessageArrowStyle
 
@@ -94,6 +94,14 @@ class LoopStatement(Statement):
     text: str
     inner: List[Statement]
 
+@dataclass
+class NoteStatement(Statement):
+    target: str
+    text: str
+    dx: Optional[int] = None
+    dy: Optional[int] = None
+    width: Optional[int] = None
+    height: Optional[int] = None
 
 @dataclass
 class VerticalOffsetStatement(Statement):

@@ -124,6 +124,39 @@ class SeqTransformer(Transformer):
         return LoopStatement(str(items[0]), items[1])
 
     @staticmethod
+    def note(items):
+        assert len(items) == 3
+        name = items[0]
+        attr = items[1]
+        text = str(items[2])
+
+        note = NoteStatement(name, text)
+
+        for item in attr.children:
+            if item.data == 'note_dx':
+                note.dx = int(item.children[0])
+            elif item.data == 'note_dy':
+                note.dy = int(item.children[0])
+            elif item.data == 'note_width':
+                note.width = int(item.children[0])
+            elif item.data == 'note_height':
+                note.height = int(item.children[0])
+            else:
+                raise NotImplementedError()
+
+        return note
+
+    @staticmethod
+    def vertical_offset(items):
+        assert len(items) == 1
+        return VerticalOffsetStatement(int(items[0]))
+
+    @staticmethod
+    def frame_dimension(items):
+        assert len(items) == 2
+        return FrameDimensionStatement(items[0], int(items[1]))
+
+    @staticmethod
     def arrow(items):
         assert len(items) in (2, 3)
 
@@ -158,13 +191,3 @@ class SeqTransformer(Transformer):
             return str(items[0])
         else:
             raise NotImplementedError()
-
-    @staticmethod
-    def vertical_offset(items):
-        assert len(items) == 1
-        return VerticalOffsetStatement(int(items[0]))
-
-    @staticmethod
-    def frame_dimension(items):
-        assert len(items) == 2
-        return FrameDimensionStatement(items[0], int(items[1]))

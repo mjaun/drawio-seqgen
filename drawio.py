@@ -441,3 +441,28 @@ class Message(Object):
                 ET.SubElement(array, 'mxPoint', attrib={'x': str(point.x), 'y': str(point.y)})
 
         return cell
+
+
+class Note(ObjectWithAbsoluteGeometry):
+    def __init__(self, page: Page, value: str):
+        super().__init__(page, None, value)
+
+        self.width = 120
+        self.height = 60
+
+    def attr(self) -> Dict[str, str]:
+        return {
+            'vertex': '1'
+        }
+
+    def style(self) -> Dict[str, Optional[str]]:
+        return {
+            'shape': 'note',
+            'whiteSpace': 'wrap',
+            'html': '1',
+            'backgroundOutline': '1',
+            'darkOpacity': '0.05',
+            'size': '10',
+            'align': 'left',
+            'spacing': '8',
+        }

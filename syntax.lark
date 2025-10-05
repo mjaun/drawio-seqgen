@@ -13,6 +13,7 @@ statement: activation
          | loop
          | vertical_offset
          | frame_dimension
+         | note
          | message
          | self_call
 
@@ -25,9 +26,6 @@ participant_alias: _SPACE+ "as" _SPACE+ name
 participant_width: "participant width" _SPACE+ NUMBER _NEWLINE
 participant_spacing: "participant spacing" _SPACE+ NUMBER _NEWLINE
 
-vertical_offset: "vertical offset" _SPACE+ NUMBER _NEWLINE
-frame_dimension: "frame dimension for" _SPACE+ name _SPACE+ "dx" _SPACE+ NUMBER _NEWLINE
-
 activation: "activate" _SPACE+ name _NEWLINE
 deactivation: "deactivate" _SPACE+ name _NEWLINE
 
@@ -39,6 +37,16 @@ alternative_else: "else" _SPACE+ TEXT _NEWLINE statement_list
 option: "opt" _SPACE+ TEXT _NEWLINE statement_list "end" _NEWLINE
 loop: "loop" _SPACE+ TEXT _NEWLINE statement_list "end" _NEWLINE
 statement_list: statement+
+
+note: "note on" _SPACE+ name note_attr _SPACE* ":" _SPACE* TEXT _NEWLINE
+note_attr: (note_dx | note_dy | note_width | note_height)*
+note_dx: _SPACE+ "dx" _SPACE+ NUMBER
+note_dy: _SPACE+ "dy" _SPACE+ NUMBER
+note_width: _SPACE+ "width" _SPACE+ NUMBER
+note_height: _SPACE+ "height" _SPACE+ NUMBER
+
+vertical_offset: "vertical offset" _SPACE+ NUMBER _NEWLINE
+frame_dimension: "frame for" _SPACE+ name _SPACE+ "dx" _SPACE+ NUMBER _NEWLINE
 
 arrow: ARROW_LINE ARROW_END ARROW_ACTIVATION?
 ARROW_LINE: /-{1,2}/

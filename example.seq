@@ -17,6 +17,9 @@ A ->+ J: dispatch
 J ->+ G: dispatch
 G -->>- J: return
 
+note on J dx 10 dy 10 width 200 height 60: this is a test of a longer note with some text
+note on G: short note
+
 alt something happened
 J ->> A: yield
 else another thing happened
@@ -29,7 +32,7 @@ loop nested happenings
 J ->| G : hello
 
 J ->+ G: dummy
-frame dimension for G dx 100
+frame for G dx 100
 G: self call
 deactivate G
 end
