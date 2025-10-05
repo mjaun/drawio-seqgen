@@ -14,7 +14,7 @@ class Parser:
 
         self.lark = Lark(grammar, start='start')
 
-    def parse(self, text) -> SeqDescription:
+    def parse(self, text) -> List[Statement]:
         parsed = self.lark.parse(text)
         return SeqTransformer().transform(parsed)
 
@@ -22,13 +22,6 @@ class Parser:
 class SeqTransformer(Transformer):
     @staticmethod
     def start(items):
-        assert len(items) == 2
-        declarations = list(items[0])
-        statements = list(items[1])
-        return SeqDescription(declarations, statements)
-
-    @staticmethod
-    def declaration_list(items):
         return list(items)
 
     @staticmethod
@@ -36,7 +29,7 @@ class SeqTransformer(Transformer):
         return list(items)
 
     @staticmethod
-    def declaration(items):
+    def header_statement(items):
         assert len(items) == 1
         return items[0]
 
@@ -48,19 +41,19 @@ class SeqTransformer(Transformer):
     @staticmethod
     def title(items):
         assert len(items) == 1
-        return TitleTextDeclaration(str(items[0]))
+        return TitleStatement(str(items[0]))
 
     @staticmethod
     def title_size(items):
         assert len(items) == 2
-        return TitleSizeDeclaration(int(items[0]), int(items[1]))
+        return TitleSizeStatement(int(items[0]), int(items[1]))
 
     @staticmethod
     def participant(items):
         assert len(items) in (1, 2)
         text = items[0]
         name = items[1] if len(items) == 2 else text
-        return ParticipantNameDeclaration(text, name)
+        return ParticipantStatement(text, name)
 
     @staticmethod
     def participant_alias(items):
@@ -70,12 +63,12 @@ class SeqTransformer(Transformer):
     @staticmethod
     def participant_spacing(items):
         assert len(items) == 1
-        return ParticipantSpacingDeclaration(int(items[0]))
+        return ParticipantSpacingStatement(int(items[0]))
 
     @staticmethod
     def participant_width(items):
         assert len(items) == 1
-        return ParticipantWidthDeclaration(int(items[0]))
+        return ParticipantWidthStatement(int(items[0]))
 
     @staticmethod
     def activation(items):

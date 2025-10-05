@@ -15,8 +15,8 @@ def main():
     with open(args.input, 'r') as f:
         example = f.read()
 
-    description = Parser().parse(example)
-    file = Layouter(description).layout()
+    statement_list = Parser().parse(example)
+    file = Layouter().layout(statement_list)
 
     file.write(args.output)
 

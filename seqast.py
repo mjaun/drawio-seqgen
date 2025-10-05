@@ -1,50 +1,40 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import List, Optional
+from typing import List
 
 from drawio import MessageLineStyle, MessageArrowStyle
 
 
 @dataclass
-class Declaration:
+class Statement:
     pass
 
 
 @dataclass
-class TitleTextDeclaration(Declaration):
+class TitleStatement(Statement):
     text: str
 
 
 @dataclass
-class TitleSizeDeclaration(Declaration):
+class TitleSizeStatement(Statement):
     width: int
     height: int
 
 
 @dataclass
-class ParticipantDeclaration:
-    pass
-
-
-@dataclass
-class ParticipantNameDeclaration(ParticipantDeclaration):
+class ParticipantStatement(Statement):
     text: str
     name: str
 
 
 @dataclass
-class ParticipantWidthDeclaration(ParticipantDeclaration):
+class ParticipantWidthStatement(Statement):
     width: int
 
 
 @dataclass
-class ParticipantSpacingDeclaration(ParticipantDeclaration):
+class ParticipantSpacingStatement(Statement):
     spacing: int
-
-
-@dataclass
-class Statement:
-    pass
 
 
 @dataclass
@@ -114,19 +104,3 @@ class VerticalOffsetStatement(Statement):
 class FrameDimensionStatement(Statement):
     target: str
     dx: int
-
-
-class SeqDescription:
-    def __init__(self, declarations: List[Declaration], statements: List[Statement]):
-        self.statements: List[Statement] = statements
-        self.participants: List[ParticipantDeclaration] = all_of_type(ParticipantDeclaration, declarations)
-        self.title: Optional[TitleTextDeclaration] = last_of_type(TitleTextDeclaration, declarations)
-        self.title_size: Optional[TitleSizeDeclaration] = last_of_type(TitleSizeDeclaration, declarations)
-
-
-def last_of_type(type, items):
-    return next((item for item in reversed(items) if isinstance(item, type)), None)
-
-
-def all_of_type(type, items):
-    return list(filter(lambda item: isinstance(item, type), items))

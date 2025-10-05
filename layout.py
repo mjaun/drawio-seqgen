@@ -3,10 +3,12 @@ from typing import List, Dict, Optional
 import seqast
 import drawio
 
-LIFELINE_DEFAULT_WIDTH = 160
-LIFELINE_DEFAULT_SPACING = 40
-LIFELINE_HEIGHT = 40
+PARTICIPANT_DEFAULT_BOX_WIDTH = 160
+PARTICIPANT_DEFAULT_SPACING = 40
+PARTICIPANT_BOX_HEIGHT = 40
 
+TITLE_FRAME_DEFAULT_BOX_WIDTH = 160
+TITLE_FRAME_DEFAULT_BOX_HEIGHT = 30
 TITLE_FRAME_PADDING = 30
 
 CONTROL_FRAME_BOX_WIDTH = 60
@@ -35,72 +37,39 @@ class FrameDimension:
 
 
 class Layouter:
-    def __init__(self, description: seqast.SeqDescription):
-        self.description = description
+    def __init__(self):
         self.participant_info: Dict[str, ParticipantInfo] = {}
-        self.last_position_y_per_gap: Dict[int, int] = {i: 0 for i in range(len(description.participants) - 1)}
+        self.last_position_y_per_gap: Dict[int, int] = {}
         self.frame_dimension_stack: List[FrameDimension] = []
-        self.current_position_y = LIFELINE_HEIGHT + (2 * STATEMENT_OFFSET_Y)
+
+        self.current_position_y = PARTICIPANT_BOX_HEIGHT + (2 * STATEMENT_OFFSET_Y)
+        self.participant_width = PARTICIPANT_DEFAULT_BOX_WIDTH
+        self.participant_spacing = PARTICIPANT_DEFAULT_SPACING
+        self.participant_end_x = 0
 
         self.file = drawio.File()
         self.page = drawio.Page(self.file, 'Diagram')
-        self.title_frame = drawio.Frame(self.page, '')
+
+        self.title_frame = drawio.Frame(self.page, 'Sequence Diagram')
+        self.title_frame.box_width = TITLE_FRAME_DEFAULT_BOX_WIDTH
+        self.title_frame.box_height = TITLE_FRAME_DEFAULT_BOX_HEIGHT
+        self.title_frame.y = -TITLE_FRAME_PADDING - self.title_frame.box_height
+
+        self.frame_dimension_stack.append(FrameDimension())
+        self.request_frame_dimension(0)
 
         self.executed = False
 
-    def layout(self) -> drawio.File:
+    def layout(self, statements: List[seqast.Statement]) -> drawio.File:
         assert not self.executed, "layouter instance can only be used once"
         self.executed = True
 
-        self.setup_title_frame()
-        self.setup_participants()
-
-        self.process_statements(self.description.statements)
+        self.process_statements(statements)
 
         self.finalize_participants()
         self.finalize_title_frame()
 
         return self.file
-
-    def setup_title_frame(self):
-        if title_decl := self.description.title:
-            self.title_frame.value = title_decl.text
-        else:
-            self.title_frame.value = 'Sequence Diagram'
-
-        if title_size_decl := self.description.title_size:
-            self.title_frame.box_width = title_size_decl.width
-            self.title_frame.box_height = title_size_decl.height
-
-        self.title_frame.y = -TITLE_FRAME_PADDING - self.title_frame.box_height
-
-        self.frame_dimension_stack.append(FrameDimension())
-
-    def setup_participants(self):
-        lifeline_width = LIFELINE_DEFAULT_WIDTH
-        lifeline_spacing = LIFELINE_DEFAULT_SPACING
-        end_x = 0
-
-        for index, declaration in enumerate(self.description.participants):
-            if isinstance(declaration, seqast.ParticipantNameDeclaration):
-                lifeline = drawio.Lifeline(self.page, declaration.text)
-                lifeline.x = end_x + lifeline_spacing if end_x else 0
-                lifeline.width = lifeline_width
-                lifeline.height = LIFELINE_HEIGHT
-                end_x = lifeline_width + lifeline.x
-
-                self.participant_info[declaration.name] = ParticipantInfo(index, lifeline)
-
-            elif isinstance(declaration, seqast.ParticipantWidthDeclaration):
-                lifeline_width = declaration.width
-
-            elif isinstance(declaration, seqast.ParticipantSpacingDeclaration):
-                lifeline_spacing = declaration.spacing
-
-            else:
-                raise NotImplementedError()
-
-        self.request_frame_dimension(0, end_x)
 
     def finalize_participants(self):
         self.vertical_offset((2 * STATEMENT_OFFSET_Y))
@@ -119,6 +88,11 @@ class Layouter:
 
     def process_statements(self, statements: List[seqast.Statement]):
         handlers = {
+            seqast.TitleStatement: self.handle_title,
+            seqast.TitleSizeStatement: self.handle_title_size,
+            seqast.ParticipantStatement: self.handle_participant,
+            seqast.ParticipantWidthStatement: self.handle_participant_width,
+            seqast.ParticipantSpacingStatement: self.handle_participant_spacing,
             seqast.ActivateStatement: self.handle_activate,
             seqast.DeactivateStatement: self.handle_deactivate,
             seqast.MessageStatement: self.handle_message,
@@ -133,6 +107,35 @@ class Layouter:
         for statement in statements:
             # noinspection PyTypeChecker
             handlers[type(statement)](statement)
+
+    def handle_title(self, statement: seqast.TitleStatement):
+        self.title_frame.value = statement.text
+
+    def handle_title_size(self, statement: seqast.TitleSizeStatement):
+        self.title_frame.box_width = statement.width
+        self.title_frame.box_height = statement.height
+
+    def handle_participant(self, statement: seqast.ParticipantStatement):
+        lifeline = drawio.Lifeline(self.page, statement.text)
+        lifeline.x = self.participant_end_x + self.participant_spacing if self.participant_info else 0
+        lifeline.width = self.participant_width
+        lifeline.height = PARTICIPANT_BOX_HEIGHT
+
+        self.participant_end_x = lifeline.x + lifeline.width
+
+        index = len(self.participant_info)
+        self.participant_info[statement.name] = ParticipantInfo(index, lifeline)
+
+        if index > 0:
+            self.last_position_y_per_gap[index - 1] = 0
+
+        self.request_frame_dimension(self.participant_end_x)
+
+    def handle_participant_width(self, statement: seqast.ParticipantWidthStatement):
+        self.participant_width = statement.width
+
+    def handle_participant_spacing(self, statement: seqast.ParticipantSpacingStatement):
+        self.participant_spacing = statement.spacing
 
     def handle_activate(self, statement: seqast.ActivateStatement):
         participant = self.participant_info[statement.target]

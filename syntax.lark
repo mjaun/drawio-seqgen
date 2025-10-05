@@ -1,13 +1,10 @@
-start: declaration_list statement_list
+start: header_statement+ statement+
 
-declaration_list: declaration+
-statement_list: statement+
-
-declaration: title_size
-           | title
-           | participant_width
-           | participant_spacing
-           | participant
+header_statement: title_size
+                | title
+                | participant_width
+                | participant_spacing
+                | participant
 
 statement: activation
          | deactivation
@@ -41,6 +38,7 @@ alternative: "alt" _SPACE+ TEXT _NEWLINE statement_list alternative_else+ "end" 
 alternative_else: "else" _SPACE+ TEXT _NEWLINE statement_list
 option: "opt" _SPACE+ TEXT _NEWLINE statement_list "end" _NEWLINE
 loop: "loop" _SPACE+ TEXT _NEWLINE statement_list "end" _NEWLINE
+statement_list: statement+
 
 arrow: ARROW_LINE ARROW_END ARROW_ACTIVATION?
 ARROW_LINE: /-{1,2}/
