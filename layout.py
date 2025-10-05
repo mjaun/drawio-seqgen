@@ -28,6 +28,7 @@ class ParticipantInfo:
         self.index = index
         self.lifeline = lifeline
         self.activation_stack: List[drawio.Activation] = []
+        self.last_position_y = 0  # refers to messages between this participant and the participant to the right
 
 
 class FrameDimension:
@@ -38,8 +39,7 @@ class FrameDimension:
 
 class Layouter:
     def __init__(self):
-        self.participant_info: Dict[str, ParticipantInfo] = {}
-        self.last_position_y_per_gap: Dict[int, int] = {}
+        self.participant_dict: Dict[str, ParticipantInfo] = {}
         self.frame_dimension_stack: List[FrameDimension] = []
 
         self.current_position_y = PARTICIPANT_BOX_HEIGHT + (2 * STATEMENT_OFFSET_Y)
@@ -74,7 +74,7 @@ class Layouter:
     def finalize_participants(self):
         self.vertical_offset((2 * STATEMENT_OFFSET_Y))
 
-        for participant in self.participant_info.values():
+        for participant in self.participant_dict.values():
             assert not participant.activation_stack, "participants must be inactive at end"
             participant.lifeline.height = self.current_position_y
 
@@ -116,19 +116,16 @@ class Layouter:
         self.title_frame.box_height = statement.height
 
     def handle_participant(self, statement: seqast.ParticipantStatement):
+        first_participant = len(self.participant_dict) == 0
+        index = len(self.participant_dict)
+
         lifeline = drawio.Lifeline(self.page, statement.text)
-        lifeline.x = self.participant_end_x + self.participant_spacing if self.participant_info else 0
+        lifeline.x = self.participant_end_x + self.participant_spacing if not first_participant else 0
         lifeline.width = self.participant_width
         lifeline.height = PARTICIPANT_BOX_HEIGHT
 
+        self.participant_dict[statement.name] = ParticipantInfo(index, lifeline)
         self.participant_end_x = lifeline.x + lifeline.width
-
-        index = len(self.participant_info)
-        self.participant_info[statement.name] = ParticipantInfo(index, lifeline)
-
-        if index > 0:
-            self.last_position_y_per_gap[index - 1] = 0
-
         self.request_frame_dimension(self.participant_end_x)
 
     def handle_participant_width(self, statement: seqast.ParticipantWidthStatement):
@@ -138,14 +135,14 @@ class Layouter:
         self.participant_spacing = statement.spacing
 
     def handle_activate(self, statement: seqast.ActivateStatement):
-        participant = self.participant_info[statement.target]
+        participant = self.participant_dict[statement.target]
 
         self.activate_participant(participant)
         self.request_frame_dimension(participant.lifeline.center_x())
         self.vertical_offset(STATEMENT_OFFSET_Y)
 
     def handle_deactivate(self, statement: seqast.DeactivateStatement):
-        participant = self.participant_info[statement.target]
+        participant = self.participant_dict[statement.target]
         assert participant.activation_stack, "deactivation not possible, participant is inactive"
 
         self.deactivate_participant(participant)
@@ -165,8 +162,8 @@ class Layouter:
         handlers[statement.activation](statement)
 
     def handle_message_regular(self, statement: seqast.MessageStatement):
-        sender = self.participant_info[statement.sender]
-        receiver = self.participant_info[statement.receiver]
+        sender = self.participant_dict[statement.sender]
+        receiver = self.participant_dict[statement.receiver]
 
         assert sender.activation_stack, "sender must be active to send a message"
         assert receiver.activation_stack, "receiver must be active to receive a message"
@@ -183,8 +180,8 @@ class Layouter:
         self.vertical_offset(STATEMENT_OFFSET_Y)
 
     def handle_message_activate(self, statement: seqast.MessageStatement):
-        sender = self.participant_info[statement.sender]
-        receiver = self.participant_info[statement.receiver]
+        sender = self.participant_dict[statement.sender]
+        receiver = self.participant_dict[statement.receiver]
 
         assert sender.activation_stack, "sender must be active to send a message"
 
@@ -201,8 +198,8 @@ class Layouter:
         self.vertical_offset(STATEMENT_OFFSET_Y)
 
     def handle_message_deactivate(self, statement: seqast.MessageStatement):
-        sender = self.participant_info[statement.sender]
-        receiver = self.participant_info[statement.receiver]
+        sender = self.participant_dict[statement.sender]
+        receiver = self.participant_dict[statement.receiver]
 
         assert sender.activation_stack, "sender must be active to send a message"
         assert receiver.activation_stack, "deactivation not possible, participant is inactive"
@@ -221,8 +218,8 @@ class Layouter:
         self.vertical_offset(STATEMENT_OFFSET_Y)
 
     def handle_message_fireforget(self, statement: seqast.MessageStatement):
-        sender = self.participant_info[statement.sender]
-        receiver = self.participant_info[statement.receiver]
+        sender = self.participant_dict[statement.sender]
+        receiver = self.participant_dict[statement.receiver]
 
         assert sender.activation_stack, "sender must be active to send a message"
 
@@ -244,7 +241,7 @@ class Layouter:
         self.vertical_offset(STATEMENT_OFFSET_Y)
 
     def handle_self_call(self, statement: seqast.SelfCallStatement):
-        participant = self.participant_info[statement.target]
+        participant = self.participant_dict[statement.target]
 
         assert participant.activation_stack, "participant must be active for self call"
 
@@ -314,7 +311,7 @@ class Layouter:
         self.vertical_offset(statement.spacing)
 
     def handle_frame_dimension(self, statement: seqast.FrameDimensionStatement):
-        participant = self.participant_info[statement.target]
+        participant = self.participant_dict[statement.target]
         lifeline_x = participant.lifeline.center_x()
         self.request_frame_dimension(lifeline_x + statement.dx)
 
@@ -332,13 +329,15 @@ class Layouter:
         self.current_position_y += dy
 
     def reset_vertical_position_per_gap(self):
-        self.last_position_y_per_gap = {k: self.current_position_y for k in self.last_position_y_per_gap}
+        for participant in self.participant_dict.values():
+            participant.last_position_y = self.current_position_y
 
     def ensure_message_spacing(self, part1: ParticipantInfo, part2: ParticipantInfo, message_dy: int):
         # determine the max vertical position occupied in the gaps between the two participants
-        start_gap = min(part1.index, part2.index)
-        end_gap = max(part1.index, part2.index)
-        max_position_y = max(self.last_position_y_per_gap[gap] for gap in range(start_gap, end_gap))
+        start_index = min(part1.index, part2.index)
+        end_index = max(part1.index, part2.index)
+        participants = [p for p in self.participant_dict.values() if p.index in range(start_index, end_index)]
+        max_position_y = max(p.last_position_y for p in participants)
 
         # add vertical offset if needed
         current_spacing = self.current_position_y - max_position_y
@@ -348,9 +347,9 @@ class Layouter:
             dy = round_up_int(required_spacing - current_spacing, STATEMENT_OFFSET_Y)
             self.vertical_offset(dy)
 
-        # remember the vertical position occupied per gap by the current message
-        for gap in range(start_gap, end_gap):
-            self.last_position_y_per_gap[gap] = self.current_position_y + message_dy
+        # update the vertical position occupied by the current message
+        for participant in participants:
+            participant.last_position_y = self.current_position_y + message_dy
 
     def request_frame_dimension(self, *x: int):
         dimension = self.frame_dimension_stack[-1]
