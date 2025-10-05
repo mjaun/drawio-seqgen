@@ -17,24 +17,27 @@ A ->+ J: dispatch
 J ->+ G: dispatch
 G -->>- J: return
 
-note on J dx 10 dy 10 width 200 height 60: this is a test of a longer note with some text
-note on G: short note
+note on J dx 10 dy 10 width 200 height 60
+    this is a test of a longer note with some text
+
+    and a new line within
+end
 
 alt something happened
-J ->> A: yield
+    J ->> A: yield
 else another thing happened
-J ->> A: yield
+    J ->> A: yield
 else otherwise
-J: do nothing
+    J: do nothing
 end
 
 loop nested happenings
-J ->| G : hello
+    J ->| G : hello
 
-J ->+ G: dummy
-frame for G dx 100
-G: self call
-deactivate G
+    J ->+ G: dummy
+    frame for G dx 100
+    G: self call
+    deactivate G
 end
 
 J ->+ A: dispatch

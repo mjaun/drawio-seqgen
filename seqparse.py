@@ -77,9 +77,10 @@ class SeqTransformer(Transformer):
 
     @staticmethod
     def message(items):
-        assert len(items) == 4
+        assert len(items) in (3, 4)
         line, arrow, activation = items[1]
-        return MessageStatement(items[0], items[2], items[3], activation, line, arrow)
+        text = items[3] if len(items) == 4 else ''
+        return MessageStatement(items[0], items[2], text, activation, line, arrow)
 
     @staticmethod
     def self_call(items):
@@ -92,8 +93,12 @@ class SeqTransformer(Transformer):
         alternative = AlternativeStatement(items[0], items[1], [])
 
         for branch in items[2].children:
-            assert len(branch.children) == 2
-            alternative.branches.append(AlternativeBranch(branch.children[0], branch.children[1]))
+            if len(branch.children) == 1:
+                alternative.branches.append(AlternativeBranch('else', branch.children[0]))
+            elif len(branch.children) == 2:
+                alternative.branches.append(AlternativeBranch(branch.children[0], branch.children[1]))
+            else:
+                raise NotImplementedError()
 
         return alternative
 
@@ -110,7 +115,11 @@ class SeqTransformer(Transformer):
     @staticmethod
     def note(items):
         assert len(items) == 3
-        note = NoteStatement(items[0], items[2])
+
+        lines = items[2].children[0].splitlines()
+        text = '<br/>'.join(line.strip() for line in lines)
+
+        note = NoteStatement(items[0], text)
 
         for attr in items[1].children:
             if attr.data == 'note_dx':
@@ -174,7 +183,7 @@ class SeqTransformer(Transformer):
 
     @staticmethod
     def TEXT(token):
-        return str(token)
+        return str(token).replace('\\n', '<br/>')
 
     @staticmethod
     def NUMBER(token):

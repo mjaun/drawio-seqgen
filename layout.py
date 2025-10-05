@@ -8,12 +8,12 @@ PARTICIPANT_DEFAULT_SPACING = 40
 PARTICIPANT_BOX_HEIGHT = 40
 
 TITLE_FRAME_DEFAULT_BOX_WIDTH = 160
-TITLE_FRAME_DEFAULT_BOX_HEIGHT = 30
+TITLE_FRAME_DEFAULT_BOX_HEIGHT = 40
 TITLE_FRAME_PADDING = 30
 
 CONTROL_FRAME_BOX_WIDTH = 60
 CONTROL_FRAME_BOX_HEIGHT = 20
-CONTROL_FRAME_SPACING = 20
+CONTROL_FRAME_PADDING = 30
 
 NOTE_DEFAULT_DX = 30
 NOTE_DEFAULT_DY = 0
@@ -79,8 +79,8 @@ class Layouter:
     def finalize_participants(self):
         self.vertical_offset((2 * STATEMENT_OFFSET_Y))
 
-        for participant in self.participant_dict.values():
-            assert not participant.activation_stack, "participants must be inactive at end"
+        for name, participant in self.participant_dict.items():
+            assert not participant.activation_stack, f"participants must be inactive at end: {name}"
             participant.lifeline.height = self.current_position_y
 
     def finalize_title_frame(self):
@@ -133,6 +133,7 @@ class Layouter:
         lifeline.width = self.participant_width
         lifeline.height = PARTICIPANT_BOX_HEIGHT
 
+        assert statement.name not in self.participant_dict, "participant already exists"
         self.participant_dict[statement.name] = ParticipantInfo(index, lifeline)
         self.participant_end_x = lifeline.x + lifeline.width
         self.request_frame_dimension(self.participant_end_x)
@@ -301,6 +302,7 @@ class Layouter:
 
             self.vertical_offset(30)
             self.reset_vertical_position_per_gap()
+            self.vertical_offset(STATEMENT_OFFSET_Y)
 
             self.process_statements(branch.inner)
 
@@ -392,15 +394,15 @@ class Layouter:
         frame.box_height = CONTROL_FRAME_BOX_HEIGHT
 
         text = drawio.Text(self.page, frame, f'[{text}]')
-        text.x = CONTROL_FRAME_BOX_WIDTH + 10
-        text.y = 5
+        text.x = 10
+        text.y = CONTROL_FRAME_BOX_HEIGHT + 5
 
         # push frame stack
         dimension = FrameDimension()
         self.frame_dimension_stack.append(dimension)
 
         # positioning on frame begin
-        self.vertical_offset(CONTROL_FRAME_BOX_HEIGHT + 10)
+        self.vertical_offset(CONTROL_FRAME_BOX_HEIGHT + 30)
         self.reset_vertical_position_per_gap()
         self.vertical_offset(STATEMENT_OFFSET_Y)
 
@@ -419,8 +421,8 @@ class Layouter:
         dimension = self.frame_dimension_stack.pop()
 
         # set frame width
-        frame.x = dimension.min_x - CONTROL_FRAME_SPACING
-        frame.width = dimension.max_x + CONTROL_FRAME_SPACING - frame.x
+        frame.x = dimension.min_x - CONTROL_FRAME_PADDING
+        frame.width = dimension.max_x + CONTROL_FRAME_PADDING - frame.x
 
         # request dimension for parent frame
         self.request_frame_dimension(frame.x, frame.x + frame.width)
