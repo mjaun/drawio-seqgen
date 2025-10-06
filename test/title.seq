@@ -1,4 +1,6 @@
-title "My Diagram"
+title "My Diagram\nwith a title"
 title size 200 60
 
-participant Dummy
+participant A
+participant B
+participant C

@@ -1,0 +1,13 @@
+participant A
+
+activate A
+
+A: self call
+A: self call with\nmultiple lines
+
+activate A
+
+A: self call on\nstacked activation
+
+deactivate A
+deactivate A

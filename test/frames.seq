@@ -1,0 +1,47 @@
+title Frames
+
+participant A
+participant B
+participant C
+
+// activation sets frame size
+loop forever
+  activate A
+  activate C
+  deactivate A
+  deactivate C
+end
+
+activate A
+activate B
+activate C
+
+// message sets frame size
+opt sometimes, sometimes not
+  A -> B
+end
+
+// self call sets frame size
+alt what if?
+C: self call
+else what if not?
+C: self call also
+frame for C dx 60
+else
+// empty
+end
+
+vertical offset -200
+
+loop never
+  opt but maybe
+    A -> B
+    B: again a\nself call
+    frame for B dx 70
+    frame for A dx -100
+  end
+end
+
+deactivate A
+deactivate B
+deactivate C

@@ -14,7 +14,11 @@ class Parser:
 
         self.lark = Lark(grammar, start='start', propagate_positions=True)
 
-    def parse(self, text) -> List[Statement]:
+    def parse(self, text: str) -> List[Statement]:
+        text = text.replace('\r', '')
+        if not text.endswith('\n'):
+            text += '\n'
+
         parsed = self.lark.parse(text)
         return SeqTransformer().transform(parsed)
 

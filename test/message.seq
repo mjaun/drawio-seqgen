@@ -1,0 +1,40 @@
+participant A
+participant B
+participant C
+
+activate A
+activate B
+activate C
+
+// arrow styles
+A -> B
+A --> B
+A ->> B
+A -->> B
+
+// with short activation
+A ->| B
+A -->| B
+A ->>| B
+A -->>| B
+
+// messages
+A -> B: short message
+
+vertical offset 30
+A -> B: longer message which spans\nover multiple lines
+vertical offset 20
+
+// layouting
+A -> B: message
+B -> C: message
+C -> B: message
+B -> A: message
+A -> C: message
+A -> B: message
+C -> A: message
+C -> B: message
+
+deactivate A
+deactivate B
+deactivate C

@@ -36,7 +36,7 @@ alternative_branch: "else" (_SPACE+ TEXT)? _NEWLINE inner_statements
 option: "opt" _SPACE+ TEXT _NEWLINE inner_statements "end" _NEWLINE
 loop: "loop" _SPACE+ TEXT _NEWLINE inner_statements "end" _NEWLINE
 
-inner_statements: body_statement+
+inner_statements: body_statement*
 
 note: "note on" _SPACE+ name note_attrs _NEWLINE note_text "end" _NEWLINE
 note_text: /.+?(?=^[ \t]*end[ \t]*$)/sm
@@ -73,4 +73,3 @@ _END: /$/m
 %ignore _BEGIN _SPACE* _NEWLINE // empty lines
 %ignore _BEGIN _SPACE+ // leading white space
 %ignore _SPACE+ _END // trailing white space
-%ignore "\r" // windows line endings

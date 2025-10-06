@@ -158,9 +158,14 @@ class Layouter:
         assert participant.activation_stack, "deactivation not possible, participant is inactive"
 
         self.deactivate_participant(participant)
+        self.request_frame_dimension(participant.lifeline.center_x())
         self.vertical_offset(STATEMENT_OFFSET_Y)
 
     def handle_message(self, statement: seqast.MessageStatement):
+        sender = self.participant_dict[statement.sender]
+        receiver = self.participant_dict[statement.receiver]
+
+        assert sender.activation_stack, "sender must be active to send a message"
         assert statement.sender != statement.receiver, "use self call syntax"
 
         handlers = {
@@ -173,11 +178,13 @@ class Layouter:
         # noinspection PyArgumentList
         handlers[statement.activation](statement)
 
+        self.request_frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x())
+        self.vertical_offset(STATEMENT_OFFSET_Y)
+
     def handle_message_regular(self, statement: seqast.MessageStatement):
         sender = self.participant_dict[statement.sender]
         receiver = self.participant_dict[statement.receiver]
 
-        assert sender.activation_stack, "sender must be active to send a message"
         assert receiver.activation_stack, "receiver must be active to receive a message"
 
         self.ensure_message_spacing(sender, receiver, 0)
@@ -188,14 +195,9 @@ class Layouter:
             y=self.current_position_y
         ))
 
-        self.request_frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x())
-        self.vertical_offset(STATEMENT_OFFSET_Y)
-
     def handle_message_activate(self, statement: seqast.MessageStatement):
         sender = self.participant_dict[statement.sender]
         receiver = self.participant_dict[statement.receiver]
-
-        assert sender.activation_stack, "sender must be active to send a message"
 
         self.ensure_message_spacing(sender, receiver, drawio.MESSAGE_ANCHOR_DY)
         self.activate_participant(receiver, sender)
@@ -206,14 +208,10 @@ class Layouter:
         else:
             message.type = drawio.MessageAnchor.TOP_RIGHT
 
-        self.request_frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x())
-        self.vertical_offset(STATEMENT_OFFSET_Y)
-
     def handle_message_deactivate(self, statement: seqast.MessageStatement):
         sender = self.participant_dict[statement.sender]
         receiver = self.participant_dict[statement.receiver]
 
-        assert sender.activation_stack, "sender must be active to send a message"
         assert receiver.activation_stack, "deactivation not possible, participant is inactive"
 
         self.ensure_message_spacing(sender, receiver, -drawio.MESSAGE_ANCHOR_DY)
@@ -226,14 +224,9 @@ class Layouter:
 
         self.deactivate_participant(sender)
 
-        self.request_frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x())
-        self.vertical_offset(STATEMENT_OFFSET_Y)
-
     def handle_message_fireforget(self, statement: seqast.MessageStatement):
         sender = self.participant_dict[statement.sender]
         receiver = self.participant_dict[statement.receiver]
-
-        assert sender.activation_stack, "sender must be active to send a message"
 
         self.activate_participant(receiver, sender)
         self.vertical_offset(STATEMENT_OFFSET_Y)
@@ -248,9 +241,6 @@ class Layouter:
 
         self.vertical_offset(STATEMENT_OFFSET_Y)
         self.deactivate_participant(receiver)
-
-        self.request_frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x())
-        self.vertical_offset(STATEMENT_OFFSET_Y)
 
     def handle_self_call(self, statement: seqast.SelfCallStatement):
         participant = self.participant_dict[statement.target]
@@ -423,6 +413,7 @@ class Layouter:
         dimension = self.frame_dimension_stack.pop()
 
         # set frame width
+        assert dimension.min_x is not None and dimension.max_x is not None, "unknown frame dimension"
         frame.x = dimension.min_x - CONTROL_FRAME_PADDING
         frame.width = dimension.max_x + CONTROL_FRAME_PADDING - frame.x
 
