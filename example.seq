@@ -17,8 +17,8 @@ A ->+ J: dispatch
 J ->+ G: dispatch
 G -->>- J: return
 
-note on J dx 10 dy 10 width 200 height 60
-    this is a test of a longer note with some text
+note on J dx 80 dy 10 width 200 height 60
+    this is a test of a longer note with some text end
 
     and a new line within
 end

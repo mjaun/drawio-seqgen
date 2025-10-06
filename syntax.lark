@@ -39,7 +39,7 @@ loop: "loop" _SPACE+ TEXT _NEWLINE inner_statements "end" _NEWLINE
 inner_statements: body_statement+
 
 note: "note on" _SPACE+ name note_attrs _NEWLINE note_text "end" _NEWLINE
-note_text: /.+?(?=\bend\b)/s
+note_text: /.+?(?=^[ \t]*end[ \t]*$)/sm
 note_attrs: (note_dx | note_dy | note_width | note_height)*
 note_dx: _SPACE+ "dx" _SPACE+ NUMBER
 note_dy: _SPACE+ "dy" _SPACE+ NUMBER
