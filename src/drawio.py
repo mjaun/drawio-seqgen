@@ -7,6 +7,8 @@ from typing import List, Dict, Optional
 ACTIVATION_WIDTH = 10
 MESSAGE_ANCHOR_DY = 5
 
+next_id = 1001
+
 
 class MessageAnchor(Enum):
     NONE = auto()
@@ -62,7 +64,7 @@ class File:
 class Page:
     def __init__(self, file: File, name: str):
         self.name = name
-        self.id = str(id(self))
+        self.id = str(create_id())
         self.objects: List[Object] = []
         file.pages.append(self)
 
@@ -104,7 +106,7 @@ class Page:
 
 class Object:
     def __init__(self, page: Page, parent: Optional['Object'], value: str):
-        self.id = str(id(self))
+        self.id = str(create_id())
         self.page = page
         self.parent = parent
         self.value = value
@@ -466,3 +468,10 @@ class Note(ObjectWithAbsoluteGeometry):
             'align': 'left',
             'spacing': '8',
         }
+
+
+def create_id():
+    global next_id
+    result = next_id
+    next_id += 1
+    return result

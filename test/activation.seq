@@ -1,0 +1,71 @@
+participant A
+participant B
+participant C
+
+// single activation
+activate B
+vertical offset 30
+deactivate B
+
+// stacked activation
+activate B
+activate B
+activate B
+vertical offset 30
+deactivate B
+deactivate B
+deactivate B
+
+activate B
+activate A
+A ->+ B
+activate B
+vertical offset 30
+deactivate B
+deactivate B
+deactivate B
+deactivate A
+
+// activate via message
+activate A
+activate B
+activate C
+
+A ->+ B
+vertical offset 20
+deactivate B
+
+C ->+ B
+vertical offset 20
+deactivate B
+
+A ->+ B
+C ->+ B
+vertical offset 20
+deactivate B
+deactivate B
+
+C ->+ B
+A ->+ B
+vertical offset 20
+deactivate B
+deactivate B
+
+deactivate A
+deactivate B
+deactivate C
+
+// deactivate via message
+activate A
+activate B
+activate C
+
+activate B
+activate B
+vertical offset 20
+B ->- A
+B ->- C
+
+deactivate A
+deactivate B
+deactivate C

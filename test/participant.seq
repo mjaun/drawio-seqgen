@@ -1,0 +1,11 @@
+participant George
+participant "Max Muster"
+participant Alice as A
+participant "Peter Müller" as P
+participant "Multiline\nParticipant"
+
+participant width 250
+participant spacing 100
+
+participant "Big Participant 1"
+participant "Big Participant 2"

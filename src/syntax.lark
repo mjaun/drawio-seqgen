@@ -18,7 +18,7 @@ body_statement: activation
               | self_call
 
 title: "title" _SPACE+ TEXT _NEWLINE
-title_size: "title size" _SPACE+ NUMBER "x" NUMBER _NEWLINE
+title_size: "title size" _SPACE+ NUMBER _SPACE+ NUMBER _NEWLINE
 
 participant: "participant" _SPACE+ name participant_alias? _NEWLINE
 participant_alias: _SPACE+ "as" _SPACE+ name
@@ -69,7 +69,7 @@ _NEWLINE: "\n"
 _BEGIN: /^/m
 _END: /$/m
 
-%ignore _SPACE* /\/\/.*/ // comments
+%ignore _BEGIN _SPACE* /\/\/.*/ _NEWLINE // comments
 %ignore _BEGIN _SPACE* _NEWLINE // empty lines
 %ignore _BEGIN _SPACE+ // leading white space
 %ignore _SPACE+ _END // trailing white space

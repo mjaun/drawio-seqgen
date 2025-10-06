@@ -175,11 +175,13 @@ class SeqTransformer(Transformer):
         assert len(items) == 1
 
         if items[0].type == 'QUOTED_NAME':
-            return str(items[0])[1:-1]
+            name = str(items[0])[1:-1]
         elif items[0].type == 'UNQUOTED_NAME':
-            return str(items[0])
+            name = str(items[0])
         else:
             raise NotImplementedError()
+
+        return name.replace('\\n', '<br/>')
 
     @staticmethod
     def TEXT(token):

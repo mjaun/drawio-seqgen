@@ -123,6 +123,7 @@ class Layouter:
     def handle_title_size(self, statement: seqast.TitleSizeStatement):
         self.title_frame.box_width = statement.width
         self.title_frame.box_height = statement.height
+        self.title_frame.y = -TITLE_FRAME_PADDING - self.title_frame.box_height
 
     def handle_participant(self, statement: seqast.ParticipantStatement):
         first_participant = len(self.participant_dict) == 0
