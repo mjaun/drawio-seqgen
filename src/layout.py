@@ -53,10 +53,7 @@ class Layouter:
         self.file = drawio.File()
         self.page = drawio.Page(self.file, 'Diagram')
 
-        self.title_frame = drawio.Frame(self.page, 'Sequence Diagram')
-        self.title_frame.box_width = TITLE_FRAME_DEFAULT_BOX_WIDTH
-        self.title_frame.box_height = TITLE_FRAME_DEFAULT_BOX_HEIGHT
-        self.title_frame.y = -TITLE_FRAME_PADDING - self.title_frame.box_height
+        self.title_frame: Optional[drawio.Frame] = None
 
         self.frame_dimension_stack.append(FrameDimension())
         self.request_frame_dimension(0)
@@ -82,12 +79,16 @@ class Layouter:
             participant.lifeline.height = self.current_position_y
 
     def finalize_title_frame(self):
-        self.title_frame.height = (self.current_position_y - self.title_frame.y) + TITLE_FRAME_PADDING
-
         assert len(self.frame_dimension_stack) == 1
         dimensions = self.frame_dimension_stack.pop()
+
+        if not self.title_frame:
+            return
+
         self.title_frame.x = dimensions.min_x - TITLE_FRAME_PADDING
+        self.title_frame.y = -TITLE_FRAME_PADDING - self.title_frame.box_height
         self.title_frame.width = dimensions.max_x + TITLE_FRAME_PADDING - self.title_frame.x
+        self.title_frame.height = (self.current_position_y - self.title_frame.y) + TITLE_FRAME_PADDING
 
     def process_statements(self, statements: List[seqast.Statement]):
         handlers = {
@@ -116,12 +117,14 @@ class Layouter:
                 raise RuntimeError(f'error processing statement on line {statement.line_number}')
 
     def handle_title(self, statement: seqast.TitleStatement):
-        self.title_frame.value = statement.text
+        assert not self.title_frame, "title may occur only once"
+        self.title_frame = drawio.Frame(self.page, statement.text)
+        self.title_frame.box_width = TITLE_FRAME_DEFAULT_BOX_WIDTH
+        self.title_frame.box_height = TITLE_FRAME_DEFAULT_BOX_HEIGHT
 
     def handle_title_size(self, statement: seqast.TitleSizeStatement):
         self.title_frame.box_width = statement.width
         self.title_frame.box_height = statement.height
-        self.title_frame.y = -TITLE_FRAME_PADDING - self.title_frame.box_height
 
     def handle_participant(self, statement: seqast.ParticipantStatement):
         first_participant = len(self.participant_dict) == 0
