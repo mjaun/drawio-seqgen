@@ -15,8 +15,6 @@ CONTROL_FRAME_BOX_WIDTH = 60
 CONTROL_FRAME_BOX_HEIGHT = 20
 CONTROL_FRAME_PADDING = 30
 
-NOTE_DEFAULT_DX = 30
-NOTE_DEFAULT_DY = 0
 NOTE_DEFAULT_WIDTH = 100
 NOTE_DEFAULT_HEIGHT = 40
 
@@ -323,8 +321,8 @@ class Layouter:
         participant = self.participant_dict[statement.target]
 
         note = drawio.Note(self.page, statement.text)
-        note.x = participant.lifeline.center_x() + (statement.dx or NOTE_DEFAULT_DX)
-        note.y = self.current_position_y + (statement.dy or NOTE_DEFAULT_DY)
+        note.x = participant.lifeline.center_x() + (statement.dx or 0)
+        note.y = self.current_position_y + (statement.dy or 0)
         note.width = statement.width or NOTE_DEFAULT_WIDTH
         note.height = statement.height or NOTE_DEFAULT_HEIGHT
 
