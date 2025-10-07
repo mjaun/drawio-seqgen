@@ -1,3 +1,4 @@
+import os
 import xml.etree.ElementTree as ET
 
 from dataclasses import dataclass
@@ -7,7 +8,11 @@ from typing import List, Dict, Optional
 ACTIVATION_WIDTH = 10
 MESSAGE_ANCHOR_DY = 5
 
-next_id = 1001
+# Live reloading in draw.io does not work well if an object ID is suddenly used for another type of object.
+# On the other side, the integration test require a predictable output.
+# Using deterministic IDs with a random prefix which can be overridden for testing seems like a good trade-off.
+next_id = 1
+id_prefix = os.getenv('SEQGEN_ID_PREFIX', os.getrandom(4).hex() + '-')
 
 
 class MessageAnchor(Enum):
@@ -64,7 +69,7 @@ class File:
 class Page:
     def __init__(self, file: File, name: str):
         self.name = name
-        self.id = str(create_id())
+        self.id = create_id()
         self.objects: List[Object] = []
         file.pages.append(self)
 
@@ -106,7 +111,7 @@ class Page:
 
 class Object:
     def __init__(self, page: Page, parent: Optional['Object'], value: str):
-        self.id = str(create_id())
+        self.id = create_id()
         self.page = page
         self.parent = parent
         self.value = value
@@ -470,8 +475,8 @@ class Note(ObjectWithAbsoluteGeometry):
         }
 
 
-def create_id():
+def create_id() -> str:
     global next_id
     result = next_id
     next_id += 1
-    return result
+    return id_prefix + str(result)

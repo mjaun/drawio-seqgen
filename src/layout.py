@@ -41,7 +41,9 @@ class FrameDimension:
 
 
 class Layouter:
-    def __init__(self):
+    def __init__(self, page: drawio.Page):
+        self.page = page
+
         self.participant_dict: Dict[str, ParticipantInfo] = {}
         self.frame_dimension_stack: List[FrameDimension] = []
 
@@ -50,9 +52,6 @@ class Layouter:
         self.participant_spacing = PARTICIPANT_DEFAULT_SPACING
         self.participant_end_x = 0
 
-        self.file = drawio.File()
-        self.page = drawio.Page(self.file, 'Diagram')
-
         self.title_frame: Optional[drawio.Frame] = None
 
         self.frame_dimension_stack.append(FrameDimension())
@@ -60,7 +59,7 @@ class Layouter:
 
         self.executed = False
 
-    def layout(self, statements: List[seqast.Statement]) -> drawio.File:
+    def layout(self, statements: List[seqast.Statement]):
         assert not self.executed, "layouter instance can only be used once"
         self.executed = True
 
@@ -68,8 +67,6 @@ class Layouter:
 
         self.finalize_participants()
         self.finalize_title_frame()
-
-        return self.file
 
     def finalize_participants(self):
         self.vertical_offset((2 * STATEMENT_OFFSET_Y))

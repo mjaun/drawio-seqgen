@@ -1,4 +1,5 @@
 import argparse
+import drawio
 
 from seqparse import Parser
 from layout import Layouter
@@ -16,7 +17,11 @@ def main():
         example = f.read()
 
     statement_list = Parser().parse(example)
-    file = Layouter().layout(statement_list)
+
+    file = drawio.File()
+    page = drawio.Page(file, 'Diagram')
+
+    Layouter(page).layout(statement_list)
 
     file.write(args.output)
 

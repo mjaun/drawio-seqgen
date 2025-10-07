@@ -3,7 +3,8 @@ set -e -u -o pipefail
 
 cd $(dirname $0)
 
-SEQGEN="python ../src/main.py"
+export SEQGEN_ID_PREFIX="test-"
+SEQGEN="python3 ../src/main.py"
 
 for input_file in *.seq; do
   echo $input_file
