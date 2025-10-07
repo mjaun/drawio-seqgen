@@ -10,7 +10,7 @@ but the resulting file is an editable draw.io diagram instead of an image file.
 ## Usage
 
 ```
-drawio-seqgen -i [input_file] -o [output_file]
+src/main.py -i [input_file] -o [output_file]
 ```
 
 Where the input file is a text file describing the sequence using the syntax explained below and the output file
@@ -19,7 +19,7 @@ is the resulting draw.io diagram.
 ## Syntax
 
 The input file contains one statement per line.
-The indentation of lines do not matter.
+The indentation of lines does not matter.
 
 ### Comments
 
@@ -32,6 +32,7 @@ title My Diagram Title
 ```
 
 If a title statement is present, the resulting diagram will be framed by a title frame.
+The title statement is optional.
 
 The size of the UML box containing the title can be changed using the following statements:
 
@@ -71,10 +72,10 @@ vertical offset -50
 ```
 
 When processing the sequence description a counter for the current vertical position is maintained.
-The counter is incremented before/after statements by a reasonable amount for typical use cases.
+The vertical position is incremented before/after statements by a reasonable amount for typical use cases.
 In some cases it may be desirable to move content further up or down.
 This can be done using the vertical spacing statement.
-This statement may occur in any location and modifies the vertical position counter at this specific point.
+This statement may occur in any location and modifies the vertical position at this specific point.
 
 ### Activations
 
@@ -163,11 +164,14 @@ end
 
 Creates a frame for different branches of the sequence.
 An arbitrary amount of branches can be defined.
-If omitted, the label for a branch defaults to "else".
+If the branch label is omitted, it defaults to "else".
 
-The vertical position of a frame is determined by the vertical position counter as described above.
-The horizontal position of a frame is determined by the participants mentioned in the statements within
-the frame. Therefore, a frame cannot be empty. Sometimes a frame must be enlarged because of long texts.
+Frames can be nested.
+
+The vertical dimensions of a frame is determined by the current vertical position on the beginning and end of the
+frame as described above.
+The horizontal dimensions of a frame is determined by the participants mentioned in the statements within
+the frame. Therefore, a frame cannot be empty. Sometimes a frame must be enlarged, for example because of long texts.
 This can be done with the following statement:
 
 ```
@@ -183,7 +187,7 @@ in all parent frames where the statement occurs.
 ```
 note on Alice dx 10
   short note
-end note note
+end note
 
 note on Alice width 150 height 80 dx 100 dy 50
   a larger note with
@@ -193,6 +197,7 @@ note on Alice width 150 height 80 dx 100 dy 50
 end note
 ```
 
-Notes are placed at the current vertical position counter at the lifeline of the specified participant.
+Notes are placed at the current vertical position at the lifeline of the specified participant.
 Using the attributes shown in the example, the size and position of the note can be modified.
 All lines are part of the note until the keyword `end note` is reached on its own line.
+Notes do not modify the current vertical position or frame width.
