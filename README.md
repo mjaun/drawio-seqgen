@@ -2,6 +2,8 @@
 
 ![Example Diagram](doc/example.png)
 
+[Example Source File](doc/example.seq)
+
 A script which turns a text based sequence description into a sequence diagram similar to PlantUML or Mermaid.js,
 but the resulting file is an editable draw.io diagram instead of an image file.
 
