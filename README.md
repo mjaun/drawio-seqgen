@@ -1,5 +1,7 @@
 # drawio-seqgen
 
+![Example Diagram](doc/example.png)
+
 A script which turns a text based sequence description into a sequence diagram similar to PlantUML or Mermaid.js,
 but the resulting file is an editable draw.io diagram instead of an image file.
 
@@ -59,11 +61,11 @@ participant spacing 150
 
 These statements apply to all participants declared afterward.
 
-### Vertical Spacing
+### Vertical Offsets
 
 ```
-vertical spacing 30
-vertical spacing -50
+vertical offset 30
+vertical offset -50
 ```
 
 When processing the sequence description a counter for the current vertical position is maintained.

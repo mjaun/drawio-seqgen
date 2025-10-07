@@ -1,0 +1,23 @@
+title Example
+
+participant Alice
+participant John
+
+activate Alice
+
+Alice ->+ John: Hello John!
+
+John: Stop\nthinking
+
+alt John wants to chat
+  John -> Alice: Hello Alice!
+else
+  note on John dx -130
+    Ignore Alice
+  end note
+
+  vertical offset 50
+end
+
+deactivate John
+deactivate Alice
