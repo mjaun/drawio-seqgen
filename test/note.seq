@@ -3,27 +3,27 @@ participant B
 
 note on A
   default
-end
+end note
 
 note on B width 150 height 80
   a larger note with
   multiple lines
 
   in it
-end
+end note
 
 vertical offset 100
 
 note on A height 80
   note follows vertical offset
-end
+end note
 
 note on B
-  note with keyword end
-end
+  note with keyword end note
+end note
 
 vertical offset 100
 
 note on A dx 140 dy -40
   moved note
-end
+end note

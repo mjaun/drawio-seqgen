@@ -90,7 +90,8 @@ class Layouter:
     def process_statements(self, statements: List[seqast.Statement]):
         handlers = {
             seqast.TitleStatement: self.handle_title,
-            seqast.TitleSizeStatement: self.handle_title_size,
+            seqast.TitleWidthStatement: self.handle_title_width,
+            seqast.TitleHeightStatement: self.handle_title_height,
             seqast.ParticipantStatement: self.handle_participant,
             seqast.ParticipantWidthStatement: self.handle_participant_width,
             seqast.ParticipantSpacingStatement: self.handle_participant_spacing,
@@ -119,8 +120,10 @@ class Layouter:
         self.title_frame.box_width = TITLE_FRAME_DEFAULT_BOX_WIDTH
         self.title_frame.box_height = TITLE_FRAME_DEFAULT_BOX_HEIGHT
 
-    def handle_title_size(self, statement: seqast.TitleSizeStatement):
+    def handle_title_width(self, statement: seqast.TitleWidthStatement):
         self.title_frame.box_width = statement.width
+
+    def handle_title_height(self, statement: seqast.TitleHeightStatement):
         self.title_frame.box_height = statement.height
 
     def handle_participant(self, statement: seqast.ParticipantStatement):

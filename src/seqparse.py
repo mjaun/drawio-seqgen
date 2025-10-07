@@ -46,9 +46,14 @@ class SeqTransformer(Transformer):
         return TitleStatement(items[0])
 
     @staticmethod
-    def title_size(items):
-        assert len(items) == 2
-        return TitleSizeStatement(items[0], items[1])
+    def title_width(items):
+        assert len(items) == 1
+        return TitleWidthStatement(items[0])
+
+    @staticmethod
+    def title_height(items):
+        assert len(items) == 1
+        return TitleHeightStatement(items[0])
 
     @staticmethod
     def participant(items):

@@ -1,6 +1,7 @@
 start: header_statement* body_statement*
 
-header_statement: title_size
+header_statement: title_width
+                | title_height
                 | title
                 | participant_width
                 | participant_spacing
@@ -18,7 +19,8 @@ body_statement: activation
               | self_call
 
 title: "title" _SPACE+ TEXT _NEWLINE
-title_size: "title size" _SPACE+ NUMBER _SPACE+ NUMBER _NEWLINE
+title_width: "title width" _SPACE+ NUMBER _NEWLINE
+title_height: "title height" _SPACE+ NUMBER _NEWLINE
 
 participant: "participant" _SPACE+ name participant_alias? _NEWLINE
 participant_alias: _SPACE+ "as" _SPACE+ name
@@ -38,8 +40,8 @@ loop: "loop" _SPACE+ TEXT _NEWLINE inner_statements "end" _NEWLINE
 
 inner_statements: body_statement*
 
-note: "note on" _SPACE+ name note_attrs _NEWLINE note_text "end" _NEWLINE
-note_text: /.+?(?=^[ \t]*end[ \t]*$)/sm
+note: "note on" _SPACE+ name note_attrs _NEWLINE note_text "end note" _NEWLINE
+note_text: /.+?(?=^[ \t]*end note[ \t]*$)/sm
 note_attrs: (note_dx | note_dy | note_width | note_height)*
 note_dx: _SPACE+ "dx" _SPACE+ NUMBER
 note_dy: _SPACE+ "dy" _SPACE+ NUMBER

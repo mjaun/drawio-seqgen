@@ -17,8 +17,12 @@ class TitleStatement(Statement):
 
 
 @dataclass
-class TitleSizeStatement(Statement):
+class TitleWidthStatement(Statement):
     width: int
+
+
+@dataclass
+class TitleHeightStatement(Statement):
     height: int
 
 
