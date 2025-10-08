@@ -3,9 +3,6 @@ import drawio
 
 from seqparse import Parser
 from layout import Layouter
-from pathlib import Path
-
-SCRIPT_DIR = Path(__file__).resolve().parent
 
 def main():
     parser = argparse.ArgumentParser()
@@ -14,9 +11,9 @@ def main():
     args = parser.parse_args()
 
     with open(args.input, 'r') as f:
-        example = f.read()
+        source = f.read()
 
-    statement_list = Parser().parse(example)
+    statement_list = Parser().parse(source)
 
     file = drawio.File()
     page = drawio.Page(file, 'Diagram')

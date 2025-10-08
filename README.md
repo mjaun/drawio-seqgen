@@ -24,6 +24,7 @@ The indentation of lines does not matter.
 ### Comments
 
 Lines where the content begins with `//` are ignored.
+Comments at the end of statements are not supported.
 
 ### Title
 
@@ -113,10 +114,10 @@ The following arrow types are defined:
 
 The following activation types are defined:
 
-* `+` receiver is activated by the message
-* `-` sender is deactivated by the message
-* `|` receiver is activated and deactivated by the message
-* Omitted: No activation, the receiver must be active to receive a message
+* `+` Receiver is activated by the message
+* `-` Sender is deactivated by the message
+* `|` Receiver is activated and deactivated by the message
+* Omitted: No activation, the receiver must be active to receive the message
 
 The sender must always be active to send a message.
 
@@ -134,7 +135,7 @@ The message text for a self call is required.
 
 The participant must be active.
 
-### Control Frames
+### Frames
 
 ```
 opt Something happened
