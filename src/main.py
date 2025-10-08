@@ -1,7 +1,7 @@
 import argparse
 import drawio
 
-from seqparse import Parser
+from seqast import Parser
 from layout import Layouter
 
 def main():
