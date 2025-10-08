@@ -1,0 +1,27 @@
+participant A
+participant B
+participant C
+
+activate C
+C ->+ A: message
+A ->| B: message
+A ->- C: message
+deactivate C
+
+activate A
+A ->| C: message
+A ->| B: message
+A ->| C: message
+deactivate A
+
+activate A
+A ->+ B: message
+B: message
+B ->- A: message
+deactivate A
+
+activate C
+C ->+ B: message
+B: message
+B ->- C: message
+deactivate C

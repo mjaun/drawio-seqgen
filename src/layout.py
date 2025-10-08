@@ -8,7 +8,7 @@ PARTICIPANT_DEFAULT_SPACING = 40
 PARTICIPANT_BOX_HEIGHT = 40
 
 TITLE_FRAME_DEFAULT_BOX_WIDTH = 160
-TITLE_FRAME_DEFAULT_BOX_HEIGHT = 40
+TITLE_FRAME_DEFAULT_BOX_HEIGHT = 30
 TITLE_FRAME_PADDING = 30
 
 CONTROL_FRAME_BOX_WIDTH = 60
@@ -109,7 +109,7 @@ class Layouter:
 
         for statement in statements:
             try:
-                # noinspection PyTypeChecker
+                # noinspection PyTypeChecker, PyArgumentList
                 handlers[type(statement)](statement)
             except:
                 raise RuntimeError(f'error processing statement on line {statement.line_number}')
@@ -228,10 +228,10 @@ class Layouter:
         sender = self.participant_dict[statement.sender]
         receiver = self.participant_dict[statement.receiver]
 
+        self.ensure_message_spacing(sender, receiver, STATEMENT_OFFSET_Y)
         self.activate_participant(receiver, sender)
         self.vertical_offset(STATEMENT_OFFSET_Y)
 
-        self.ensure_message_spacing(sender, receiver, STATEMENT_OFFSET_Y)
         message = self.create_message(sender, receiver, statement)
 
         message.points.append(drawio.Point(
@@ -275,7 +275,6 @@ class Layouter:
         self.deactivate_participant(participant)
 
         self.request_frame_dimension(lifeline_x, lifeline_x + SELF_CALL_WIDTH)
-
         self.vertical_offset(STATEMENT_OFFSET_Y)
 
     def handle_alternative(self, statement: seqast.AlternativeStatement):
@@ -322,6 +321,9 @@ class Layouter:
     def handle_vertical_offset(self, statement: seqast.VerticalOffsetStatement):
         self.vertical_offset(statement.spacing)
 
+        for participant in self.participant_dict.values():
+            participant.last_position_y += statement.spacing
+
     def handle_frame_dimension(self, statement: seqast.FrameDimensionStatement):
         participant = self.participant_dict[statement.target]
         lifeline_x = participant.lifeline.center_x()
@@ -352,16 +354,15 @@ class Layouter:
         max_position_y = max(p.last_position_y for p in participants)
 
         # add vertical offset if needed
-        current_spacing = self.current_position_y - max_position_y
-        required_spacing = MESSAGE_MIN_SPACING - message_dy
+        current_spacing = (self.current_position_y + message_dy) - max_position_y
 
-        if current_spacing < required_spacing:
-            dy = round_up_int(required_spacing - current_spacing, STATEMENT_OFFSET_Y)
+        if current_spacing < MESSAGE_MIN_SPACING:
+            dy = round_up_int(MESSAGE_MIN_SPACING - current_spacing, STATEMENT_OFFSET_Y)
             self.vertical_offset(dy)
 
         # update the vertical position occupied by the current message
         for participant in participants:
-            participant.last_position_y = self.current_position_y + message_dy
+            participant.last_position_y = (self.current_position_y + message_dy)
 
     def request_frame_dimension(self, *x: int):
         dimension = self.frame_dimension_stack[-1]
