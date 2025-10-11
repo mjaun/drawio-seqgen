@@ -151,6 +151,7 @@ class Text(ObjectWithAbsoluteGeometry):
             'text': None,
             'html': '1',
             'rounded': '0',
+            'labelBackgroundColor': 'default',
         }
 
         style.update(self.alignment.style())
