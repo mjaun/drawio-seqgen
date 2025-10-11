@@ -111,10 +111,10 @@ class ObjectWithAbsoluteGeometry(Object):
     def __init__(self, page: Page, parent: Optional['Object'], value: str):
         super().__init__(page, parent, value)
 
-        self.x = 0
-        self.y = 0
-        self.width = 0
-        self.height = 0
+        self.x: float = 0
+        self.y: float = 0
+        self.width: float = 0
+        self.height: float = 0
 
     def center_x(self):
         return self.x + (self.width / 2)
@@ -137,8 +137,8 @@ class Text(ObjectWithAbsoluteGeometry):
     def __init__(self, page: Page, parent: Optional['Object'], value: str):
         super().__init__(page, parent, value)
 
-        self.width = 100
-        self.height = 20
+        self.width: float = 100
+        self.height: float = 20
         self.alignment = TextAlignment.MIDDLE_LEFT
 
     def attr(self) -> Dict[str, str]:
@@ -162,8 +162,8 @@ class Frame(ObjectWithAbsoluteGeometry):
     def __init__(self, page: Page, value: str):
         super().__init__(page, None, value)
 
-        self.box_width = 160
-        self.box_height = 30
+        self.box_width: float = 160
+        self.box_height: float = 30
 
     def attr(self) -> Dict[str, str]:
         return {
@@ -186,7 +186,7 @@ class Separator(Object):
         super().__init__(frame.page, None, '')
 
         self.frame = frame
-        self.y = 0
+        self.y: float = 0
 
     def attr(self) -> Dict[str, str]:
         return {
@@ -264,9 +264,9 @@ class Activation(Object):
         super().__init__(lifeline.page, lifeline, '')
 
         self.lifeline = lifeline
-        self.dx = 0
-        self.y = 90
-        self.height = 100
+        self.dx: float = 0
+        self.y: float = 90
+        self.height: float = 100
 
     def attr(self) -> Dict[str, str]:
         return {
@@ -365,8 +365,8 @@ class Note(ObjectWithAbsoluteGeometry):
     def __init__(self, page: Page, value: str):
         super().__init__(page, None, value)
 
-        self.width = 120
-        self.height = 60
+        self.width: float = 120
+        self.height: float = 60
 
     def attr(self) -> Dict[str, str]:
         return {
@@ -387,8 +387,8 @@ class Note(ObjectWithAbsoluteGeometry):
 
 @dataclass
 class Point:
-    x: int
-    y: int
+    x: float
+    y: float
 
 
 class MessageAnchor(Enum):

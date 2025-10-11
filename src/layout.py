@@ -50,8 +50,8 @@ class ParticipantInfo:
 
 class FrameDimension:
     def __init__(self):
-        self.min_x: Optional[int] = None
-        self.max_x: Optional[int] = None
+        self.min_x: Optional[float] = None
+        self.max_x: Optional[float] = None
 
 
 class Layouter:
@@ -207,6 +207,7 @@ class Layouter:
         message = drawio.Message(sender.activation_stack[-1], receiver.activation_stack[-1], statement.text)
         message.line = statement.line_style
         message.arrow = statement.arrow_style
+
         message.points.append(drawio.Point(
             x=(sender.lifeline.center_x() + receiver.lifeline.center_x()) / 2,
             y=self.current_position_y
@@ -273,6 +274,9 @@ class Layouter:
     def handle_message_fireforget(self, statement: seqast.MessageStatement):
         sender = self.participant_by_name(statement.sender)
         receiver = self.participant_by_name(statement.receiver)
+
+        assert sender.activation_stack, "sender must be active to send a message"
+        assert statement.sender != statement.receiver, "use self call syntax"
 
         self.ensure_vertical_spacing_between(sender, receiver, MESSAGE_MIN_SPACING - (FIREFORGET_ACTIVATION_HEIGHT / 2))
         self.activate_participant(receiver, sender)
@@ -427,7 +431,7 @@ class Layouter:
         # update dimension for parent frame
         self.update_frame_dimension(frame.x, frame.x + frame.width)
 
-    def update_frame_dimension(self, *x: int):
+    def update_frame_dimension(self, *x: float):
         dimension = self.frame_dimension_stack[-1]
 
         if dimension.min_x is None:
@@ -475,11 +479,11 @@ class Layouter:
     def participant_by_name(self, name: str) -> ParticipantInfo:
         return next((p for p in self.participants if p.name == name), None)
 
-    def ensure_vertical_spacing_between(self, first: ParticipantInfo, second: ParticipantInfo, required_spacing: int):
+    def ensure_vertical_spacing_between(self, first: ParticipantInfo, second: ParticipantInfo, required_spacing: float):
         for indicator in self.position_indicators_between(first, second):
             self.ensure_vertical_spacing(indicator, required_spacing)
 
-    def ensure_vertical_spacing(self, indicator: PositionIndicator, required_spacing: int):
+    def ensure_vertical_spacing(self, indicator: PositionIndicator, required_spacing: float):
         current_spacing = (self.current_position_y - indicator.y)
 
         if current_spacing < required_spacing:
@@ -515,10 +519,5 @@ class Layouter:
             yield participant.center_indicator
             yield participant.right_indicator
 
-    def vertical_offset(self, dy: int):
+    def vertical_offset(self, dy: float):
         self.current_position_y += dy
-
-
-def round_up_int(number: int, multiple: int = 1):
-    assert multiple >= 1
-    return ((number + multiple - 1) // multiple) * multiple
