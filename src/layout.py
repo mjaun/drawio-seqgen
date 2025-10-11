@@ -347,8 +347,6 @@ class Layouter:
         self.process_statements(statement.inner)
 
         for branch in statement.branches:
-            self.vertical_offset(STATEMENT_OFFSET_Y)
-
             separator = drawio.Separator(frame)
             separator.y = self.current_position_y - frame.y
 
@@ -358,7 +356,6 @@ class Layouter:
 
             self.vertical_offset(30)
             self.update_all_position_indicators()
-            self.vertical_offset(STATEMENT_OFFSET_Y)
 
             self.process_statements(branch.inner)
 
@@ -396,8 +393,6 @@ class Layouter:
 
     def open_frame(self, value: str, text: str) -> drawio.Frame:
         # create frame
-        self.vertical_offset(STATEMENT_OFFSET_Y)
-
         frame = drawio.Frame(self.page, value)
         frame.y = self.current_position_y
         frame.box_width = CONTROL_FRAME_BOX_WIDTH
@@ -414,18 +409,16 @@ class Layouter:
         # positioning on frame begin
         self.vertical_offset(CONTROL_FRAME_BOX_HEIGHT + 30)
         self.update_all_position_indicators()
-        self.vertical_offset(STATEMENT_OFFSET_Y)
 
         return frame
 
     def close_frame(self, frame: drawio.Frame):
         # set frame height
-        self.vertical_offset(STATEMENT_OFFSET_Y)
         frame.height = self.current_position_y - frame.y
 
         # positioning on frame end
         self.update_all_position_indicators()
-        self.vertical_offset(STATEMENT_OFFSET_Y)
+        self.vertical_offset(STATEMENT_OFFSET_Y * 2)
 
         # pop frame stack
         dimension = self.frame_dimension_stack.pop()

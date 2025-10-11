@@ -17,9 +17,11 @@ activate B
 activate C
 
 // message sets frame size
+A -> B: message
 opt sometimes, sometimes not
-  A -> B
+  A -> B: message
 end
+A -> B: message
 
 // self call sets frame size
 alt what if?
