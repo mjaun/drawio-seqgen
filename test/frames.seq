@@ -6,15 +6,12 @@ participant C
 
 // activation sets frame size
 loop forever
-  activate A
-  activate C
-  deactivate A
-  deactivate C
+  activate A C
+  vertical offset 30
+  deactivate A C
 end
 
-activate A
-activate B
-activate C
+activate A B C
 
 // message sets frame size
 A -> B: message
@@ -27,7 +24,7 @@ A -> B: message
 alt what if?
 C: self call
 else what if not?
-C: self call also
+C: self call\nalso
 frame for C dx 60
 else
 // empty
@@ -44,6 +41,4 @@ loop never
   end
 end
 
-deactivate A
-deactivate B
-deactivate C
+deactivate A B C

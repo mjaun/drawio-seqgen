@@ -2,9 +2,7 @@ participant A
 participant B
 participant C
 
-activate A
-activate B
-activate C
+activate A B C
 
 // arrow styles
 A -> B
@@ -35,6 +33,24 @@ A -> B: message
 C -> A: message
 C -> B: message
 
-deactivate A
-deactivate B
+deactivate A B C
+
+activate C
+C ->+ A: message
+A ->| B: message
+A ->- C: message
 deactivate C
+
+activate A
+A ->| C: message
+A ->| B: message
+A ->| C: message
+deactivate A
+
+activate A B C
+vertical offset 30
+deactivate B
+
+A -> C: message
+
+deactivate A C
