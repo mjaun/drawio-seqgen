@@ -235,6 +235,7 @@ class Lifeline(ObjectWithAbsoluteGeometry):
 
         self.width = 100
         self.height = 300
+        self.box_height = 40
 
     def attr(self) -> Dict[str, str]:
         return {
@@ -254,6 +255,7 @@ class Lifeline(ObjectWithAbsoluteGeometry):
             'outlineConnect': '0',
             'portConstraint': 'eastwest',
             'newEdgeStyle': '{"curved":0,"rounded":0}',
+            'size': str(self.box_height),
         }
 
 

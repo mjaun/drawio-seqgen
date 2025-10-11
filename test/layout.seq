@@ -25,3 +25,14 @@ C ->+ B: message
 B: message
 B ->- C: message
 deactivate C
+
+activate A
+activate B
+activate C
+
+deactivate B
+
+A -> C: message
+
+deactivate A
+deactivate C
