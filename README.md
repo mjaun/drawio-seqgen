@@ -175,8 +175,6 @@ Creates a frame for different branches of the sequence.
 An arbitrary amount of branches can be defined.
 If the branch label is omitted, it defaults to "else".
 
-Frames can be nested.
-
 The vertical dimensions of a frame is determined by the current vertical position on the beginning and end of the
 frame as described above.
 The horizontal dimensions of a frame is determined by the participants mentioned in the statements within

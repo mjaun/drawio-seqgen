@@ -19,5 +19,4 @@ else
   vertical offset 50
 end
 
-deactivate John
-deactivate Alice
+deactivate Alice John
