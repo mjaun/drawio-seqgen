@@ -13,7 +13,7 @@
         <mxCell id="test-4" value="" parent="test-2" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1">
           <mxGeometry x="80.0" y="80" width="10" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="test-5" value="self call" parent="1" style="html=1;curved=0;rounded=0;align=left;spacingLeft=2;endArrow=block;dashed=0;" edge="1" source="test-3" target="test-4">
+        <mxCell id="test-5" value="self call" parent="1" style="html=1;curved=0;rounded=0;spacingLeft=2;align=left;verticalAlign=middle;endArrow=block;dashed=0;" edge="1" source="test-3" target="test-4">
           <mxGeometry relative="1" as="geometry">
             <mxPoint as="targetPoint" />
             <mxPoint as="sourcePoint" />
@@ -26,7 +26,7 @@
         <mxCell id="test-6" value="" parent="test-2" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1">
           <mxGeometry x="80.0" y="120" width="10" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="test-7" value="self call with&lt;br/&gt;multiple lines" parent="1" style="html=1;curved=0;rounded=0;align=left;spacingLeft=2;endArrow=block;dashed=0;" edge="1" source="test-3" target="test-6">
+        <mxCell id="test-7" value="self call with&lt;br/&gt;multiple lines" parent="1" style="html=1;curved=0;rounded=0;spacingLeft=2;align=left;verticalAlign=middle;endArrow=block;dashed=0;" edge="1" source="test-3" target="test-6">
           <mxGeometry relative="1" as="geometry">
             <mxPoint as="targetPoint" />
             <mxPoint as="sourcePoint" />
@@ -42,7 +42,7 @@
         <mxCell id="test-9" value="" parent="test-2" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1">
           <mxGeometry x="85.0" y="170" width="10" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="test-10" value="self call on&lt;br/&gt;stacked activation" parent="1" style="html=1;curved=0;rounded=0;align=left;spacingLeft=2;endArrow=block;dashed=0;" edge="1" source="test-8" target="test-9">
+        <mxCell id="test-10" value="self call on&lt;br/&gt;stacked activation" parent="1" style="html=1;curved=0;rounded=0;spacingLeft=2;align=left;verticalAlign=middle;endArrow=block;dashed=0;" edge="1" source="test-8" target="test-9">
           <mxGeometry relative="1" as="geometry">
             <mxPoint as="targetPoint" />
             <mxPoint as="sourcePoint" />

@@ -34,7 +34,7 @@
         <mxCell id="test-11" value="" parent="test-3" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1">
           <mxGeometry x="70.0" y="220" width="10" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="test-12" value="" parent="1" style="html=1;curved=0;rounded=0;verticalAlign=bottom;endArrow=block;dashed=0;entryX=0;entryY=0;entryDx=0;entryDy=5;" edge="1" source="test-10" target="test-11">
+        <mxCell id="test-12" value="" parent="1" style="html=1;curved=0;rounded=0;align=center;verticalAlign=bottom;endArrow=block;dashed=0;entryX=0;entryY=0;entryDx=0;entryDy=5;" edge="1" source="test-10" target="test-11">
           <mxGeometry relative="1" as="geometry">
             <mxPoint as="sourcePoint" />
           </mxGeometry>
@@ -54,7 +54,7 @@
         <mxCell id="test-17" value="" parent="test-3" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1">
           <mxGeometry x="70.0" y="340" width="10" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="test-18" value="" parent="1" style="html=1;curved=0;rounded=0;verticalAlign=bottom;endArrow=block;dashed=0;entryX=0;entryY=0;entryDx=0;entryDy=5;" edge="1" source="test-14" target="test-17">
+        <mxCell id="test-18" value="" parent="1" style="html=1;curved=0;rounded=0;align=center;verticalAlign=bottom;endArrow=block;dashed=0;entryX=0;entryY=0;entryDx=0;entryDy=5;" edge="1" source="test-14" target="test-17">
           <mxGeometry relative="1" as="geometry">
             <mxPoint as="sourcePoint" />
           </mxGeometry>
@@ -62,7 +62,7 @@
         <mxCell id="test-19" value="" parent="test-3" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1">
           <mxGeometry x="80.0" y="380" width="10" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="test-20" value="" parent="1" style="html=1;curved=0;rounded=0;verticalAlign=bottom;endArrow=block;dashed=0;entryX=1;entryY=0;entryDx=0;entryDy=5;" edge="1" source="test-16" target="test-19">
+        <mxCell id="test-20" value="" parent="1" style="html=1;curved=0;rounded=0;align=center;verticalAlign=bottom;endArrow=block;dashed=0;entryX=1;entryY=0;entryDx=0;entryDy=5;" edge="1" source="test-16" target="test-19">
           <mxGeometry relative="1" as="geometry">
             <mxPoint as="sourcePoint" />
           </mxGeometry>
@@ -70,7 +70,7 @@
         <mxCell id="test-21" value="" parent="test-3" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1">
           <mxGeometry x="70.0" y="420" width="10" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="test-22" value="" parent="1" style="html=1;curved=0;rounded=0;verticalAlign=bottom;endArrow=block;dashed=0;entryX=0;entryY=0;entryDx=0;entryDy=5;" edge="1" source="test-14" target="test-21">
+        <mxCell id="test-22" value="" parent="1" style="html=1;curved=0;rounded=0;align=center;verticalAlign=bottom;endArrow=block;dashed=0;entryX=0;entryY=0;entryDx=0;entryDy=5;" edge="1" source="test-14" target="test-21">
           <mxGeometry relative="1" as="geometry">
             <mxPoint as="sourcePoint" />
           </mxGeometry>
@@ -78,7 +78,7 @@
         <mxCell id="test-23" value="" parent="test-3" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1">
           <mxGeometry x="65.0" y="430" width="10" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="test-24" value="" parent="1" style="html=1;curved=0;rounded=0;verticalAlign=bottom;endArrow=block;dashed=0;entryX=1;entryY=0;entryDx=0;entryDy=5;" edge="1" source="test-16" target="test-23">
+        <mxCell id="test-24" value="" parent="1" style="html=1;curved=0;rounded=0;align=center;verticalAlign=bottom;endArrow=block;dashed=0;entryX=1;entryY=0;entryDx=0;entryDy=5;" edge="1" source="test-16" target="test-23">
           <mxGeometry relative="1" as="geometry">
             <mxPoint as="sourcePoint" />
           </mxGeometry>
@@ -86,7 +86,7 @@
         <mxCell id="test-25" value="" parent="test-3" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1">
           <mxGeometry x="80.0" y="480" width="10" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="test-26" value="" parent="1" style="html=1;curved=0;rounded=0;verticalAlign=bottom;endArrow=block;dashed=0;entryX=1;entryY=0;entryDx=0;entryDy=5;" edge="1" source="test-16" target="test-25">
+        <mxCell id="test-26" value="" parent="1" style="html=1;curved=0;rounded=0;align=center;verticalAlign=bottom;endArrow=block;dashed=0;entryX=1;entryY=0;entryDx=0;entryDy=5;" edge="1" source="test-16" target="test-25">
           <mxGeometry relative="1" as="geometry">
             <mxPoint as="sourcePoint" />
           </mxGeometry>
@@ -94,7 +94,7 @@
         <mxCell id="test-27" value="" parent="test-3" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1">
           <mxGeometry x="85.0" y="490" width="10" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="test-28" value="" parent="1" style="html=1;curved=0;rounded=0;verticalAlign=bottom;endArrow=block;dashed=0;entryX=0;entryY=0;entryDx=0;entryDy=5;" edge="1" source="test-14" target="test-27">
+        <mxCell id="test-28" value="" parent="1" style="html=1;curved=0;rounded=0;align=center;verticalAlign=bottom;endArrow=block;dashed=0;entryX=0;entryY=0;entryDx=0;entryDy=5;" edge="1" source="test-14" target="test-27">
           <mxGeometry relative="1" as="geometry">
             <mxPoint as="sourcePoint" />
           </mxGeometry>
@@ -114,12 +114,12 @@
         <mxCell id="test-33" value="" parent="test-3" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1">
           <mxGeometry x="85.0" y="610" width="10" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="test-34" value="" parent="1" style="html=1;curved=0;rounded=0;verticalAlign=bottom;endArrow=block;dashed=0;exitX=0;exitY=1;exitDx=0;exitDy=-5;" edge="1" source="test-33" target="test-29">
+        <mxCell id="test-34" value="" parent="1" style="html=1;curved=0;rounded=0;align=center;verticalAlign=bottom;endArrow=block;dashed=0;exitX=0;exitY=1;exitDx=0;exitDy=-5;" edge="1" source="test-33" target="test-29">
           <mxGeometry relative="1" as="geometry">
             <mxPoint as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="test-35" value="" parent="1" style="html=1;curved=0;rounded=0;verticalAlign=bottom;endArrow=block;dashed=0;exitX=1;exitY=1;exitDx=0;exitDy=-5;" edge="1" source="test-32" target="test-31">
+        <mxCell id="test-35" value="" parent="1" style="html=1;curved=0;rounded=0;align=center;verticalAlign=bottom;endArrow=block;dashed=0;exitX=1;exitY=1;exitDx=0;exitDy=-5;" edge="1" source="test-32" target="test-31">
           <mxGeometry relative="1" as="geometry">
             <mxPoint as="targetPoint" />
           </mxGeometry>

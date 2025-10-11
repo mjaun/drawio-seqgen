@@ -4,7 +4,7 @@ from typing import List, Optional
 from lark import Lark, Transformer
 from pathlib import Path
 
-from drawio import MessageLineStyle, MessageArrowStyle
+from drawio import LineStyle, ArrowStyle
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
@@ -161,12 +161,12 @@ class SeqTransformer(Transformer):
         assert len(items) in (2, 3)
 
         line_map = {
-            '-': MessageLineStyle.SOLID,
-            '--': MessageLineStyle.DASHED,
+            '-': LineStyle.SOLID,
+            '--': LineStyle.DASHED,
         }
         arrow_map = {
-            '>': MessageArrowStyle.BLOCK,
-            '>>': MessageArrowStyle.OPEN,
+            '>': ArrowStyle.BLOCK,
+            '>>': ArrowStyle.OPEN,
         }
         activation_map = {
             '': MessageActivationType.REGULAR,
@@ -263,8 +263,8 @@ class MessageStatement(Statement):
     receiver: str
     text: str
     activation: MessageActivationType
-    line_style: MessageLineStyle
-    arrow_style: MessageArrowStyle
+    line_style: LineStyle
+    arrow_style: ArrowStyle
 
 
 @dataclass

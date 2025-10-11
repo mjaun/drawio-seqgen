@@ -8,40 +8,7 @@ from typing import List, Dict, Optional
 ACTIVATION_WIDTH = 10
 MESSAGE_ANCHOR_DY = 5
 
-# Live reloading in draw.io does not work well if an object ID is suddenly used for another type of object.
-# On the other side, the integration test require a predictable output.
-# Using deterministic IDs with a random prefix which can be overridden for testing seems like a good trade-off.
-next_id = 1
-id_prefix = os.getenv('SEQGEN_ID_PREFIX', os.getrandom(4).hex() + '-')
-
-
-class MessageAnchor(Enum):
-    NONE = auto()
-    TOP_LEFT = auto()
-    TOP_RIGHT = auto()
-    BOTTOM_LEFT = auto()
-    BOTTOM_RIGHT = auto()
-
-
-class MessageLineStyle(Enum):
-    SOLID = auto()
-    DASHED = auto()
-
-
-class MessageArrowStyle(Enum):
-    BLOCK = auto()
-    OPEN = auto()
-
-
-class TextAlignment(Enum):
-    TOP_CENTER = auto()
-    MIDDLE_RIGHT = auto()
-
-
-@dataclass
-class Point:
-    x: int
-    y: int
+StyleAttributes = Dict[str, Optional[str]]
 
 
 class File:
@@ -133,7 +100,7 @@ class Object:
         cell = ET.SubElement(xml_parent, 'mxCell', attrib=attr)
         return cell
 
-    def style(self) -> Dict[str, Optional[str]]:
+    def style(self) -> StyleAttributes:
         return {}
 
     def attr(self) -> Dict[str, str]:
@@ -172,23 +139,23 @@ class Text(ObjectWithAbsoluteGeometry):
 
         self.width = 100
         self.height = 20
+        self.alignment = TextAlignment.MIDDLE_LEFT
 
     def attr(self) -> Dict[str, str]:
         return {
             'vertex': '1'
         }
 
-    def style(self) -> Dict[str, Optional[str]]:
-        return {
+    def style(self) -> StyleAttributes:
+        style = {
             'text': None,
             'html': '1',
-            'align': 'left',
-            'verticalAlign': 'middle',
             'rounded': '0',
-            'labelPosition': 'center',
-            'verticalLabelPosition': 'middle',
-            'labelBackgroundColor': 'default',
         }
+
+        style.update(self.alignment.style())
+
+        return style
 
 
 class Frame(ObjectWithAbsoluteGeometry):
@@ -203,7 +170,7 @@ class Frame(ObjectWithAbsoluteGeometry):
             'vertex': '1'
         }
 
-    def style(self) -> Dict[str, Optional[str]]:
+    def style(self) -> StyleAttributes:
         return {
             'shape': 'umlFrame',
             'whiteSpace': 'wrap',
@@ -228,7 +195,7 @@ class Separator(Object):
             'target': self.frame.id,
         }
 
-    def style(self) -> Dict[str, Optional[str]]:
+    def style(self) -> StyleAttributes:
         rel_y = self.y / self.frame.height
 
         return {
@@ -274,7 +241,7 @@ class Lifeline(ObjectWithAbsoluteGeometry):
             'vertex': '1'
         }
 
-    def style(self) -> Dict[str, Optional[str]]:
+    def style(self) -> StyleAttributes:
         return {
             'shape': 'umlLifeline',
             'perimeter': 'lifelinePerimeter',
@@ -304,7 +271,7 @@ class Activation(Object):
             'vertex': '1'
         }
 
-    def style(self) -> Dict[str, Optional[str]]:
+    def style(self) -> StyleAttributes:
         return {
             'html': '1',
             'points': '[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]]',
@@ -336,9 +303,9 @@ class Message(Object):
         self.target = target
 
         self.type = MessageAnchor.NONE
-        self.line = MessageLineStyle.SOLID
-        self.arrow = MessageArrowStyle.BLOCK
-        self.alignment = TextAlignment.TOP_CENTER
+        self.line = LineStyle.SOLID
+        self.arrow = ArrowStyle.BLOCK
+        self.alignment = TextAlignment.BOTTOM_CENTER
         self.points: List[Point] = []
 
     def attr(self) -> Dict[str, str]:
@@ -348,73 +315,20 @@ class Message(Object):
             'target': self.target.id,
         }
 
-    def style(self) -> Dict[str, Optional[str]]:
+    def style(self) -> StyleAttributes:
         style = {
             'html': '1',
             'curved': '0',
             'rounded': '0',
         }
 
-        alignment_map = {
-            TextAlignment.TOP_CENTER: {
-                'verticalAlign': 'bottom',
-            },
-            TextAlignment.MIDDLE_RIGHT: {
-                'align': 'left',
-                'spacingLeft': '2',
-            },
-        }
+        if self.alignment == TextAlignment.MIDDLE_LEFT:
+            style['spacingLeft'] = '2'
 
-        arrow_map = {
-            MessageArrowStyle.BLOCK: {
-                'endArrow': 'block',
-            },
-            MessageArrowStyle.OPEN: {
-                'endArrow': 'open',
-            },
-        }
-
-        line_map = {
-            MessageLineStyle.SOLID: {
-                'dashed': '0',
-            },
-            MessageLineStyle.DASHED: {
-                'dashed': '1',
-            },
-        }
-
-        type_map = {
-            MessageAnchor.NONE: {},
-            MessageAnchor.TOP_LEFT: {
-                'entryX': '0',
-                'entryY': '0',
-                'entryDx': '0',
-                'entryDy': str(MESSAGE_ANCHOR_DY),
-            },
-            MessageAnchor.TOP_RIGHT: {
-                'entryX': '1',
-                'entryY': '0',
-                'entryDx': '0',
-                'entryDy': str(MESSAGE_ANCHOR_DY),
-            },
-            MessageAnchor.BOTTOM_LEFT: {
-                'exitX': '0',
-                'exitY': '1',
-                'exitDx': '0',
-                'exitDy': str(-MESSAGE_ANCHOR_DY),
-            },
-            MessageAnchor.BOTTOM_RIGHT: {
-                'exitX': '1',
-                'exitY': '1',
-                'exitDx': '0',
-                'exitDy': str(-MESSAGE_ANCHOR_DY),
-            },
-        }
-
-        style.update(alignment_map[self.alignment])
-        style.update(arrow_map[self.arrow])
-        style.update(line_map[self.line])
-        style.update(type_map[self.type])
+        style.update(self.alignment.style())
+        style.update(self.arrow.style())
+        style.update(self.line.style())
+        style.update(self.type.style())
 
         return style
 
@@ -457,17 +371,121 @@ class Note(ObjectWithAbsoluteGeometry):
             'vertex': '1'
         }
 
-    def style(self) -> Dict[str, Optional[str]]:
+    def style(self) -> StyleAttributes:
         return {
             'shape': 'note',
             'whiteSpace': 'wrap',
             'html': '1',
             'backgroundOutline': '1',
-            'darkOpacity': '0.05',
             'size': '10',
             'align': 'left',
             'spacing': '8',
         }
+
+
+@dataclass
+class Point:
+    x: int
+    y: int
+
+
+class MessageAnchor(Enum):
+    NONE = auto()
+    TOP_LEFT = auto()
+    TOP_RIGHT = auto()
+    BOTTOM_LEFT = auto()
+    BOTTOM_RIGHT = auto()
+
+    def style(self) -> StyleAttributes:
+        style_map = {
+            MessageAnchor.NONE: {},
+            MessageAnchor.TOP_LEFT: {
+                'entryX': '0',
+                'entryY': '0',
+                'entryDx': '0',
+                'entryDy': str(MESSAGE_ANCHOR_DY),
+            },
+            MessageAnchor.TOP_RIGHT: {
+                'entryX': '1',
+                'entryY': '0',
+                'entryDx': '0',
+                'entryDy': str(MESSAGE_ANCHOR_DY),
+            },
+            MessageAnchor.BOTTOM_LEFT: {
+                'exitX': '0',
+                'exitY': '1',
+                'exitDx': '0',
+                'exitDy': str(-MESSAGE_ANCHOR_DY),
+            },
+            MessageAnchor.BOTTOM_RIGHT: {
+                'exitX': '1',
+                'exitY': '1',
+                'exitDx': '0',
+                'exitDy': str(-MESSAGE_ANCHOR_DY),
+            },
+        }
+
+        return style_map[self]
+
+
+class LineStyle(Enum):
+    SOLID = auto()
+    DASHED = auto()
+
+    def style(self) -> StyleAttributes:
+        style_map = {
+            LineStyle.SOLID: {
+                'dashed': '0',
+            },
+            LineStyle.DASHED: {
+                'dashed': '1',
+            },
+        }
+
+        return style_map[self]
+
+
+class ArrowStyle(Enum):
+    BLOCK = auto()
+    OPEN = auto()
+
+    def style(self) -> StyleAttributes:
+        style_map = {
+            ArrowStyle.BLOCK: {
+                'endArrow': 'block',
+            },
+            ArrowStyle.OPEN: {
+                'endArrow': 'open',
+            },
+        }
+
+        return style_map[self]
+
+
+class TextAlignment(Enum):
+    BOTTOM_CENTER = auto()
+    MIDDLE_LEFT = auto()
+
+    def style(self) -> StyleAttributes:
+        style_map = {
+            TextAlignment.BOTTOM_CENTER: {
+                'align': 'center',
+                'verticalAlign': 'bottom',
+            },
+            TextAlignment.MIDDLE_LEFT: {
+                'align': 'left',
+                'verticalAlign': 'middle',
+            },
+        }
+
+        return style_map[self]
+
+
+# Live reloading in draw.io does not work well if an object ID is suddenly used for another type of object.
+# On the other side, the integration test require a predictable output.
+# Using deterministic IDs with a random prefix which can be overridden for testing seems like a good trade-off.
+next_id = 1
+id_prefix = os.getenv('SEQGEN_ID_PREFIX', os.getrandom(4).hex() + '-')
 
 
 def create_id() -> str:

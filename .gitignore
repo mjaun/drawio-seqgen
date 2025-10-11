@@ -1,5 +1,4 @@
 /.venv/
-/*.drawio
-/*.xml
 *.pyc
 *.bkp
+*.dtmp

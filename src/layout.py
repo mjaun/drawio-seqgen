@@ -255,7 +255,7 @@ class Layouter:
         regular_activation = participant.activation_stack[-2]
         self_call_activation = participant.activation_stack[-1]
         message = drawio.Message(regular_activation, self_call_activation, statement.text)
-        message.alignment = drawio.TextAlignment.MIDDLE_RIGHT
+        message.alignment = drawio.TextAlignment.MIDDLE_LEFT
 
         lifeline_x = participant.lifeline.center_x()
         self_call_x = lifeline_x + self_call_activation.dx + 25
