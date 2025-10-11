@@ -69,3 +69,8 @@ B ->- C
 deactivate A
 deactivate B
 deactivate C
+
+// activate multiple participants
+activate A B C
+vertical offset 30
+deactivate A B C

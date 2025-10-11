@@ -168,19 +168,21 @@ class Layouter:
         self.participant_spacing = statement.spacing
 
     def handle_activate(self, statement: seqast.ActivateStatement):
-        participant = self.participant_by_name(statement.target)
+        for name in statement.targets:
+            participant = self.participant_by_name(name)
+            self.activate_participant(participant)
+            self.update_frame_dimension(participant.lifeline.center_x())
 
-        self.activate_participant(participant)
-        self.update_frame_dimension(participant.lifeline.center_x())
         self.vertical_offset(STATEMENT_OFFSET_Y)
 
     def handle_deactivate(self, statement: seqast.DeactivateStatement):
-        participant = self.participant_by_name(statement.target)
-        assert participant.activation_stack, "deactivation not possible, participant is inactive"
+        for name in statement.targets:
+            participant = self.participant_by_name(name)
+            assert participant.activation_stack, "deactivation not possible, participant is inactive"
+            self.deactivate_participant(participant)
+            self.update_position_indicator(participant.center_indicator)
+            self.update_frame_dimension(participant.lifeline.center_x())
 
-        self.deactivate_participant(participant)
-        self.update_position_indicator(participant.center_indicator)
-        self.update_frame_dimension(participant.lifeline.center_x())
         self.vertical_offset(STATEMENT_OFFSET_Y)
 
     def handle_message(self, statement: seqast.MessageStatement):

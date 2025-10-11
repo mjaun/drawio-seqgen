@@ -89,6 +89,14 @@ Participants can be activated and deactivated explicitly or via messages (see be
 A participant can be activated multiple times which results in stacked activation lines.
 At the end of the sequence description all participants must be inactive.
 
+```
+activate John Alice
+deactivate John Alice
+```
+
+Multiple participants can be activated or deactivated at once to have the activation
+lines start, respectively end on the same position.
+
 ### Messages
 
 ```
@@ -99,7 +107,7 @@ John -->>- Alice
 The generalized form looks like this:
 
 ```
-[Sender] [Line][Arrow][Activation] [Receiver]: [Message]
+<Sender> <Line><Arrow><Activation> <Receiver>[: <Message>]
 ```
 
 The following line types are defined:

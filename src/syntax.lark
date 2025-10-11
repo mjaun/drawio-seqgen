@@ -29,8 +29,8 @@ participant_alias: _SPACE+ "as" _SPACE+ name
 participant_width: "participant width" _SPACE+ NUMBER _NEWLINE
 participant_spacing: "participant spacing" _SPACE+ NUMBER _NEWLINE
 
-activation: "activate" _SPACE+ name _NEWLINE
-deactivation: "deactivate" _SPACE+ name _NEWLINE
+activation: "activate" _SPACE+ name (_SPACE+ name)* _NEWLINE
+deactivation: "deactivate" _SPACE+ name (_SPACE+ name)* _NEWLINE
 
 alternative: "alt" _SPACE+ TEXT _NEWLINE statement_list alternative_branches "end" _NEWLINE
 alternative_branches: alternative_branch*

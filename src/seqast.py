@@ -79,13 +79,13 @@ class SeqTransformer(Transformer):
 
     @staticmethod
     def activation(items):
-        assert len(items) == 1
-        return ActivateStatement(items[0])
+        assert len(items) > 0
+        return ActivateStatement(items)
 
     @staticmethod
     def deactivation(items):
-        assert len(items) == 1
-        return DeactivateStatement(items[0])
+        assert len(items) > 0
+        return DeactivateStatement(items)
 
     @staticmethod
     def message(items):
@@ -243,12 +243,12 @@ class ParticipantSpacingStatement(Statement):
 
 @dataclass
 class ActivateStatement(Statement):
-    target: str
+    targets: List[str]
 
 
 @dataclass
 class DeactivateStatement(Statement):
-    target: str
+    targets: List[str]
 
 
 class MessageActivationType(Enum):
