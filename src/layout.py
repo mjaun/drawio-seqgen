@@ -14,6 +14,7 @@ TITLE_FRAME_PADDING = 30
 CONTROL_FRAME_BOX_WIDTH = 60
 CONTROL_FRAME_BOX_HEIGHT = 20
 CONTROL_FRAME_PADDING = 30
+CONTROL_FRAME_NESTED_PADDING = 20
 
 NOTE_DEFAULT_WIDTH = 100
 NOTE_DEFAULT_HEIGHT = 40
@@ -429,7 +430,8 @@ class Layouter:
         frame.width = dimension.max_x + CONTROL_FRAME_PADDING - frame.x
 
         # update dimension for parent frame
-        self.update_frame_dimension(frame.x, frame.x + frame.width)
+        reduce_padding = CONTROL_FRAME_PADDING - CONTROL_FRAME_NESTED_PADDING
+        self.update_frame_dimension(frame.x + reduce_padding, frame.x + frame.width - reduce_padding)
 
     def update_frame_dimension(self, *x: float):
         dimension = self.frame_dimension_stack[-1]

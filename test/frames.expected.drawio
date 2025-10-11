@@ -5,7 +5,7 @@
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="test-2" value="Frames" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=160;height=30;" vertex="1">
-          <mxGeometry x="-110.0" y="-60" width="710.0" height="650" as="geometry" />
+          <mxGeometry x="-90.0" y="-60" width="680.0" height="650" as="geometry" />
         </mxCell>
         <mxCell id="test-3" value="A" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};size=40;" vertex="1">
           <mxGeometry x="0" y="0" width="160" height="560" as="geometry" />
@@ -121,7 +121,7 @@
           <mxGeometry x="10" y="165" width="100" height="20" as="geometry" />
         </mxCell>
         <mxCell id="test-28" value="loop" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=60;height=20;" vertex="1">
-          <mxGeometry x="-80.0" y="320" width="490.0" height="190" as="geometry" />
+          <mxGeometry x="-70.0" y="320" width="470.0" height="190" as="geometry" />
         </mxCell>
         <mxCell id="test-29" value="[never]" parent="test-28" style="text;html=1;rounded=0;labelBackgroundColor=default;align=left;verticalAlign=middle;" vertex="1">
           <mxGeometry x="10" y="25" width="100" height="20" as="geometry" />
