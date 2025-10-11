@@ -14,8 +14,7 @@ for input_file in *.seq; do
 
   $SEQGEN -i $input_file -o $output_file
 
-  if ! diff $output_file $expected_file > /dev/null ; then
-    echo "CONTENT CHANGED!"
+  if ! diff $output_file $expected_file ; then
     RESULT=1
   fi
 done

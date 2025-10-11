@@ -60,11 +60,6 @@ class File:
 
         return root
 
-    def write(self, file):
-        root = self.xml()
-        tree = ET.ElementTree(root)
-        tree.write(file, encoding='utf-8', xml_declaration=False)
-
 
 class Page:
     def __init__(self, file: File, name: str):
@@ -91,7 +86,7 @@ class Page:
             'fold': '1',
             'page': '0',
             'pageScale': '1',
-            'pageWidth': '850',
+            'pageWidth': '851',
             'pageHeight': '1100',
             'background': '#ffffff',
             'math': '0',
