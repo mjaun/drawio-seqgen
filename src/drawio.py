@@ -326,6 +326,8 @@ class Message(Object):
 
         if self.alignment == TextAlignment.MIDDLE_LEFT:
             style['spacingLeft'] = '2'
+        if self.alignment == TextAlignment.MIDDLE_RIGHT:
+            style['spacingRight'] = '2'
 
         style.update(self.alignment.style())
         style.update(self.arrow.style())
@@ -467,6 +469,7 @@ class ArrowStyle(Enum):
 class TextAlignment(Enum):
     BOTTOM_CENTER = auto()
     MIDDLE_LEFT = auto()
+    MIDDLE_RIGHT = auto()
 
     def style(self) -> StyleAttributes:
         style_map = {
@@ -476,6 +479,10 @@ class TextAlignment(Enum):
             },
             TextAlignment.MIDDLE_LEFT: {
                 'align': 'left',
+                'verticalAlign': 'middle',
+            },
+            TextAlignment.MIDDLE_RIGHT: {
+                'align': 'right',
                 'verticalAlign': 'middle',
             },
         }

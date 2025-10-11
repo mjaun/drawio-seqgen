@@ -315,10 +315,15 @@ class Layouter:
 
         # create self call message
         message = drawio.Message(regular_activation, self_call_activation, statement.text)
-        message.alignment = drawio.TextAlignment.MIDDLE_LEFT
 
-        lifeline_x = participant.lifeline.center_x()
-        self_call_x = lifeline_x + self_call_activation.dx + SELF_CALL_MESSAGE_DX
+        activation_x = participant.lifeline.center_x() + self_call_activation.dx
+
+        if self_call_activation.dx > 0:
+            self_call_x = activation_x + SELF_CALL_MESSAGE_DX
+            message.alignment = drawio.TextAlignment.MIDDLE_LEFT
+        else:
+            self_call_x = activation_x - SELF_CALL_MESSAGE_DX
+            message.alignment = drawio.TextAlignment.MIDDLE_RIGHT
 
         message.points.append(drawio.Point(
             x=self_call_x,
@@ -334,7 +339,7 @@ class Layouter:
         self.vertical_offset(SELF_CALL_ACTIVATION_HEIGHT)
         self.deactivate_participant(participant)
 
-        self.update_frame_dimension(lifeline_x, self_call_x + SELF_CALL_MIN_TEXT_WIDTH)
+        self.update_frame_dimension(participant.lifeline.center_x(), self_call_x + SELF_CALL_MIN_TEXT_WIDTH)
         self.vertical_offset(STATEMENT_OFFSET_Y)
 
     def handle_alternative(self, statement: seqast.AlternativeStatement):

@@ -1,4 +1,5 @@
 participant A
+participant B
 
 activate A
 
@@ -6,8 +7,13 @@ A: self call
 A: self call with\nmultiple lines
 
 activate A
-
 A: self call on\nstacked activation
+deactivate A
 
-deactivate A
-deactivate A
+activate B
+
+A ->+ B
+B: self call on\nleft side
+B ->- A
+
+deactivate A B
