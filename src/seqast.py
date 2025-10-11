@@ -28,10 +28,11 @@ class Parser:
 class SeqTransformer(Transformer):
     @staticmethod
     def start(items):
-        return SeqTransformer.inner_statements(items)
+        assert len(items) == 1
+        return items[0]
 
     @staticmethod
-    def inner_statements(items):
+    def statement_list(items):
         statements = []
 
         for item in items:
