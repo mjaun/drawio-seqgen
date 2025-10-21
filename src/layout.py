@@ -34,7 +34,7 @@ ACTIVATION_STACK_OFFSET_X = drawio.ACTIVATION_WIDTH / 2
 MESSAGE_ANCHOR_DY = drawio.MESSAGE_ANCHOR_DY
 
 
-class PositionIndicator:
+class PositionMarker:
     def __init__(self):
         self.y = 0
 
@@ -45,9 +45,9 @@ class ParticipantInfo:
         self.name = name
         self.lifeline = lifeline
         self.activation_stack: List[drawio.Activation] = []
-        self.center_indicator: PositionIndicator = PositionIndicator()
-        self.left_indicator: PositionIndicator = PositionIndicator()
-        self.right_indicator: PositionIndicator = PositionIndicator()
+        self.center_marker: PositionMarker = PositionMarker()
+        self.left_marker: PositionMarker = PositionMarker()
+        self.right_marker: PositionMarker = PositionMarker()
 
 
 class FrameDimension:
@@ -158,7 +158,7 @@ class Layouter:
         participant = ParticipantInfo(index, statement.name, lifeline)
 
         if not first_participant:
-            participant.left_indicator = self.participants[-1].right_indicator
+            participant.left_marker = self.participants[-1].right_marker
 
         self.participants.append(participant)
         self.update_frame_dimension(lifeline.x + lifeline.width)
@@ -182,7 +182,7 @@ class Layouter:
             participant = self.participant_by_name(name)
             assert participant.activation_stack, "deactivation not possible, participant is inactive"
             self.deactivate_participant(participant)
-            self.update_position_indicator(participant.center_indicator)
+            self.update_position_marker(participant.center_marker)
             self.update_frame_dimension(participant.lifeline.center_x())
 
         self.current_position_y += STATEMENT_OFFSET_Y
@@ -217,7 +217,7 @@ class Layouter:
             y=self.current_position_y
         ))
 
-        self.update_position_indicators_between(sender, receiver)
+        self.update_position_markers_between(sender, receiver)
 
         self.current_position_y += STATEMENT_OFFSET_Y
         self.update_frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x())
@@ -242,7 +242,7 @@ class Layouter:
         else:
             message.type = drawio.MessageAnchor.TOP_RIGHT
 
-        self.update_position_indicators_between(sender, receiver)
+        self.update_position_markers_between(sender, receiver)
 
         self.current_position_y += STATEMENT_OFFSET_Y
         self.update_frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x())
@@ -266,10 +266,10 @@ class Layouter:
         else:
             message.type = drawio.MessageAnchor.BOTTOM_LEFT
 
-        self.update_position_indicators_between(sender, receiver)
+        self.update_position_markers_between(sender, receiver)
         self.current_position_y += MESSAGE_ANCHOR_DY
         self.deactivate_participant(sender)
-        self.update_position_indicator(sender.center_indicator)
+        self.update_position_marker(sender.center_marker)
 
         self.current_position_y += STATEMENT_OFFSET_Y
         self.update_frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x())
@@ -295,10 +295,10 @@ class Layouter:
             y=self.current_position_y
         ))
 
-        self.update_position_indicators_between(sender, receiver)
+        self.update_position_markers_between(sender, receiver)
         self.current_position_y += FIREFORGET_ACTIVATION_HEIGHT / 2
         self.deactivate_participant(receiver)
-        self.update_position_indicator(sender.center_indicator)
+        self.update_position_marker(sender.center_marker)
 
         self.current_position_y += STATEMENT_OFFSET_Y
         self.update_frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x())
@@ -357,7 +357,7 @@ class Layouter:
             text.y = separator.y + 5
 
             self.current_position_y += CONTROL_FRAME_LABEL_HEIGHT
-            self.update_all_position_indicators()
+            self.update_all_position_markers()
 
             self.process_statements(branch.inner)
 
@@ -385,8 +385,8 @@ class Layouter:
     def handle_vertical_offset(self, statement: seqast.VerticalOffsetStatement):
         self.current_position_y += statement.spacing
 
-        for indicator in self.all_position_indicators():
-            indicator.y += statement.spacing
+        for marker in self.all_position_markers():
+            marker.y += statement.spacing
 
     def handle_frame_dimension(self, statement: seqast.FrameDimensionStatement):
         participant = self.participant_by_name(statement.target)
@@ -410,7 +410,7 @@ class Layouter:
 
         # positioning on frame begin
         self.current_position_y += CONTROL_FRAME_BOX_HEIGHT + CONTROL_FRAME_LABEL_HEIGHT
-        self.update_all_position_indicators()
+        self.update_all_position_markers()
 
         return frame
 
@@ -419,7 +419,7 @@ class Layouter:
         frame.height = self.current_position_y - frame.y
 
         # positioning on frame end
-        self.update_all_position_indicators()
+        self.update_all_position_markers()
         self.current_position_y += STATEMENT_OFFSET_Y * 2
 
         # pop frame stack
@@ -483,42 +483,42 @@ class Layouter:
         return next((p for p in self.participants if p.name == name), None)
 
     def ensure_vertical_spacing_between(self, first: ParticipantInfo, second: ParticipantInfo, required_spacing: float):
-        for indicator in self.position_indicators_between(first, second):
-            self.ensure_vertical_spacing(indicator, required_spacing)
+        for marker in self.position_markers_between(first, second):
+            self.ensure_vertical_spacing(marker, required_spacing)
 
-    def ensure_vertical_spacing(self, indicator: PositionIndicator, required_spacing: float):
-        current_spacing = (self.current_position_y - indicator.y)
+    def ensure_vertical_spacing(self, marker: PositionMarker, required_spacing: float):
+        current_spacing = (self.current_position_y - marker.y)
 
         if current_spacing < required_spacing:
             self.current_position_y += required_spacing - current_spacing
 
-    def update_position_indicators_between(self, first: ParticipantInfo, second: ParticipantInfo):
-        for indicator in self.position_indicators_between(first, second):
-            self.update_position_indicator(indicator)
+    def update_position_markers_between(self, first: ParticipantInfo, second: ParticipantInfo):
+        for marker in self.position_markers_between(first, second):
+            self.update_position_marker(marker)
 
-    def update_all_position_indicators(self):
-        for indicator in self.all_position_indicators():
-            self.update_position_indicator(indicator)
+    def update_all_position_markers(self):
+        for marker in self.all_position_markers():
+            self.update_position_marker(marker)
 
-    def update_position_indicator(self, indicator: PositionIndicator):
-        indicator.y = self.current_position_y
+    def update_position_marker(self, marker: PositionMarker):
+        marker.y = self.current_position_y
 
-    def position_indicators_between(self, first: ParticipantInfo, second: ParticipantInfo) \
-            -> Iterable[PositionIndicator]:
+    def position_markers_between(self, first: ParticipantInfo, second: ParticipantInfo) \
+            -> Iterable[PositionMarker]:
         start_index = min(first.index, second.index)
         end_index = max(first.index, second.index)
 
         for participant in self.participants[start_index:end_index + 1]:
             if participant.index != start_index and participant.index != end_index:
-                yield participant.center_indicator
+                yield participant.center_marker
 
             if participant.index != end_index:
-                yield participant.right_indicator
+                yield participant.right_marker
 
-    def all_position_indicators(self) -> Iterable[PositionIndicator]:
+    def all_position_markers(self) -> Iterable[PositionMarker]:
         if self.participants:
-            yield self.participants[0].left_indicator
+            yield self.participants[0].left_marker
 
         for participant in self.participants:
-            yield participant.center_indicator
-            yield participant.right_indicator
+            yield participant.center_marker
+            yield participant.right_marker
