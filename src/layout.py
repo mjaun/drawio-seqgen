@@ -13,6 +13,7 @@ TITLE_FRAME_PADDING = 30
 
 CONTROL_FRAME_BOX_WIDTH = 60
 CONTROL_FRAME_BOX_HEIGHT = 20
+CONTROL_FRAME_LABEL_HEIGHT = 30
 CONTROL_FRAME_PADDING = 30
 CONTROL_FRAME_NESTED_PADDING = 20
 
@@ -83,7 +84,7 @@ class Layouter:
         self.finalize_title_frame()
 
     def finalize_participants(self):
-        self.vertical_offset((2 * STATEMENT_OFFSET_Y))
+        self.current_position_y += 2 * STATEMENT_OFFSET_Y
 
         for participant in self.participants:
             assert not participant.activation_stack, f"participants must be inactive at end: {participant.name}"
@@ -174,7 +175,7 @@ class Layouter:
             self.activate_participant(participant)
             self.update_frame_dimension(participant.lifeline.center_x())
 
-        self.vertical_offset(STATEMENT_OFFSET_Y)
+        self.current_position_y += STATEMENT_OFFSET_Y
 
     def handle_deactivate(self, statement: seqast.DeactivateStatement):
         for name in statement.targets:
@@ -184,7 +185,7 @@ class Layouter:
             self.update_position_indicator(participant.center_indicator)
             self.update_frame_dimension(participant.lifeline.center_x())
 
-        self.vertical_offset(STATEMENT_OFFSET_Y)
+        self.current_position_y += STATEMENT_OFFSET_Y
 
     def handle_message(self, statement: seqast.MessageStatement):
         handlers = {
@@ -218,7 +219,7 @@ class Layouter:
 
         self.update_position_indicators_between(sender, receiver)
 
-        self.vertical_offset(STATEMENT_OFFSET_Y)
+        self.current_position_y += STATEMENT_OFFSET_Y
         self.update_frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x())
 
     def handle_message_activate(self, statement: seqast.MessageStatement):
@@ -230,7 +231,7 @@ class Layouter:
 
         self.ensure_vertical_spacing_between(sender, receiver, MESSAGE_MIN_SPACING - MESSAGE_ANCHOR_DY)
         self.activate_participant(receiver, sender)
-        self.vertical_offset(MESSAGE_ANCHOR_DY)
+        self.current_position_y += MESSAGE_ANCHOR_DY
 
         message = drawio.Message(sender.activation_stack[-1], receiver.activation_stack[-1], statement.text)
         message.line = statement.line_style
@@ -243,7 +244,7 @@ class Layouter:
 
         self.update_position_indicators_between(sender, receiver)
 
-        self.vertical_offset(STATEMENT_OFFSET_Y)
+        self.current_position_y += STATEMENT_OFFSET_Y
         self.update_frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x())
 
     def handle_message_deactivate(self, statement: seqast.MessageStatement):
@@ -266,11 +267,11 @@ class Layouter:
             message.type = drawio.MessageAnchor.BOTTOM_LEFT
 
         self.update_position_indicators_between(sender, receiver)
-        self.vertical_offset(MESSAGE_ANCHOR_DY)
+        self.current_position_y += MESSAGE_ANCHOR_DY
         self.deactivate_participant(sender)
         self.update_position_indicator(sender.center_indicator)
 
-        self.vertical_offset(STATEMENT_OFFSET_Y)
+        self.current_position_y += STATEMENT_OFFSET_Y
         self.update_frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x())
 
 
@@ -283,7 +284,7 @@ class Layouter:
 
         self.ensure_vertical_spacing_between(sender, receiver, MESSAGE_MIN_SPACING - (FIREFORGET_ACTIVATION_HEIGHT / 2))
         self.activate_participant(receiver, sender)
-        self.vertical_offset(FIREFORGET_ACTIVATION_HEIGHT / 2)
+        self.current_position_y += FIREFORGET_ACTIVATION_HEIGHT / 2
 
         message = drawio.Message(sender.activation_stack[-1], receiver.activation_stack[-1], statement.text)
         message.line = statement.line_style
@@ -295,11 +296,11 @@ class Layouter:
         ))
 
         self.update_position_indicators_between(sender, receiver)
-        self.vertical_offset(FIREFORGET_ACTIVATION_HEIGHT / 2)
+        self.current_position_y += FIREFORGET_ACTIVATION_HEIGHT / 2
         self.deactivate_participant(receiver)
         self.update_position_indicator(sender.center_indicator)
 
-        self.vertical_offset(STATEMENT_OFFSET_Y)
+        self.current_position_y += STATEMENT_OFFSET_Y
         self.update_frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x())
 
     def handle_self_call(self, statement: seqast.SelfCallStatement):
@@ -308,7 +309,7 @@ class Layouter:
         assert participant.activation_stack, "participant must be active for self call"
 
         # create activation for self call
-        self.vertical_offset(SELF_CALL_MESSAGE_ACTIVATION_SPACING)
+        self.current_position_y += SELF_CALL_MESSAGE_ACTIVATION_SPACING
         self.activate_participant(participant)
 
         regular_activation = participant.activation_stack[-2]
@@ -337,11 +338,11 @@ class Layouter:
         ))
 
         # deactivate after self call
-        self.vertical_offset(SELF_CALL_ACTIVATION_HEIGHT)
+        self.current_position_y += SELF_CALL_ACTIVATION_HEIGHT
         self.deactivate_participant(participant)
 
         self.update_frame_dimension(participant.lifeline.center_x(), self_call_x + SELF_CALL_MIN_TEXT_WIDTH)
-        self.vertical_offset(STATEMENT_OFFSET_Y)
+        self.current_position_y += STATEMENT_OFFSET_Y
 
     def handle_alternative(self, statement: seqast.AlternativeStatement):
         frame = self.open_frame('alt', statement.text)
@@ -355,7 +356,7 @@ class Layouter:
             text.x = 10
             text.y = separator.y + 5
 
-            self.vertical_offset(30)
+            self.current_position_y += CONTROL_FRAME_LABEL_HEIGHT
             self.update_all_position_indicators()
 
             self.process_statements(branch.inner)
@@ -382,7 +383,7 @@ class Layouter:
         note.height = statement.height or NOTE_DEFAULT_HEIGHT
 
     def handle_vertical_offset(self, statement: seqast.VerticalOffsetStatement):
-        self.vertical_offset(statement.spacing)
+        self.current_position_y += statement.spacing
 
         for indicator in self.all_position_indicators():
             indicator.y += statement.spacing
@@ -408,7 +409,7 @@ class Layouter:
         self.frame_dimension_stack.append(dimension)
 
         # positioning on frame begin
-        self.vertical_offset(CONTROL_FRAME_BOX_HEIGHT + 30)
+        self.current_position_y += CONTROL_FRAME_BOX_HEIGHT + CONTROL_FRAME_LABEL_HEIGHT
         self.update_all_position_indicators()
 
         return frame
@@ -419,7 +420,7 @@ class Layouter:
 
         # positioning on frame end
         self.update_all_position_indicators()
-        self.vertical_offset(STATEMENT_OFFSET_Y * 2)
+        self.current_position_y += STATEMENT_OFFSET_Y * 2
 
         # pop frame stack
         dimension = self.frame_dimension_stack.pop()
@@ -489,7 +490,7 @@ class Layouter:
         current_spacing = (self.current_position_y - indicator.y)
 
         if current_spacing < required_spacing:
-            self.vertical_offset(required_spacing - current_spacing)
+            self.current_position_y += required_spacing - current_spacing
 
     def update_position_indicators_between(self, first: ParticipantInfo, second: ParticipantInfo):
         for indicator in self.position_indicators_between(first, second):
@@ -521,6 +522,3 @@ class Layouter:
         for participant in self.participants:
             yield participant.center_indicator
             yield participant.right_indicator
-
-    def vertical_offset(self, dy: float):
-        self.current_position_y += dy
