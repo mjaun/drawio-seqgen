@@ -507,8 +507,9 @@ class Layouter:
         start_index = min(first.index, second.index)
         end_index = max(first.index, second.index)
 
-        for participant in self.participants[start_index:end_index]:
-            yield participant.center_indicator
+        for participant in self.participants[start_index:end_index + 1]:
+            if participant.index != start_index and participant.index != end_index:
+                yield participant.center_indicator
 
             if participant.index != end_index:
                 yield participant.right_indicator

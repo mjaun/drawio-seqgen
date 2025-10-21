@@ -54,3 +54,21 @@ deactivate B
 A -> C: message
 
 deactivate A C
+
+activate A B C
+
+B -> A: message
+B -> C: message
+B -> A: message
+B -> C: message
+
+deactivate A B C
+
+activate A B C
+
+A -> B: message
+C -> B: message
+A -> B: message
+C -> B: message
+
+deactivate A B C
