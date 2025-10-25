@@ -188,118 +188,54 @@ class Layouter:
         self.current_position_y += STATEMENT_OFFSET_Y
 
     def handle_message(self, statement: seqast.MessageStatement):
-        handlers = {
-            seqast.MessageActivation.REGULAR: self.handle_message_regular,
-            seqast.MessageActivation.ACTIVATE: self.handle_message_activate,
-            seqast.MessageActivation.DEACTIVATE: self.handle_message_deactivate,
-            seqast.MessageActivation.FIREFORGET: self.handle_message_fireforget,
-        }
-
-        # noinspection PyArgumentList
-        handlers[statement.activation](statement)
-
-    def handle_message_regular(self, statement: seqast.MessageStatement):
         sender = self.participant_by_name(statement.sender)
         receiver = self.participant_by_name(statement.receiver)
+        min_spacing = MESSAGE_MIN_SPACING
 
+        # activation before message
+        if statement.activation == seqast.MessageActivation.ACTIVATE:
+            self.activate_participant(receiver, sender)
+            self.current_position_y += MESSAGE_ANCHOR_DY
+            min_spacing -= MESSAGE_ANCHOR_DY
+        if statement.activation == seqast.MessageActivation.FIREFORGET:
+            self.activate_participant(receiver, sender)
+            self.current_position_y += FIREFORGET_ACTIVATION_HEIGHT / 2
+            min_spacing -= FIREFORGET_ACTIVATION_HEIGHT / 2
+
+        # actual message
         assert sender.activation_stack, "sender must be active to send a message"
         assert statement.sender != statement.receiver, "use self call syntax"
         assert receiver.activation_stack, "receiver must be active to receive a message"
 
-        self.ensure_vertical_spacing_between(sender, receiver, MESSAGE_MIN_SPACING)
+        self.ensure_vertical_spacing_between(sender, receiver, min_spacing)
 
         message = drawio.Message(sender.activation_stack[-1], receiver.activation_stack[-1], statement.text)
         message.line_style = statement.line_style
         message.arrow_style = statement.arrow_style
 
-        message.points.append(drawio.Point(
-            x=(sender.lifeline.center_x() + receiver.lifeline.center_x()) / 2,
-            y=self.current_position_y
-        ))
-
-        self.update_position_markers_between(sender, receiver)
-
-        self.current_position_y += STATEMENT_OFFSET_Y
-        self.update_frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x())
-
-    def handle_message_activate(self, statement: seqast.MessageStatement):
-        sender = self.participant_by_name(statement.sender)
-        receiver = self.participant_by_name(statement.receiver)
-
-        assert sender.activation_stack, "sender must be active to send a message"
-        assert statement.sender != statement.receiver, "use self call syntax"
-
-        self.ensure_vertical_spacing_between(sender, receiver, MESSAGE_MIN_SPACING - MESSAGE_ANCHOR_DY)
-        self.activate_participant(receiver, sender)
-        self.current_position_y += MESSAGE_ANCHOR_DY
-
-        message = drawio.Message(sender.activation_stack[-1], receiver.activation_stack[-1], statement.text)
-        message.line_style = statement.line_style
-        message.arrow_style = statement.arrow_style
-
-        if sender.index < receiver.index:
-            message.anchor = drawio.MessageAnchor.TOP_LEFT
+        if statement.activation == seqast.MessageActivation.ACTIVATE:
+            message.anchor = drawio.MessageAnchor.TOP_LEFT if sender.index < receiver.index else drawio.MessageAnchor.TOP_RIGHT
+        elif statement.activation == seqast.MessageActivation.DEACTIVATE:
+            message.anchor = drawio.MessageAnchor.BOTTOM_RIGHT if sender.index < receiver.index else drawio.MessageAnchor.BOTTOM_LEFT
         else:
-            message.anchor = drawio.MessageAnchor.TOP_RIGHT
+            message.points.append(drawio.Point(
+                x=(sender.lifeline.center_x() + receiver.lifeline.center_x()) / 2,
+                y=self.current_position_y
+            ))
 
         self.update_position_markers_between(sender, receiver)
 
-        self.current_position_y += STATEMENT_OFFSET_Y
-        self.update_frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x())
+        # deactivation after message
+        if statement.activation == seqast.MessageActivation.DEACTIVATE:
+            self.current_position_y += MESSAGE_ANCHOR_DY
+            self.deactivate_participant(sender)
+            self.update_position_marker(sender.center_marker)
+        if statement.activation == seqast.MessageActivation.FIREFORGET:
+            self.current_position_y += FIREFORGET_ACTIVATION_HEIGHT / 2
+            self.deactivate_participant(receiver)
+            self.update_position_marker(receiver.center_marker)
 
-    def handle_message_deactivate(self, statement: seqast.MessageStatement):
-        sender = self.participant_by_name(statement.sender)
-        receiver = self.participant_by_name(statement.receiver)
-
-        assert sender.activation_stack, "sender must be active to send a message"
-        assert statement.sender != statement.receiver, "use self call syntax"
-        assert receiver.activation_stack, "receiver must be active to receive a message"
-
-        self.ensure_vertical_spacing_between(sender, receiver, MESSAGE_MIN_SPACING)
-
-        message = drawio.Message(sender.activation_stack[-1], receiver.activation_stack[-1], statement.text)
-        message.line_style = statement.line_style
-        message.arrow_style = statement.arrow_style
-
-        if sender.index < receiver.index:
-            message.anchor = drawio.MessageAnchor.BOTTOM_RIGHT
-        else:
-            message.anchor = drawio.MessageAnchor.BOTTOM_LEFT
-
-        self.update_position_markers_between(sender, receiver)
-        self.current_position_y += MESSAGE_ANCHOR_DY
-        self.deactivate_participant(sender)
-        self.update_position_marker(sender.center_marker)
-
-        self.current_position_y += STATEMENT_OFFSET_Y
-        self.update_frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x())
-
-
-    def handle_message_fireforget(self, statement: seqast.MessageStatement):
-        sender = self.participant_by_name(statement.sender)
-        receiver = self.participant_by_name(statement.receiver)
-
-        assert sender.activation_stack, "sender must be active to send a message"
-        assert statement.sender != statement.receiver, "use self call syntax"
-
-        self.ensure_vertical_spacing_between(sender, receiver, MESSAGE_MIN_SPACING - (FIREFORGET_ACTIVATION_HEIGHT / 2))
-        self.activate_participant(receiver, sender)
-        self.current_position_y += FIREFORGET_ACTIVATION_HEIGHT / 2
-
-        message = drawio.Message(sender.activation_stack[-1], receiver.activation_stack[-1], statement.text)
-        message.line_style = statement.line_style
-        message.arrow_style = statement.arrow_style
-
-        message.points.append(drawio.Point(
-            x=(sender.lifeline.center_x() + receiver.lifeline.center_x()) / 2,
-            y=self.current_position_y
-        ))
-
-        self.update_position_markers_between(sender, receiver)
-        self.current_position_y += FIREFORGET_ACTIVATION_HEIGHT / 2
-        self.deactivate_participant(receiver)
-        self.update_position_marker(sender.center_marker)
-
+        # layout
         self.current_position_y += STATEMENT_OFFSET_Y
         self.update_frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x())
 
