@@ -30,3 +30,5 @@ C ->+ B: message
 B: message
 B ->- C: message
 deactivate C
+
+A: self call\nwithout activation

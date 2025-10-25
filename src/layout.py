@@ -246,13 +246,12 @@ class Layouter:
     def handle_self_call(self, statement: seqast.SelfCallStatement):
         participant = self.participant_by_name(statement.target)
 
-        assert participant.activation_stack, "participant must be active for self call"
-
         # create activation for self call
         self.current_position_y += SELF_CALL_MESSAGE_ACTIVATION_SPACING
         self.activate_participant(participant)
 
-        regular_activation = participant.activation_stack[-2]
+        regular_activation = participant.activation_stack[-2] \
+            if len(participant.activation_stack) > 1 else participant.lifeline
         self_call_activation = participant.activation_stack[-1]
 
         # create self call message
@@ -260,7 +259,7 @@ class Layouter:
 
         activation_x = participant.lifeline.center_x() + self_call_activation.dx
 
-        if self_call_activation.dx > 0:
+        if self_call_activation.dx >= 0:
             self_call_x = activation_x + SELF_CALL_MESSAGE_DX
             message.text_alignment = drawio.TextAlignment.MIDDLE_LEFT
         else:
