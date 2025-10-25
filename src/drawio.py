@@ -364,6 +364,60 @@ class Message(Object):
         return cell
 
 
+class FoundMessage(Object):
+    def __init__(self, source: 'Point', target: Object, value: str):
+        super().__init__(target.page, None, value)
+        self.source = source
+        self.target = target
+
+        self.anchor = MessageAnchor.NONE
+        self.line_style = LineStyle.SOLID
+        self.arrow_style = ArrowStyle.BLOCK
+        self.text_alignment = TextAlignment.BOTTOM_CENTER
+
+    def attr(self) -> Dict[str, str]:
+        return {
+            'edge': '1',
+            'target': self.target.id,
+        }
+
+    def style(self) -> StyleAttributes:
+        style = {
+            'html': '1',
+            'curved': '0',
+            'rounded': '0',
+            'startArrow': 'oval',
+            'startFill': '1',
+        }
+
+        style.update(self.text_alignment.style())
+        style.update(self.arrow_style.style())
+        style.update(self.line_style.style())
+        style.update(self.anchor.style())
+
+        return style
+
+    def xml(self, xml_parent: ET.Element) -> ET.Element:
+        cell = super().xml(xml_parent)
+
+        geometry = ET.SubElement(cell, 'mxGeometry', attrib={
+            'relative': '1',
+            'as': 'geometry',
+        })
+
+        ET.SubElement(geometry, 'mxPoint', attrib={
+            'as': 'sourcePoint',
+            'x': str(self.source.x),
+            'y': str(self.source.y),
+        })
+
+        ET.SubElement(geometry, 'mxPoint', attrib={
+            'as': 'targetPoint',
+        })
+
+        return cell
+
+
 class Note(ObjectWithAbsoluteGeometry):
     def __init__(self, page: Page, value: str):
         super().__init__(page, None, value)

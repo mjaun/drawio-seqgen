@@ -97,6 +97,13 @@ deactivate John Alice
 Multiple participants can be activated or deactivated at once to have the activation
 lines start, respectively end on the same position.
 
+```
+activate John from left: With message
+activate Alice from right
+```
+
+A single participant can be activated with a message without source participant.
+
 ### Messages
 
 ```

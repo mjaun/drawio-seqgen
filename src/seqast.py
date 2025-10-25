@@ -88,6 +88,18 @@ class SeqTransformer(Transformer):
         return DeactivateStatement(items)
 
     @staticmethod
+    def activation_from(items):
+        assert len(items) in (2, 3)
+        text = items[2] if len(items) == 3 else ''
+
+        source_dir_map = {
+            'left': ActivateFromSourceDir.LEFT,
+            'right': ActivateFromSourceDir.RIGHT,
+        }
+
+        return ActivateFromStatement(items[0], source_dir_map[str(items[1])], text)
+
+    @staticmethod
     def message(items):
         assert len(items) in (3, 4)
         line, arrow, activation = items[1]
@@ -249,6 +261,18 @@ class ActivateStatement(Statement):
 @dataclass
 class DeactivateStatement(Statement):
     targets: List[str]
+
+
+class ActivateFromSourceDir(Enum):
+    LEFT = auto()
+    RIGHT = auto()
+
+
+@dataclass
+class ActivateFromStatement(Statement):
+    target: str
+    source: ActivateFromSourceDir
+    text: str
 
 
 class MessageActivation(Enum):

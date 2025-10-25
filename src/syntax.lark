@@ -8,6 +8,7 @@ statement: title_width
          | participant_width
          | participant_spacing
          | participant
+         | activation_from
          | activation
          | deactivation
          | alternative
@@ -31,6 +32,8 @@ participant_spacing: "participant spacing" _SPACE+ NUMBER _NEWLINE
 
 activation: "activate" _SPACE+ name (_SPACE+ name)* _NEWLINE
 deactivation: "deactivate" _SPACE+ name (_SPACE+ name)* _NEWLINE
+
+activation_from: "activate" _SPACE+ name _SPACE+ "from" _SPACE+ /left|right/ (_SPACE* ":" _SPACE+ TEXT)? _NEWLINE
 
 alternative: "alt" _SPACE+ TEXT _NEWLINE statement_list alternative_branches "end" _NEWLINE
 alternative_branches: alternative_branch*

@@ -20,6 +20,8 @@ CONTROL_FRAME_NESTED_PADDING = 20
 NOTE_DEFAULT_WIDTH = 100
 NOTE_DEFAULT_HEIGHT = 40
 
+ACTIVATE_FROM_MESSAGE_WIDTH = 120
+
 SELF_CALL_MIN_TEXT_WIDTH = 30
 SELF_CALL_MESSAGE_DX = 25
 SELF_CALL_MESSAGE_ACTIVATION_SPACING = 10
@@ -112,6 +114,7 @@ class Layouter:
             seqast.ParticipantSpacingStatement: self.handle_participant_spacing,
             seqast.ActivateStatement: self.handle_activate,
             seqast.DeactivateStatement: self.handle_deactivate,
+            seqast.ActivateFromStatement: self.handle_activate_from,
             seqast.MessageStatement: self.handle_message,
             seqast.SelfCallStatement: self.handle_self_call,
             seqast.AlternativeStatement: self.handle_alternative,
@@ -177,6 +180,35 @@ class Layouter:
 
         self.current_position_y += STATEMENT_OFFSET_Y
 
+    def handle_activate_from(self, statement: seqast.ActivateFromStatement):
+        target = self.participant_by_name(statement.target)
+
+        if statement.source == seqast.ActivateFromSourceDir.LEFT:
+            source_x = target.lifeline.center_x() - ACTIVATE_FROM_MESSAGE_WIDTH
+        elif statement.source == seqast.ActivateFromSourceDir.RIGHT:
+            source_x = target.lifeline.center_x() + ACTIVATE_FROM_MESSAGE_WIDTH
+        else:
+            raise NotImplementedError()
+
+        self.ensure_vertical_spacing(target.left_marker, MESSAGE_MIN_SPACING - MESSAGE_ANCHOR_DY)
+        self.activate_participant(target, source_x)
+        self.current_position_y += MESSAGE_ANCHOR_DY
+
+        source = drawio.Point(source_x, self.current_position_y)
+        message = drawio.FoundMessage(source, target.activation_stack[-1], statement.text)
+
+        if statement.source == seqast.ActivateFromSourceDir.LEFT:
+            message.anchor = drawio.MessageAnchor.TOP_LEFT
+            self.update_position_marker(target.left_marker)
+        elif statement.source == seqast.ActivateFromSourceDir.RIGHT:
+            message.anchor = drawio.MessageAnchor.TOP_RIGHT
+            self.update_position_marker(target.right_marker)
+        else:
+            raise NotImplementedError()
+
+        self.current_position_y += STATEMENT_OFFSET_Y
+        self.update_frame_dimension(source_x, target.lifeline.center_x())
+
     def handle_deactivate(self, statement: seqast.DeactivateStatement):
         for name in statement.targets:
             participant = self.participant_by_name(name)
@@ -203,10 +235,10 @@ class Layouter:
         self.ensure_vertical_spacing_between(sender, receiver, min_spacing)
 
         if statement.activation == seqast.MessageActivation.ACTIVATE:
-            self.activate_participant(receiver, sender)
+            self.activate_participant(receiver, sender.lifeline.center_x())
             self.current_position_y += MESSAGE_ANCHOR_DY
         if statement.activation == seqast.MessageActivation.FIREFORGET:
-            self.activate_participant(receiver, sender)
+            self.activate_participant(receiver, sender.lifeline.center_x())
             self.current_position_y += FIREFORGET_ACTIVATION_HEIGHT / 2
 
         # actual message
@@ -386,7 +418,7 @@ class Layouter:
         else:
             dimension.max_x = max(dimension.max_x, max(x))
 
-    def activate_participant(self, participant: ParticipantInfo, activator: Optional[ParticipantInfo] = None):
+    def activate_participant(self, participant: ParticipantInfo, activator_x: Optional[float] = None):
         activation = drawio.Activation(participant.lifeline)
         activation.y = self.current_position_y
 
@@ -396,7 +428,7 @@ class Layouter:
 
         elif len(participant.activation_stack) == 1:
             # if participant is activated once, we consider the location of the activator
-            if not activator or activator.index > participant.index:
+            if activator_x is None or activator_x > participant.lifeline.center_x():
                 next_dx = ACTIVATION_STACK_OFFSET_X
             else:
                 next_dx = -ACTIVATION_STACK_OFFSET_X
