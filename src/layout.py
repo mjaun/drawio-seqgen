@@ -196,17 +196,20 @@ class Layouter:
 
         # activation before message
         if statement.activation == seqast.MessageActivation.ACTIVATE:
+            min_spacing -= MESSAGE_ANCHOR_DY
+        if statement.activation == seqast.MessageActivation.FIREFORGET:
+            min_spacing -= FIREFORGET_ACTIVATION_HEIGHT / 2
+
+        self.ensure_vertical_spacing_between(sender, receiver, min_spacing)
+
+        if statement.activation == seqast.MessageActivation.ACTIVATE:
             self.activate_participant(receiver, sender)
             self.current_position_y += MESSAGE_ANCHOR_DY
-            min_spacing -= MESSAGE_ANCHOR_DY
         if statement.activation == seqast.MessageActivation.FIREFORGET:
             self.activate_participant(receiver, sender)
             self.current_position_y += FIREFORGET_ACTIVATION_HEIGHT / 2
-            min_spacing -= FIREFORGET_ACTIVATION_HEIGHT / 2
 
         # actual message
-        self.ensure_vertical_spacing_between(sender, receiver, min_spacing)
-
         source = sender.activation_stack[-1] if sender.activation_stack else sender.lifeline
         target = receiver.activation_stack[-1] if receiver.activation_stack else receiver.lifeline
 
