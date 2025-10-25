@@ -72,3 +72,22 @@ A -> B: message
 C -> B: message
 
 deactivate A B C
+
+A -> B: message
+A ->+ B: message
+B ->- A: message
+A ->| B: message
+
+activate A
+A -> B: message
+A ->+ B: message
+B ->- A: message
+A ->| B: message
+deactivate A
+
+activate B
+A -> B: message
+A ->+ B: message
+B ->- A: message
+A ->| B: message
+deactivate B

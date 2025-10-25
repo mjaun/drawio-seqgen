@@ -188,6 +188,8 @@ class Layouter:
         self.current_position_y += STATEMENT_OFFSET_Y
 
     def handle_message(self, statement: seqast.MessageStatement):
+        assert statement.sender != statement.receiver, "use self call syntax"
+
         sender = self.participant_by_name(statement.sender)
         receiver = self.participant_by_name(statement.receiver)
         min_spacing = MESSAGE_MIN_SPACING
@@ -203,13 +205,12 @@ class Layouter:
             min_spacing -= FIREFORGET_ACTIVATION_HEIGHT / 2
 
         # actual message
-        assert sender.activation_stack, "sender must be active to send a message"
-        assert statement.sender != statement.receiver, "use self call syntax"
-        assert receiver.activation_stack, "receiver must be active to receive a message"
-
         self.ensure_vertical_spacing_between(sender, receiver, min_spacing)
 
-        message = drawio.Message(sender.activation_stack[-1], receiver.activation_stack[-1], statement.text)
+        source = sender.activation_stack[-1] if sender.activation_stack else sender.lifeline
+        target = receiver.activation_stack[-1] if receiver.activation_stack else receiver.lifeline
+
+        message = drawio.Message(source, target, statement.text)
         message.line_style = statement.line_style
         message.arrow_style = statement.arrow_style
 
