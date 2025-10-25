@@ -189,10 +189,10 @@ class Layouter:
 
     def handle_message(self, statement: seqast.MessageStatement):
         handlers = {
-            seqast.MessageActivationType.REGULAR: self.handle_message_regular,
-            seqast.MessageActivationType.ACTIVATE: self.handle_message_activate,
-            seqast.MessageActivationType.DEACTIVATE: self.handle_message_deactivate,
-            seqast.MessageActivationType.FIREFORGET: self.handle_message_fireforget,
+            seqast.MessageActivation.REGULAR: self.handle_message_regular,
+            seqast.MessageActivation.ACTIVATE: self.handle_message_activate,
+            seqast.MessageActivation.DEACTIVATE: self.handle_message_deactivate,
+            seqast.MessageActivation.FIREFORGET: self.handle_message_fireforget,
         }
 
         # noinspection PyArgumentList
@@ -209,8 +209,8 @@ class Layouter:
         self.ensure_vertical_spacing_between(sender, receiver, MESSAGE_MIN_SPACING)
 
         message = drawio.Message(sender.activation_stack[-1], receiver.activation_stack[-1], statement.text)
-        message.line = statement.line_style
-        message.arrow = statement.arrow_style
+        message.line_style = statement.line_style
+        message.arrow_style = statement.arrow_style
 
         message.points.append(drawio.Point(
             x=(sender.lifeline.center_x() + receiver.lifeline.center_x()) / 2,
@@ -234,13 +234,13 @@ class Layouter:
         self.current_position_y += MESSAGE_ANCHOR_DY
 
         message = drawio.Message(sender.activation_stack[-1], receiver.activation_stack[-1], statement.text)
-        message.line = statement.line_style
-        message.arrow = statement.arrow_style
+        message.line_style = statement.line_style
+        message.arrow_style = statement.arrow_style
 
         if sender.index < receiver.index:
-            message.type = drawio.MessageAnchor.TOP_LEFT
+            message.anchor = drawio.MessageAnchor.TOP_LEFT
         else:
-            message.type = drawio.MessageAnchor.TOP_RIGHT
+            message.anchor = drawio.MessageAnchor.TOP_RIGHT
 
         self.update_position_markers_between(sender, receiver)
 
@@ -258,13 +258,13 @@ class Layouter:
         self.ensure_vertical_spacing_between(sender, receiver, MESSAGE_MIN_SPACING)
 
         message = drawio.Message(sender.activation_stack[-1], receiver.activation_stack[-1], statement.text)
-        message.line = statement.line_style
-        message.arrow = statement.arrow_style
+        message.line_style = statement.line_style
+        message.arrow_style = statement.arrow_style
 
         if sender.index < receiver.index:
-            message.type = drawio.MessageAnchor.BOTTOM_RIGHT
+            message.anchor = drawio.MessageAnchor.BOTTOM_RIGHT
         else:
-            message.type = drawio.MessageAnchor.BOTTOM_LEFT
+            message.anchor = drawio.MessageAnchor.BOTTOM_LEFT
 
         self.update_position_markers_between(sender, receiver)
         self.current_position_y += MESSAGE_ANCHOR_DY
@@ -287,8 +287,8 @@ class Layouter:
         self.current_position_y += FIREFORGET_ACTIVATION_HEIGHT / 2
 
         message = drawio.Message(sender.activation_stack[-1], receiver.activation_stack[-1], statement.text)
-        message.line = statement.line_style
-        message.arrow = statement.arrow_style
+        message.line_style = statement.line_style
+        message.arrow_style = statement.arrow_style
 
         message.points.append(drawio.Point(
             x=(sender.lifeline.center_x() + receiver.lifeline.center_x()) / 2,
@@ -322,10 +322,10 @@ class Layouter:
 
         if self_call_activation.dx > 0:
             self_call_x = activation_x + SELF_CALL_MESSAGE_DX
-            message.alignment = drawio.TextAlignment.MIDDLE_LEFT
+            message.text_alignment = drawio.TextAlignment.MIDDLE_LEFT
         else:
             self_call_x = activation_x - SELF_CALL_MESSAGE_DX
-            message.alignment = drawio.TextAlignment.MIDDLE_RIGHT
+            message.text_alignment = drawio.TextAlignment.MIDDLE_RIGHT
 
         message.points.append(drawio.Point(
             x=self_call_x,

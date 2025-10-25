@@ -170,10 +170,10 @@ class SeqTransformer(Transformer):
             '>>': ArrowStyle.OPEN,
         }
         activation_map = {
-            '': MessageActivationType.REGULAR,
-            '+': MessageActivationType.ACTIVATE,
-            '-': MessageActivationType.DEACTIVATE,
-            '|': MessageActivationType.FIREFORGET,
+            '': MessageActivation.REGULAR,
+            '+': MessageActivation.ACTIVATE,
+            '-': MessageActivation.DEACTIVATE,
+            '|': MessageActivation.FIREFORGET,
         }
 
         line_str = str(items[0])
@@ -251,7 +251,7 @@ class DeactivateStatement(Statement):
     targets: List[str]
 
 
-class MessageActivationType(Enum):
+class MessageActivation(Enum):
     REGULAR = auto()
     ACTIVATE = auto()
     DEACTIVATE = auto()
@@ -263,7 +263,7 @@ class MessageStatement(Statement):
     sender: str
     receiver: str
     text: str
-    activation: MessageActivationType
+    activation: MessageActivation
     line_style: LineStyle
     arrow_style: ArrowStyle
 

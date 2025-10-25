@@ -305,10 +305,10 @@ class Message(Object):
         self.source = source
         self.target = target
 
-        self.type = MessageAnchor.NONE
-        self.line = LineStyle.SOLID
-        self.arrow = ArrowStyle.BLOCK
-        self.alignment = TextAlignment.BOTTOM_CENTER
+        self.anchor = MessageAnchor.NONE
+        self.line_style = LineStyle.SOLID
+        self.arrow_style = ArrowStyle.BLOCK
+        self.text_alignment = TextAlignment.BOTTOM_CENTER
         self.points: List[Point] = []
 
     def attr(self) -> Dict[str, str]:
@@ -325,15 +325,15 @@ class Message(Object):
             'rounded': '0',
         }
 
-        if self.alignment == TextAlignment.MIDDLE_LEFT:
+        if self.text_alignment == TextAlignment.MIDDLE_LEFT:
             style['spacingLeft'] = '2'
-        if self.alignment == TextAlignment.MIDDLE_RIGHT:
+        if self.text_alignment == TextAlignment.MIDDLE_RIGHT:
             style['spacingRight'] = '2'
 
-        style.update(self.alignment.style())
-        style.update(self.arrow.style())
-        style.update(self.line.style())
-        style.update(self.type.style())
+        style.update(self.text_alignment.style())
+        style.update(self.arrow_style.style())
+        style.update(self.line_style.style())
+        style.update(self.anchor.style())
 
         return style
 
@@ -345,12 +345,12 @@ class Message(Object):
             'as': 'geometry'
         })
 
-        if self.type == MessageAnchor.NONE:
+        if self.anchor == MessageAnchor.NONE:
             ET.SubElement(geometry, 'mxPoint', attrib={'as': 'targetPoint'})
             ET.SubElement(geometry, 'mxPoint', attrib={'as': 'sourcePoint'})
-        elif self.type in (MessageAnchor.TOP_LEFT, MessageAnchor.TOP_RIGHT):
+        elif self.anchor in (MessageAnchor.TOP_LEFT, MessageAnchor.TOP_RIGHT):
             ET.SubElement(geometry, 'mxPoint', attrib={'as': 'sourcePoint'})
-        elif self.type in (MessageAnchor.BOTTOM_LEFT, MessageAnchor.BOTTOM_RIGHT):
+        elif self.anchor in (MessageAnchor.BOTTOM_LEFT, MessageAnchor.BOTTOM_RIGHT):
             ET.SubElement(geometry, 'mxPoint', attrib={'as': 'targetPoint'})
         else:
             raise NotImplementedError()
