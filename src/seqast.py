@@ -137,6 +137,11 @@ class SeqTransformer(Transformer):
         return LoopStatement(items[0], items[1])
 
     @staticmethod
+    def group(items):
+        assert len(items) == 2
+        return GroupStatement(items[0], items[1])
+
+    @staticmethod
     def note(items):
         assert len(items) == 3
 
@@ -319,6 +324,12 @@ class OptionStatement(Statement):
 
 @dataclass
 class LoopStatement(Statement):
+    text: str
+    inner: List[Statement]
+
+
+@dataclass
+class GroupStatement(Statement):
     text: str
     inner: List[Statement]
 

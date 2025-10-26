@@ -161,14 +161,6 @@ end
 Creates a frame for an optional part of the sequence.
 
 ```
-loop Until tired
-  ...
-end
-```
-
-Creates a frame for a looped part of the sequence.
-
-```
 alt x == 1
   ...
 else x == 2
@@ -181,6 +173,22 @@ end
 Creates a frame for different branches of the sequence.
 An arbitrary amount of branches can be defined.
 If the branch label is omitted, it defaults to "else".
+
+```
+loop Until tired
+  ...
+end
+```
+
+Creates a frame for a looped part of the sequence.
+
+```
+group critical
+  ...
+end
+```
+
+Creates a frame with a custom title.
 
 The vertical dimensions of a frame is determined by the current vertical position on the beginning and end of the
 frame as described above.

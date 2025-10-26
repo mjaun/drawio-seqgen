@@ -42,3 +42,8 @@ loop never
 end
 
 deactivate A B C
+
+group critical
+  A -> B
+  B -> A
+end

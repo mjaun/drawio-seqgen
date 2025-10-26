@@ -120,6 +120,7 @@ class Layouter:
             seqast.AlternativeStatement: self.handle_alternative,
             seqast.OptionStatement: self.handle_option,
             seqast.LoopStatement: self.handle_loop,
+            seqast.GroupStatement: self.handle_group,
             seqast.NoteStatement: self.handle_note,
             seqast.VerticalOffsetStatement: self.handle_vertical_offset,
             seqast.FrameDimensionStatement: self.handle_frame_dimension,
@@ -344,6 +345,11 @@ class Layouter:
         self.process_statements(statement.inner)
         self.close_frame(frame)
 
+    def handle_group(self, statement: seqast.LoopStatement):
+        frame = self.open_frame(statement.text)
+        self.process_statements(statement.inner)
+        self.close_frame(frame)
+
     def handle_note(self, statement: seqast.NoteStatement):
         participant = self.participant_by_name(statement.target)
 
@@ -364,23 +370,28 @@ class Layouter:
         lifeline_x = participant.lifeline.center_x()
         self.update_frame_dimension(lifeline_x + statement.dx)
 
-    def open_frame(self, value: str, text: str) -> drawio.Frame:
+    def open_frame(self, value: str, text: Optional[str] = None) -> drawio.Frame:
         # create frame
         frame = drawio.Frame(self.page, value)
         frame.y = self.current_position_y
         frame.box_width = CONTROL_FRAME_BOX_WIDTH
         frame.box_height = CONTROL_FRAME_BOX_HEIGHT
 
-        text = drawio.Text(self.page, frame, f'[{text}]')
-        text.x = 10
-        text.y = CONTROL_FRAME_BOX_HEIGHT + 5
+        if text:
+            text = drawio.Text(self.page, frame, f'[{text}]')
+            text.x = 10
+            text.y = CONTROL_FRAME_BOX_HEIGHT + 5
 
         # push frame stack
         dimension = FrameDimension()
         self.frame_dimension_stack.append(dimension)
 
         # positioning on frame begin
-        self.current_position_y += CONTROL_FRAME_BOX_HEIGHT + CONTROL_FRAME_LABEL_HEIGHT
+        if text:
+            self.current_position_y += CONTROL_FRAME_BOX_HEIGHT + CONTROL_FRAME_LABEL_HEIGHT
+        else:
+            self.current_position_y += CONTROL_FRAME_BOX_HEIGHT
+
         self.update_all_position_markers()
 
         return frame
