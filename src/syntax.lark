@@ -8,7 +8,6 @@ statement: title_width
          | participant_width
          | participant_spacing
          | participant
-         | activation_from
          | activation
          | deactivation
          | alternative
@@ -18,6 +17,8 @@ statement: title_width
          | vertical_offset
          | frame_dimension
          | note
+         | found_message
+         | lost_message
          | message
          | self_call
 
@@ -33,8 +34,6 @@ participant_spacing: "participant spacing" _SPACE+ NUMBER _NEWLINE
 
 activation: "activate" _SPACE+ name (_SPACE+ name)* _NEWLINE
 deactivation: "deactivate" _SPACE+ name (_SPACE+ name)* _NEWLINE
-
-activation_from: "activate" _SPACE+ name _SPACE+ "from" _SPACE+ /left|right/ (_SPACE* ":" _SPACE+ TEXT)? _NEWLINE
 
 alternative: "alt" _SPACE+ TEXT _NEWLINE statement_list alternative_branches "end" _NEWLINE
 alternative_branches: alternative_branch*
@@ -52,6 +51,8 @@ note_dy: _SPACE+ "dy" _SPACE+ NUMBER
 note_width: _SPACE+ "width" _SPACE+ NUMBER
 note_height: _SPACE+ "height" _SPACE+ NUMBER
 
+found_message: "found" _SPACE+ /left|right/ _SPACE+ arrow _SPACE+ name (_SPACE* ":" _SPACE+ TEXT)? _NEWLINE
+lost_message: name _SPACE+ arrow _SPACE+ "lost" _SPACE+ /left|right/ (_SPACE* ":" _SPACE+ TEXT)? _NEWLINE
 message: name _SPACE+ arrow _SPACE+ name (_SPACE* ":" _SPACE+ TEXT)? _NEWLINE
 self_call: name _SPACE* ":" _SPACE+ TEXT _NEWLINE
 

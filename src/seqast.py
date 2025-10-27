@@ -88,16 +88,34 @@ class SeqTransformer(Transformer):
         return DeactivateStatement(items)
 
     @staticmethod
-    def activation_from(items):
-        assert len(items) in (2, 3)
-        text = items[2] if len(items) == 3 else ''
+    def found_message(items):
+        assert len(items) in (3, 4)
 
-        source_dir_map = {
-            'left': ActivateFromSourceDir.LEFT,
-            'right': ActivateFromSourceDir.RIGHT,
+        direction_map = {
+            'left': MessageDirection.LEFT,
+            'right': MessageDirection.RIGHT,
         }
 
-        return ActivateFromStatement(items[0], source_dir_map[str(items[1])], text)
+        direction = direction_map[str(items[0])]
+        line, arrow, activation = items[1]
+        text = items[3] if len(items) == 4 else ''
+
+        return FoundMessageStatement(direction, items[2], text, activation, line, arrow)
+
+    @staticmethod
+    def lost_message(items):
+        assert len(items) in (3, 4)
+
+        direction_map = {
+            'left': MessageDirection.LEFT,
+            'right': MessageDirection.RIGHT,
+        }
+
+        direction = direction_map[str(items[2])]
+        line, arrow, activation = items[1]
+        text = items[3] if len(items) == 4 else ''
+
+        return LostMessageStatement(items[0], direction, text, activation, line, arrow)
 
     @staticmethod
     def message(items):
@@ -268,16 +286,9 @@ class DeactivateStatement(Statement):
     targets: List[str]
 
 
-class ActivateFromSourceDir(Enum):
+class MessageDirection(Enum):
     LEFT = auto()
     RIGHT = auto()
-
-
-@dataclass
-class ActivateFromStatement(Statement):
-    target: str
-    source: ActivateFromSourceDir
-    text: str
 
 
 class MessageActivation(Enum):
@@ -291,6 +302,26 @@ class MessageActivation(Enum):
 class MessageStatement(Statement):
     sender: str
     receiver: str
+    text: str
+    activation: MessageActivation
+    line_style: LineStyle
+    arrow_style: ArrowStyle
+
+
+@dataclass
+class FoundMessageStatement(Statement):
+    from_direction: MessageDirection
+    receiver: str
+    text: str
+    activation: MessageActivation
+    line_style: LineStyle
+    arrow_style: ArrowStyle
+
+
+@dataclass
+class LostMessageStatement(Statement):
+    sender: str
+    to_direction: MessageDirection
     text: str
     activation: MessageActivation
     line_style: LineStyle

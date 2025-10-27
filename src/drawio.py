@@ -348,9 +348,9 @@ class Message(Object):
         if self.anchor == MessageAnchor.NONE:
             ET.SubElement(geometry, 'mxPoint', attrib={'as': 'targetPoint'})
             ET.SubElement(geometry, 'mxPoint', attrib={'as': 'sourcePoint'})
-        elif self.anchor in (MessageAnchor.TOP_LEFT, MessageAnchor.TOP_RIGHT):
+        elif self.anchor in (MessageAnchor.ACTIVATE_LEFT, MessageAnchor.ACTIVATE_RIGHT):
             ET.SubElement(geometry, 'mxPoint', attrib={'as': 'sourcePoint'})
-        elif self.anchor in (MessageAnchor.BOTTOM_LEFT, MessageAnchor.BOTTOM_RIGHT):
+        elif self.anchor in (MessageAnchor.DEACTIVATE_LEFT, MessageAnchor.DEACTIVATE_RIGHT):
             ET.SubElement(geometry, 'mxPoint', attrib={'as': 'targetPoint'})
         else:
             raise NotImplementedError()
@@ -364,58 +364,29 @@ class Message(Object):
         return cell
 
 
-class FoundMessage(Object):
-    def __init__(self, source: 'Point', target: Object, value: str):
-        super().__init__(target.page, None, value)
-        self.source = source
-        self.target = target
+class LostFoundDot(ObjectWithAbsoluteGeometry):
+    def __init__(self, page: Page):
+        super().__init__(page, None, '')
 
-        self.anchor = MessageAnchor.NONE
-        self.line_style = LineStyle.SOLID
-        self.arrow_style = ArrowStyle.BLOCK
-        self.text_alignment = TextAlignment.BOTTOM_CENTER
+        self.width = 8
+        self.height = 8
+
+    def set_position(self, center_x: float, center_y: float):
+        self.x = center_x - (self.width / 2)
+        self.y = center_y - (self.height / 2)
 
     def attr(self) -> Dict[str, str]:
         return {
-            'edge': '1',
-            'target': self.target.id,
+            'vertex': '1',
         }
 
     def style(self) -> StyleAttributes:
-        style = {
+        return {
+            'ellipse': None,
             'html': '1',
-            'curved': '0',
-            'rounded': '0',
-            'startArrow': 'oval',
-            'startFill': '1',
+            'aspect': 'fixed',
+            'fillColor': '#000000',
         }
-
-        style.update(self.text_alignment.style())
-        style.update(self.arrow_style.style())
-        style.update(self.line_style.style())
-        style.update(self.anchor.style())
-
-        return style
-
-    def xml(self, xml_parent: ET.Element) -> ET.Element:
-        cell = super().xml(xml_parent)
-
-        geometry = ET.SubElement(cell, 'mxGeometry', attrib={
-            'relative': '1',
-            'as': 'geometry',
-        })
-
-        ET.SubElement(geometry, 'mxPoint', attrib={
-            'as': 'sourcePoint',
-            'x': str(self.source.x),
-            'y': str(self.source.y),
-        })
-
-        ET.SubElement(geometry, 'mxPoint', attrib={
-            'as': 'targetPoint',
-        })
-
-        return cell
 
 
 class Note(ObjectWithAbsoluteGeometry):
@@ -450,33 +421,37 @@ class Point:
 
 class MessageAnchor(Enum):
     NONE = auto()
-    TOP_LEFT = auto()
-    TOP_RIGHT = auto()
-    BOTTOM_LEFT = auto()
-    BOTTOM_RIGHT = auto()
+    ACTIVATE_LEFT = auto()
+    ACTIVATE_RIGHT = auto()
+    DEACTIVATE_LEFT = auto()
+    DEACTIVATE_RIGHT = auto()
+    FOUND_LEFT = auto()
+    FOUND_RIGHT = auto()
+    LOST_LEFT = auto()
+    LOST_RIGHT = auto()
 
     def style(self) -> StyleAttributes:
         style_map = {
             MessageAnchor.NONE: {},
-            MessageAnchor.TOP_LEFT: {
+            MessageAnchor.ACTIVATE_LEFT: {
                 'entryX': '0',
                 'entryY': '0',
                 'entryDx': '0',
                 'entryDy': str(MESSAGE_ANCHOR_DY),
             },
-            MessageAnchor.TOP_RIGHT: {
+            MessageAnchor.ACTIVATE_RIGHT: {
                 'entryX': '1',
                 'entryY': '0',
                 'entryDx': '0',
                 'entryDy': str(MESSAGE_ANCHOR_DY),
             },
-            MessageAnchor.BOTTOM_LEFT: {
+            MessageAnchor.DEACTIVATE_LEFT: {
                 'exitX': '0',
                 'exitY': '1',
                 'exitDx': '0',
                 'exitDy': str(-MESSAGE_ANCHOR_DY),
             },
-            MessageAnchor.BOTTOM_RIGHT: {
+            MessageAnchor.DEACTIVATE_RIGHT: {
                 'exitX': '1',
                 'exitY': '1',
                 'exitDx': '0',

@@ -1,0 +1,70 @@
+participant A
+participant B
+participant C
+
+found left -> B
+found right -->> B
+
+opt frame
+
+found left ->+ B: message
+vertical offset 10
+deactivate B
+
+found right ->+ B: message
+vertical offset 10
+deactivate B
+
+end
+
+found left ->+ B: message
+found right ->+ B: message
+A -> B: message
+deactivate B
+deactivate B
+
+found left ->+ B: message
+found right ->+ B: message
+C -> B: message
+deactivate B
+deactivate B
+
+found left ->+ B: message
+found left ->+ B: message
+A -> B: message
+deactivate B
+deactivate B
+
+found left ->+ B: message
+found left ->+ B: message
+C -> B: message
+deactivate B
+deactivate B
+
+
+B -> lost left
+B -->> lost right
+
+opt frame
+
+activate B
+vertical offset 10
+B ->- lost left: message
+
+activate B
+vertical offset 10
+B ->- lost right: message
+
+end
+
+activate B
+
+B -> lost left: message
+B -> lost left: message
+A -> B: message
+
+B -> lost left: message
+B -> lost left: message
+C -> B: message
+
+deactivate B

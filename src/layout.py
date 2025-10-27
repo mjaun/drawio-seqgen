@@ -20,7 +20,7 @@ CONTROL_FRAME_NESTED_PADDING = 20
 NOTE_DEFAULT_WIDTH = 100
 NOTE_DEFAULT_HEIGHT = 40
 
-ACTIVATE_FROM_MESSAGE_WIDTH = 120
+FOUND_LOST_MESSAGE_WIDTH = 120
 
 SELF_CALL_MIN_TEXT_WIDTH = 30
 SELF_CALL_MESSAGE_DX = 25
@@ -31,6 +31,7 @@ FIREFORGET_ACTIVATION_HEIGHT = 20
 
 STATEMENT_OFFSET_Y = 10
 MESSAGE_MIN_SPACING = 20
+START_POSITION_Y = PARTICIPANT_BOX_HEIGHT + (2 * STATEMENT_OFFSET_Y)
 
 ACTIVATION_STACK_OFFSET_X = drawio.ACTIVATION_WIDTH / 2
 MESSAGE_ANCHOR_DY = drawio.MESSAGE_ANCHOR_DY
@@ -38,7 +39,7 @@ MESSAGE_ANCHOR_DY = drawio.MESSAGE_ANCHOR_DY
 
 class PositionMarker:
     def __init__(self):
-        self.y = 0
+        self.y = START_POSITION_Y - STATEMENT_OFFSET_Y
 
 
 class ParticipantInfo:
@@ -65,7 +66,7 @@ class Layouter:
         self.participants: List[ParticipantInfo] = []
         self.frame_dimension_stack: List[FrameDimension] = []
 
-        self.current_position_y = PARTICIPANT_BOX_HEIGHT + (2 * STATEMENT_OFFSET_Y)
+        self.current_position_y = START_POSITION_Y
         self.participant_width = PARTICIPANT_DEFAULT_BOX_WIDTH
         self.participant_spacing = PARTICIPANT_DEFAULT_SPACING
 
@@ -114,7 +115,8 @@ class Layouter:
             seqast.ParticipantSpacingStatement: self.handle_participant_spacing,
             seqast.ActivateStatement: self.handle_activate,
             seqast.DeactivateStatement: self.handle_deactivate,
-            seqast.ActivateFromStatement: self.handle_activate_from,
+            seqast.FoundMessageStatement: self.handle_found_message,
+            seqast.LostMessageStatement: self.handle_lost_message,
             seqast.MessageStatement: self.handle_message,
             seqast.SelfCallStatement: self.handle_self_call,
             seqast.AlternativeStatement: self.handle_alternative,
@@ -181,44 +183,102 @@ class Layouter:
 
         self.current_position_y += STATEMENT_OFFSET_Y
 
-    def handle_activate_from(self, statement: seqast.ActivateFromStatement):
-        target = self.participant_by_name(statement.target)
-
-        if statement.source == seqast.ActivateFromSourceDir.LEFT:
-            source_x = target.lifeline.center_x() - ACTIVATE_FROM_MESSAGE_WIDTH
-        elif statement.source == seqast.ActivateFromSourceDir.RIGHT:
-            source_x = target.lifeline.center_x() + ACTIVATE_FROM_MESSAGE_WIDTH
-        else:
-            raise NotImplementedError()
-
-        self.ensure_vertical_spacing(target.left_marker, MESSAGE_MIN_SPACING - MESSAGE_ANCHOR_DY)
-        self.activate_participant(target, source_x)
-        self.current_position_y += MESSAGE_ANCHOR_DY
-
-        source = drawio.Point(source_x, self.current_position_y)
-        message = drawio.FoundMessage(source, target.activation_stack[-1], statement.text)
-
-        if statement.source == seqast.ActivateFromSourceDir.LEFT:
-            message.anchor = drawio.MessageAnchor.TOP_LEFT
-            self.update_position_marker(target.left_marker)
-        elif statement.source == seqast.ActivateFromSourceDir.RIGHT:
-            message.anchor = drawio.MessageAnchor.TOP_RIGHT
-            self.update_position_marker(target.right_marker)
-        else:
-            raise NotImplementedError()
-
-        self.current_position_y += STATEMENT_OFFSET_Y
-        self.update_frame_dimension(source_x, target.lifeline.center_x())
-
     def handle_deactivate(self, statement: seqast.DeactivateStatement):
         for name in statement.targets:
             participant = self.participant_by_name(name)
-            assert participant.activation_stack, "deactivation not possible, participant is inactive"
+            assert participant.activation_stack, "participant not activated"
             self.deactivate_participant(participant)
             self.update_position_marker(participant.center_marker)
             self.update_frame_dimension(participant.lifeline.center_x())
 
         self.current_position_y += STATEMENT_OFFSET_Y
+
+    def handle_found_message(self, statement: seqast.FoundMessageStatement):
+        assert statement.activation in (seqast.MessageActivation.REGULAR, seqast.MessageActivation.ACTIVATE), \
+            f"{statement.activation} not supported for found message"
+
+        receiver = self.participant_by_name(statement.receiver)
+
+        if statement.from_direction == seqast.MessageDirection.LEFT:
+            source_x = receiver.lifeline.center_x() - FOUND_LOST_MESSAGE_WIDTH
+            marker = receiver.left_marker
+            anchor = drawio.MessageAnchor.ACTIVATE_LEFT
+        elif statement.from_direction == seqast.MessageDirection.RIGHT:
+            source_x = receiver.lifeline.center_x() + FOUND_LOST_MESSAGE_WIDTH
+            marker = receiver.right_marker
+            anchor = drawio.MessageAnchor.ACTIVATE_RIGHT
+        else:
+            raise NotImplementedError()
+
+        # activation before message
+        if statement.activation == seqast.MessageActivation.ACTIVATE:
+            self.ensure_vertical_spacing(marker, MESSAGE_MIN_SPACING - MESSAGE_ANCHOR_DY)
+            self.activate_participant(receiver, source_x)
+            self.current_position_y += MESSAGE_ANCHOR_DY
+        else:
+            self.ensure_vertical_spacing(marker, MESSAGE_MIN_SPACING)
+
+        # actual message
+        bullet = drawio.LostFoundDot(self.page)
+        bullet.set_position(source_x, self.current_position_y)
+        target = receiver.activation_stack[-1] if receiver.activation_stack else receiver.lifeline
+        message = drawio.Message(bullet, target, statement.text)
+        message.points.append(drawio.Point((source_x + receiver.lifeline.center_x()) / 2, self.current_position_y))
+        message.line_style = statement.line_style
+        message.arrow_style = statement.arrow_style
+
+        if statement.activation == seqast.MessageActivation.ACTIVATE:
+            message.anchor = anchor
+
+        self.update_position_marker(marker)
+
+        # layout
+        self.current_position_y += STATEMENT_OFFSET_Y
+        self.update_frame_dimension(source_x, receiver.lifeline.center_x())
+
+    def handle_lost_message(self, statement: seqast.LostMessageStatement):
+        assert statement.activation in (seqast.MessageActivation.REGULAR, seqast.MessageActivation.DEACTIVATE), \
+            f"{statement.activation} not supported for found message"
+
+        sender = self.participant_by_name(statement.sender)
+
+        if statement.to_direction == seqast.MessageDirection.LEFT:
+            source_x = sender.lifeline.center_x() - FOUND_LOST_MESSAGE_WIDTH
+            marker = sender.left_marker
+            anchor = drawio.MessageAnchor.DEACTIVATE_LEFT
+        elif statement.to_direction == seqast.MessageDirection.RIGHT:
+            source_x = sender.lifeline.center_x() + FOUND_LOST_MESSAGE_WIDTH
+            marker = sender.right_marker
+            anchor = drawio.MessageAnchor.DEACTIVATE_RIGHT
+        else:
+            raise NotImplementedError()
+
+        self.ensure_vertical_spacing(marker, MESSAGE_MIN_SPACING)
+
+        # actual message
+        bullet = drawio.LostFoundDot(self.page)
+        bullet.set_position(source_x, self.current_position_y)
+        source = sender.activation_stack[-1] if sender.activation_stack else sender.lifeline
+        message = drawio.Message(source, bullet, statement.text)
+        message.line_style = statement.line_style
+        message.arrow_style = statement.arrow_style
+        message.points.append(drawio.Point((source_x + sender.lifeline.center_x()) / 2, self.current_position_y))
+
+        if statement.activation == seqast.MessageActivation.DEACTIVATE:
+            message.anchor = anchor
+
+        self.update_position_marker(marker)
+
+        # deactivation after message
+        if statement.activation == seqast.MessageActivation.DEACTIVATE:
+            assert sender.activation_stack, "sender not activated"
+            self.current_position_y += MESSAGE_ANCHOR_DY
+            self.deactivate_participant(sender)
+            self.update_position_marker(sender.center_marker)
+
+        # layout
+        self.current_position_y += STATEMENT_OFFSET_Y
+        self.update_frame_dimension(source_x, sender.lifeline.center_x())
 
     def handle_message(self, statement: seqast.MessageStatement):
         assert statement.sender != statement.receiver, "use self call syntax"
@@ -251,9 +311,9 @@ class Layouter:
         message.arrow_style = statement.arrow_style
 
         if statement.activation == seqast.MessageActivation.ACTIVATE:
-            message.anchor = drawio.MessageAnchor.TOP_LEFT if sender.index < receiver.index else drawio.MessageAnchor.TOP_RIGHT
+            message.anchor = drawio.MessageAnchor.ACTIVATE_LEFT if sender.index < receiver.index else drawio.MessageAnchor.ACTIVATE_RIGHT
         elif statement.activation == seqast.MessageActivation.DEACTIVATE:
-            message.anchor = drawio.MessageAnchor.BOTTOM_RIGHT if sender.index < receiver.index else drawio.MessageAnchor.BOTTOM_LEFT
+            message.anchor = drawio.MessageAnchor.DEACTIVATE_RIGHT if sender.index < receiver.index else drawio.MessageAnchor.DEACTIVATE_LEFT
         else:
             message.points.append(drawio.Point(
                 x=(sender.lifeline.center_x() + receiver.lifeline.center_x()) / 2,
@@ -264,6 +324,7 @@ class Layouter:
 
         # deactivation after message
         if statement.activation == seqast.MessageActivation.DEACTIVATE:
+            assert sender.activation_stack, "sender not activated"
             self.current_position_y += MESSAGE_ANCHOR_DY
             self.deactivate_participant(sender)
             self.update_position_marker(sender.center_marker)
@@ -329,7 +390,7 @@ class Layouter:
             text.y = separator.y + 5
 
             self.current_position_y += CONTROL_FRAME_LABEL_HEIGHT
-            self.update_all_position_markers()
+            self.update_all_position_markers(-STATEMENT_OFFSET_Y)
 
             self.process_statements(branch.inner)
 
@@ -392,7 +453,7 @@ class Layouter:
         else:
             self.current_position_y += CONTROL_FRAME_BOX_HEIGHT
 
-        self.update_all_position_markers()
+        self.update_all_position_markers(-STATEMENT_OFFSET_Y)
 
         return frame
 
@@ -478,12 +539,12 @@ class Layouter:
         for marker in self.position_markers_between(first, second):
             self.update_position_marker(marker)
 
-    def update_all_position_markers(self):
+    def update_all_position_markers(self, dy: float = 0):
         for marker in self.all_position_markers():
-            self.update_position_marker(marker)
+            self.update_position_marker(marker, dy)
 
-    def update_position_marker(self, marker: PositionMarker):
-        marker.y = self.current_position_y
+    def update_position_marker(self, marker: PositionMarker, dy: float = 0):
+        marker.y = self.current_position_y + dy
 
     def position_markers_between(self, first: ParticipantInfo, second: ParticipantInfo) \
             -> Iterable[PositionMarker]:
