@@ -118,7 +118,6 @@ class Layouter:
             seqast.FoundMessageStatement: self.handle_found_message,
             seqast.LostMessageStatement: self.handle_lost_message,
             seqast.MessageStatement: self.handle_message,
-            seqast.SelfCallStatement: self.handle_self_call,
             seqast.AlternativeStatement: self.handle_alternative,
             seqast.OptionStatement: self.handle_option,
             seqast.LoopStatement: self.handle_loop,
@@ -286,7 +285,9 @@ class Layouter:
         self.update_frame_dimension(source_x, sender.lifeline.center_x())
 
     def handle_message(self, statement: seqast.MessageStatement):
-        assert statement.sender != statement.receiver, "use self call syntax"
+        if statement.sender == statement.receiver:
+            self.handle_self_call(statement)
+            return
 
         sender = self.participant_by_name(statement.sender)
         receiver = self.participant_by_name(statement.receiver)
@@ -342,8 +343,11 @@ class Layouter:
         self.current_position_y += STATEMENT_OFFSET_Y
         self.update_frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x())
 
-    def handle_self_call(self, statement: seqast.SelfCallStatement):
-        participant = self.participant_by_name(statement.target)
+    def handle_self_call(self, statement: seqast.MessageStatement):
+        assert statement.sender == statement.receiver
+        assert statement.activation == seqast.MessageActivation.REGULAR, f"{statement.activation} invalid for self call"
+
+        participant = self.participant_by_name(statement.sender)
 
         # create activation for self call
         self.current_position_y += SELF_CALL_MESSAGE_ACTIVATION_SPACING
@@ -355,6 +359,8 @@ class Layouter:
 
         # create self call message
         message = drawio.Message(regular_activation, self_call_activation, statement.text)
+        message.line_style = statement.line_style
+        message.arrow_style = statement.arrow_style
 
         activation_x = participant.lifeline.center_x() + self_call_activation.dx
 

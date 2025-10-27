@@ -127,7 +127,8 @@ class SeqTransformer(Transformer):
     @staticmethod
     def self_call(items):
         assert len(items) == 2
-        return SelfCallStatement(items[0], items[1])
+        return MessageStatement(items[0], items[0], items[1],
+                                MessageActivation.REGULAR, LineStyle.SOLID, ArrowStyle.BLOCK)
 
     @staticmethod
     def alternative(items):
@@ -326,12 +327,6 @@ class LostMessageStatement(Statement):
     activation: MessageActivation
     line_style: LineStyle
     arrow_style: ArrowStyle
-
-
-@dataclass
-class SelfCallStatement(Statement):
-    target: str
-    text: str
 
 
 @dataclass
