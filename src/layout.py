@@ -202,11 +202,13 @@ class Layouter:
         if statement.from_direction == seqast.MessageDirection.LEFT:
             source_x = receiver.lifeline.center_x() - FOUND_LOST_MESSAGE_WIDTH
             marker = receiver.left_marker
-            anchor = drawio.MessageAnchor.ACTIVATE_LEFT
+            target_anchor = drawio.TargetAnchor.ACTIVATION_TOP_LEFT
+            source_anchor = drawio.SourceAnchor.FOUND_DOT_RIGHT
         elif statement.from_direction == seqast.MessageDirection.RIGHT:
             source_x = receiver.lifeline.center_x() + FOUND_LOST_MESSAGE_WIDTH
             marker = receiver.right_marker
-            anchor = drawio.MessageAnchor.ACTIVATE_RIGHT
+            target_anchor = drawio.TargetAnchor.ACTIVATION_TOP_RIGHT
+            source_anchor = drawio.SourceAnchor.FOUND_DOT_LEFT
         else:
             raise NotImplementedError()
 
@@ -226,9 +228,10 @@ class Layouter:
         message.points.append(drawio.Point((source_x + receiver.lifeline.center_x()) / 2, self.current_position_y))
         message.line_style = statement.line_style
         message.arrow_style = statement.arrow_style
+        message.source_anchor = source_anchor
 
         if statement.activation == seqast.MessageActivation.ACTIVATE:
-            message.anchor = anchor
+            message.target_anchor = target_anchor
 
         self.update_position_marker(marker)
 
@@ -245,11 +248,13 @@ class Layouter:
         if statement.to_direction == seqast.MessageDirection.LEFT:
             source_x = sender.lifeline.center_x() - FOUND_LOST_MESSAGE_WIDTH
             marker = sender.left_marker
-            anchor = drawio.MessageAnchor.DEACTIVATE_LEFT
+            source_anchor = drawio.SourceAnchor.ACTIVATION_BOTTOM_LEFT
+            target_anchor = drawio.TargetAnchor.LOST_DOT_RIGHT
         elif statement.to_direction == seqast.MessageDirection.RIGHT:
             source_x = sender.lifeline.center_x() + FOUND_LOST_MESSAGE_WIDTH
             marker = sender.right_marker
-            anchor = drawio.MessageAnchor.DEACTIVATE_RIGHT
+            source_anchor = drawio.SourceAnchor.ACTIVATION_BOTTOM_RIGHT
+            target_anchor = drawio.TargetAnchor.LOST_DOT_LEFT
         else:
             raise NotImplementedError()
 
@@ -262,10 +267,10 @@ class Layouter:
         message = drawio.Message(source, bullet, statement.text)
         message.line_style = statement.line_style
         message.arrow_style = statement.arrow_style
-        message.points.append(drawio.Point((source_x + sender.lifeline.center_x()) / 2, self.current_position_y))
+        message.target_anchor = target_anchor
 
         if statement.activation == seqast.MessageActivation.DEACTIVATE:
-            message.anchor = anchor
+            message.source_anchor = source_anchor
 
         self.update_position_marker(marker)
 
@@ -311,9 +316,9 @@ class Layouter:
         message.arrow_style = statement.arrow_style
 
         if statement.activation == seqast.MessageActivation.ACTIVATE:
-            message.anchor = drawio.MessageAnchor.ACTIVATE_LEFT if sender.index < receiver.index else drawio.MessageAnchor.ACTIVATE_RIGHT
+            message.target_anchor = drawio.TargetAnchor.ACTIVATION_TOP_LEFT if sender.index < receiver.index else drawio.TargetAnchor.ACTIVATION_TOP_RIGHT
         elif statement.activation == seqast.MessageActivation.DEACTIVATE:
-            message.anchor = drawio.MessageAnchor.DEACTIVATE_RIGHT if sender.index < receiver.index else drawio.MessageAnchor.DEACTIVATE_LEFT
+            message.source_anchor = drawio.SourceAnchor.ACTIVATION_BOTTOM_RIGHT if sender.index < receiver.index else drawio.SourceAnchor.ACTIVATION_BOTTOM_LEFT
         else:
             message.points.append(drawio.Point(
                 x=(sender.lifeline.center_x() + receiver.lifeline.center_x()) / 2,

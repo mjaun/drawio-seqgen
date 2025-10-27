@@ -305,7 +305,8 @@ class Message(Object):
         self.source = source
         self.target = target
 
-        self.anchor = MessageAnchor.NONE
+        self.source_anchor = SourceAnchor.NONE
+        self.target_anchor = TargetAnchor.NONE
         self.line_style = LineStyle.SOLID
         self.arrow_style = ArrowStyle.BLOCK
         self.text_alignment = TextAlignment.BOTTOM_CENTER
@@ -333,7 +334,8 @@ class Message(Object):
         style.update(self.text_alignment.style())
         style.update(self.arrow_style.style())
         style.update(self.line_style.style())
-        style.update(self.anchor.style())
+        style.update(self.source_anchor.style())
+        style.update(self.target_anchor.style())
 
         return style
 
@@ -345,15 +347,8 @@ class Message(Object):
             'as': 'geometry'
         })
 
-        if self.anchor == MessageAnchor.NONE:
-            ET.SubElement(geometry, 'mxPoint', attrib={'as': 'targetPoint'})
-            ET.SubElement(geometry, 'mxPoint', attrib={'as': 'sourcePoint'})
-        elif self.anchor in (MessageAnchor.ACTIVATE_LEFT, MessageAnchor.ACTIVATE_RIGHT):
-            ET.SubElement(geometry, 'mxPoint', attrib={'as': 'sourcePoint'})
-        elif self.anchor in (MessageAnchor.DEACTIVATE_LEFT, MessageAnchor.DEACTIVATE_RIGHT):
-            ET.SubElement(geometry, 'mxPoint', attrib={'as': 'targetPoint'})
-        else:
-            raise NotImplementedError()
+        ET.SubElement(geometry, 'mxPoint', attrib={'as': 'sourcePoint'})
+        ET.SubElement(geometry, 'mxPoint', attrib={'as': 'targetPoint'})
 
         if self.points:
             array = ET.SubElement(geometry, 'Array', attrib={'as': 'points'})
@@ -419,43 +414,77 @@ class Point:
     y: float
 
 
-class MessageAnchor(Enum):
+class SourceAnchor(Enum):
     NONE = auto()
-    ACTIVATE_LEFT = auto()
-    ACTIVATE_RIGHT = auto()
-    DEACTIVATE_LEFT = auto()
-    DEACTIVATE_RIGHT = auto()
-    FOUND_LEFT = auto()
-    FOUND_RIGHT = auto()
-    LOST_LEFT = auto()
-    LOST_RIGHT = auto()
+    ACTIVATION_BOTTOM_LEFT = auto()
+    ACTIVATION_BOTTOM_RIGHT = auto()
+    FOUND_DOT_LEFT = auto()
+    FOUND_DOT_RIGHT = auto()
 
     def style(self) -> StyleAttributes:
         style_map = {
-            MessageAnchor.NONE: {},
-            MessageAnchor.ACTIVATE_LEFT: {
-                'entryX': '0',
-                'entryY': '0',
-                'entryDx': '0',
-                'entryDy': str(MESSAGE_ANCHOR_DY),
-            },
-            MessageAnchor.ACTIVATE_RIGHT: {
-                'entryX': '1',
-                'entryY': '0',
-                'entryDx': '0',
-                'entryDy': str(MESSAGE_ANCHOR_DY),
-            },
-            MessageAnchor.DEACTIVATE_LEFT: {
+            SourceAnchor.NONE: {},
+            SourceAnchor.ACTIVATION_BOTTOM_LEFT: {
                 'exitX': '0',
                 'exitY': '1',
                 'exitDx': '0',
                 'exitDy': str(-MESSAGE_ANCHOR_DY),
             },
-            MessageAnchor.DEACTIVATE_RIGHT: {
+            SourceAnchor.ACTIVATION_BOTTOM_RIGHT: {
                 'exitX': '1',
                 'exitY': '1',
                 'exitDx': '0',
                 'exitDy': str(-MESSAGE_ANCHOR_DY),
+            },
+            SourceAnchor.FOUND_DOT_LEFT: {
+                'exitX': '0',
+                'exitY': '0.5',
+                'exitDx': '0',
+                'exitDy': '0',
+            },
+            SourceAnchor.FOUND_DOT_RIGHT: {
+                'exitX': '1',
+                'exitY': '0.5',
+                'exitDx': '0',
+                'exitDy': '0',
+            },
+        }
+
+        return style_map[self]
+
+class TargetAnchor(Enum):
+    NONE = auto()
+    ACTIVATION_TOP_LEFT = auto()
+    ACTIVATION_TOP_RIGHT = auto()
+    LOST_DOT_LEFT = auto()
+    LOST_DOT_RIGHT = auto()
+
+    def style(self) -> StyleAttributes:
+        style_map = {
+            TargetAnchor.NONE: {},
+            TargetAnchor.ACTIVATION_TOP_LEFT: {
+                'entryX': '0',
+                'entryY': '0',
+                'entryDx': '0',
+                'entryDy': str(MESSAGE_ANCHOR_DY),
+            },
+            TargetAnchor.ACTIVATION_TOP_RIGHT: {
+                'entryX': '1',
+                'entryY': '0',
+                'entryDx': '0',
+                'entryDy': str(MESSAGE_ANCHOR_DY),
+            },
+            TargetAnchor.LOST_DOT_LEFT: {
+                'entryX': '0',
+                'entryY': '0.5',
+                'entryDx': '0',
+                'entryDy': '0',
+            },
+            TargetAnchor.LOST_DOT_RIGHT: {
+                'entryX': '1',
+                'entryY': '0.5',
+                'entryDx': '0',
+                'entryDy': '0',
             },
         }
 
