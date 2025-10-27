@@ -117,6 +117,8 @@ The generalized form looks like this:
 <Sender> <Line><Arrow><Activation> <Receiver>[: <Message>]
 ```
 
+The message text may be omitted (together with the colon).
+
 The following line types are defined:
 
 * `-` Solid Line
@@ -132,23 +134,34 @@ The following activation types are defined:
 * `+` Receiver is activated by the message
 * `-` Sender is deactivated by the message
 * `|` Receiver is activated and deactivated by the message
-* Omitted: No activation, the receiver must be active to receive the message
+* Omitted: No activation
 
-The sender must always be active to send a message.
+For self calls (sender equals receiver), no activation type must be specified.
 
-The message text may be omitted (together with the colon).
-
-### Self Calls
+#### Self Call Short Form
 
 ```
 Alice: I'm thinking
 ```
 
-A participant can send a message to itself using the self call statement.
+This is a short form for sending a message to itself.
+The message text for this syntax is required.
 
-The message text for a self call is required.
+### Found / Lost Messages
 
-The participant must be active.
+```
+found left -> Alice: some event happened
+found right ->+ Alice: another event happened
+```
+```
+John -> lost left: sending to someone
+John ->- lost right: sending to someone else
+```
+
+Using the keywords "found/lost left/right", found respectively lost messages can be created.
+These kind of messages are typically used if the sender/receiver is out of scope of the diagram.
+Found messages may activate the receiver. Lost messages may deactivate the sender.
+Other activation types are not valid.
 
 ### Frames
 
