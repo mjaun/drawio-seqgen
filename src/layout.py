@@ -9,18 +9,20 @@ PARTICIPANT_BOX_HEIGHT = 40
 
 TITLE_FRAME_DEFAULT_BOX_WIDTH = 160
 TITLE_FRAME_DEFAULT_BOX_HEIGHT = 30
-TITLE_FRAME_PADDING = 30
+TITLE_FRAME_PADDING = 20
 
 CONTROL_FRAME_BOX_WIDTH = 60
 CONTROL_FRAME_BOX_HEIGHT = 20
-CONTROL_FRAME_LABEL_HEIGHT = 30
+CONTROL_FRAME_LABEL_HEIGHT = 35
 CONTROL_FRAME_PADDING = 30
 CONTROL_FRAME_NESTED_PADDING = 20
+CONTROL_FRAME_SPACING_BEFORE = 5
+CONTROL_FRAME_SPACING_AFTER = 5
 
 NOTE_DEFAULT_WIDTH = 100
 NOTE_DEFAULT_HEIGHT = 40
 
-FOUND_LOST_MESSAGE_WIDTH = 120
+FOUND_LOST_MESSAGE_WIDTH = 150
 
 SELF_CALL_MIN_TEXT_WIDTH = 30
 SELF_CALL_MESSAGE_DX = 25
@@ -87,7 +89,7 @@ class Layouter:
         self.finalize_title_frame()
 
     def finalize_participants(self):
-        self.current_position_y += 2 * STATEMENT_OFFSET_Y
+        self.current_position_y += STATEMENT_OFFSET_Y
 
         for participant in self.participants:
             assert not participant.activation_stack, f"participants must be inactive at end: {participant.name}"
@@ -444,6 +446,8 @@ class Layouter:
 
     def open_frame(self, value: str, text: Optional[str] = None) -> drawio.Frame:
         # create frame
+        self.current_position_y += CONTROL_FRAME_SPACING_BEFORE
+
         frame = drawio.Frame(self.page, value)
         frame.y = self.current_position_y
         frame.box_width = CONTROL_FRAME_BOX_WIDTH
@@ -473,8 +477,9 @@ class Layouter:
         frame.height = self.current_position_y - frame.y
 
         # positioning on frame end
+        self.current_position_y += STATEMENT_OFFSET_Y
         self.update_all_position_markers()
-        self.current_position_y += STATEMENT_OFFSET_Y * 2
+        self.current_position_y += CONTROL_FRAME_SPACING_AFTER
 
         # pop frame stack
         dimension = self.frame_dimension_stack.pop()
