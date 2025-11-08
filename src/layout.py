@@ -126,7 +126,7 @@ class Layouter:
             seqast.GroupStatement: self.handle_group,
             seqast.NoteStatement: self.handle_note,
             seqast.VerticalOffsetStatement: self.handle_vertical_offset,
-            seqast.FrameDimensionStatement: self.handle_frame_dimension,
+            seqast.ExtendFrameStatement: self.handle_extend_frame,
         }
 
         for statement in statements:
@@ -439,12 +439,12 @@ class Layouter:
         note.height = statement.height or NOTE_DEFAULT_HEIGHT
 
     def handle_vertical_offset(self, statement: seqast.VerticalOffsetStatement):
-        self.current_position_y += statement.spacing
+        self.current_position_y += statement.offset
 
         for marker in self.all_position_markers():
-            marker.y += statement.spacing
+            marker.y += statement.offset
 
-    def handle_frame_dimension(self, statement: seqast.FrameDimensionStatement):
+    def handle_extend_frame(self, statement: seqast.ExtendFrameStatement):
         dimensions = self.frame_dimension_stack[-1]
         assert dimensions.min_x is not None and dimensions.max_x is not None, "cannot extend empty frame"
 

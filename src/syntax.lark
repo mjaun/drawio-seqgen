@@ -26,26 +26,22 @@ title: "title" _SPACE+ TEXT _NEWLINE
 title_width: "title width" _SPACE+ NUMBER _NEWLINE
 title_height: "title height" _SPACE+ NUMBER _NEWLINE
 
-participant: "participant" _SPACE+ name participant_alias? _NEWLINE
-participant_alias: _SPACE+ "as" _SPACE+ name
-
+participant: "participant" _SPACE+ name (_SPACE+ "as" _SPACE+ name)? _NEWLINE
 participant_width: "participant width" _SPACE+ NUMBER _NEWLINE
 participant_spacing: "participant spacing" _SPACE+ NUMBER _NEWLINE
 
 activation: "activate" _SPACE+ name (_SPACE+ name)* _NEWLINE
 deactivation: "deactivate" _SPACE+ name (_SPACE+ name)* _NEWLINE
 
-alternative: "alt" _SPACE+ TEXT _NEWLINE statement_list alternative_branches "end" _NEWLINE
-alternative_branches: alternative_branch*
+alternative: "alt" _SPACE+ TEXT _NEWLINE statement_list alternative_branch* "end" _NEWLINE
 alternative_branch: "else" (_SPACE+ TEXT)? _NEWLINE statement_list
 
 option: "opt" _SPACE+ TEXT _NEWLINE statement_list "end" _NEWLINE
 loop: "loop" _SPACE+ TEXT _NEWLINE statement_list "end" _NEWLINE
 group: "group" _SPACE+ TEXT _NEWLINE statement_list "end" _NEWLINE
 
-note: "note on" _SPACE+ name note_attrs _NEWLINE note_text "end note" _NEWLINE
+note: "note on" _SPACE+ name (note_dx | note_dy | note_width | note_height)* _NEWLINE note_text "end note" _NEWLINE
 note_text: /.+?(?=^[ \t]*end note[ \t]*$)/sm
-note_attrs: (note_dx | note_dy | note_width | note_height)*
 note_dx: _SPACE+ "dx" _SPACE+ NUMBER
 note_dy: _SPACE+ "dy" _SPACE+ NUMBER
 note_width: _SPACE+ "width" _SPACE+ NUMBER

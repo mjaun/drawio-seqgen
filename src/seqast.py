@@ -28,16 +28,14 @@ class Parser:
 class SeqTransformer(Transformer):
     @staticmethod
     def start(items):
-        assert len(items) == 1
-        return items[0]
+        return consume(items)
 
     @staticmethod
     def statement_list(items):
         statements = []
 
         for item in items:
-            assert len(item.children) == 1
-            statement = item.children[0]
+            statement = consume(item.children)
             statement.line_number = item.meta.line
             statements.append(statement)
 
@@ -45,37 +43,34 @@ class SeqTransformer(Transformer):
 
     @staticmethod
     def title(items):
-        assert len(items) == 1
-        return TitleStatement(items[0])
+        text = consume(items)
+        return TitleStatement(text)
 
     @staticmethod
     def title_width(items):
-        assert len(items) == 1
-        return TitleWidthStatement(items[0])
+        width = consume(items)
+        return TitleWidthStatement(width)
 
     @staticmethod
     def title_height(items):
-        assert len(items) == 1
-        return TitleHeightStatement(items[0])
+        height = consume(items)
+        return TitleHeightStatement(height)
 
     @staticmethod
     def participant(items):
-        assert len(items) in (1, 2)
-        if len(items) == 1:
-            return ParticipantStatement(items[0], items[0])
-        else:
-            assert len(items[1].children) == 1
-            return ParticipantStatement(items[0], items[1].children[0])
+        text = consume(items)
+        name = consume_opt(items, default=text)
+        return ParticipantStatement(text, name)
 
     @staticmethod
     def participant_spacing(items):
-        assert len(items) == 1
-        return ParticipantSpacingStatement(items[0])
+        spacing = consume(items)
+        return ParticipantSpacingStatement(spacing)
 
     @staticmethod
     def participant_width(items):
-        assert len(items) == 1
-        return ParticipantWidthStatement(items[0])
+        width = consume(items)
+        return ParticipantWidthStatement(width)
 
     @staticmethod
     def activation(items):
@@ -98,7 +93,7 @@ class SeqTransformer(Transformer):
         width = consume_if(items, lambda item: isinstance(item, int))
         line, arrow, activation = consume(items)
         receiver = consume(items)
-        text = consume_if(items, lambda item: item, default='')
+        text = consume_opt(items, default='')
 
         return FoundMessageStatement(direction, receiver, text, activation, line, arrow, width)
 
@@ -113,90 +108,93 @@ class SeqTransformer(Transformer):
         line, arrow, activation = consume(items)
         direction = direction_map[consume(items)]
         width = consume_if(items, lambda item: isinstance(item, int))
-        text = consume_if(items, lambda item: item, default='')
+        text = consume_opt(items, default='')
 
         return LostMessageStatement(sender, direction, text, activation, line, arrow, width)
 
     @staticmethod
     def message(items):
-        assert len(items) in (3, 4)
-        line, arrow, activation = items[1]
-        text = items[3] if len(items) == 4 else ''
-        return MessageStatement(items[0], items[2], text, activation, line, arrow)
+        sender = consume(items)
+        line, arrow, activation = consume(items)
+        receiver = consume(items)
+        text = consume_opt(items, '')
+        return MessageStatement(sender, receiver, text, activation, line, arrow)
 
     @staticmethod
     def self_call(items):
-        assert len(items) == 2
-        return MessageStatement(items[0], items[0], items[1],
-                                MessageActivation.REGULAR, LineStyle.SOLID, ArrowStyle.BLOCK)
+        target = consume(items)
+        text = consume_opt(items)
+        return MessageStatement(target, target, text, MessageActivation.REGULAR, LineStyle.SOLID, ArrowStyle.BLOCK)
 
     @staticmethod
     def alternative(items):
-        assert len(items) == 3
-        alternative = AlternativeStatement(items[0], items[1], [])
+        text = consume(items)
+        inner = consume(items)
+        branches = []
 
-        for branch in items[2].children:
-            if len(branch.children) == 1:
-                alternative.branches.append(AlternativeBranch('else', branch.children[0]))
-            elif len(branch.children) == 2:
-                alternative.branches.append(AlternativeBranch(branch.children[0], branch.children[1]))
-            else:
-                raise NotImplementedError()
+        while branch := consume_opt(items):
+            branch_text = consume_if(branch.children, lambda item: isinstance(item, str), 'else')
+            branch_inner = consume(branch.children)
+            branches.append(AlternativeBranch(branch_text, branch_inner))
 
-        return alternative
+        return AlternativeStatement(text, inner, branches)
 
     @staticmethod
     def option(items):
-        assert len(items) == 2
-        return OptionStatement(items[0], items[1])
+        text = consume(items)
+        inner = consume(items)
+        return OptionStatement(text, inner)
 
     @staticmethod
     def loop(items):
-        assert len(items) == 2
-        return LoopStatement(items[0], items[1])
+        text = consume(items)
+        inner = consume(items)
+        return LoopStatement(text, inner)
 
     @staticmethod
     def group(items):
-        assert len(items) == 2
-        return GroupStatement(items[0], items[1])
+        text = consume(items)
+        inner = consume(items)
+        return GroupStatement(text, inner)
 
     @staticmethod
     def note(items):
-        assert len(items) == 3
+        target = consume(items)
+        text = None
+        dx = None
+        dy = None
+        width = None
+        height = None
 
-        lines = items[2].children[0].splitlines()
-        text = '<br/>'.join(line.strip() for line in lines)
-
-        note = NoteStatement(items[0], text)
-
-        for attr in items[1].children:
-            if attr.data == 'note_dx':
-                note.dx = int(attr.children[0])
-            elif attr.data == 'note_dy':
-                note.dy = int(attr.children[0])
-            elif attr.data == 'note_width':
-                note.width = int(attr.children[0])
-            elif attr.data == 'note_height':
-                note.height = int(attr.children[0])
+        while item := consume_opt(items):
+            if item.data == 'note_text':
+                text = str(consume(item.children))
+            elif item.data == 'note_dx':
+                dx = int(consume(item.children))
+            elif item.data == 'note_dy':
+                dy = int(consume(item.children))
+            elif item.data == 'note_width':
+                width = int(consume(item.children))
+            elif item.data == 'note_height':
+                height = int(consume(item.children))
             else:
                 raise NotImplementedError()
 
-        return note
+        text = '<br/>'.join(line.strip() for line in text.splitlines())
+        return NoteStatement(target, text, dx, dy, width, height)
 
     @staticmethod
     def vertical_offset(items):
-        assert len(items) == 1
-        return VerticalOffsetStatement(items[0])
+        offset = consume(items)
+        return VerticalOffsetStatement(offset)
 
     @staticmethod
     def frame_dimension(items):
-        assert len(items) == 1
-        return FrameDimensionStatement(items[0])
+        extend = consume(items)
+        return ExtendFrameStatement(extend)
 
     @staticmethod
     def arrow(items):
-        assert len(items) in (2, 3)
-
         line_map = {
             '-': LineStyle.SOLID,
             '--': LineStyle.DASHED,
@@ -212,20 +210,20 @@ class SeqTransformer(Transformer):
             '|': MessageActivation.FIREFORGET,
         }
 
-        line_str = str(items[0])
-        arrow_str = str(items[1])
-        activation_str = str(items[2]) if len(items) > 2 else ''
+        line_str = str(consume(items))
+        arrow_str = str(consume(items))
+        activation_str = str(consume_opt(items, default=''))
 
         return line_map[line_str], arrow_map[arrow_str], activation_map[activation_str]
 
     @staticmethod
     def name(items):
-        assert len(items) == 1
+        token = consume(items)
 
-        if items[0].type == 'QUOTED_NAME':
-            name = str(items[0])[1:-1]
-        elif items[0].type == 'UNQUOTED_NAME':
-            name = str(items[0])
+        if token.type == 'QUOTED_NAME':
+            name = str(token)[1:-1]
+        elif token.type == 'UNQUOTED_NAME':
+            name = str(token)
         else:
             raise NotImplementedError()
 
@@ -374,18 +372,25 @@ class NoteStatement(Statement):
 
 @dataclass
 class VerticalOffsetStatement(Statement):
-    spacing: int
+    offset: int
 
 
 @dataclass
-class FrameDimensionStatement(Statement):
+class ExtendFrameStatement(Statement):
     extend: int
 
+
 def consume(items):
+    assert len(items) > 0, "missing item"
     return items.pop(0)
 
+
 def consume_if(items, predicate, default=None):
-    if predicate(items[0] if items else None):
-        return items.pop(0)
+    if predicate(items[0] if len(items) > 0 else None):
+        return consume(items)
     else:
         return default
+
+
+def consume_opt(items, default=None):
+    return consume_if(items, lambda item: item is not None, default)
