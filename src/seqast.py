@@ -89,33 +89,33 @@ class SeqTransformer(Transformer):
 
     @staticmethod
     def found_message(items):
-        assert len(items) in (3, 4)
-
         direction_map = {
             'left': MessageDirection.LEFT,
             'right': MessageDirection.RIGHT,
         }
 
-        direction = direction_map[str(items[0])]
-        line, arrow, activation = items[1]
-        text = items[3] if len(items) == 4 else ''
+        direction = direction_map[str(consume(items))]
+        width = consume_if(items, lambda item: isinstance(item, int))
+        line, arrow, activation = consume(items)
+        receiver = consume(items)
+        text = consume_if(items, lambda item: item, default='')
 
-        return FoundMessageStatement(direction, items[2], text, activation, line, arrow)
+        return FoundMessageStatement(direction, receiver, text, activation, line, arrow, width)
 
     @staticmethod
     def lost_message(items):
-        assert len(items) in (3, 4)
-
         direction_map = {
             'left': MessageDirection.LEFT,
             'right': MessageDirection.RIGHT,
         }
 
-        direction = direction_map[str(items[2])]
-        line, arrow, activation = items[1]
-        text = items[3] if len(items) == 4 else ''
+        sender = consume(items)
+        line, arrow, activation = consume(items)
+        direction = direction_map[consume(items)]
+        width = consume_if(items, lambda item: isinstance(item, int))
+        text = consume_if(items, lambda item: item, default='')
 
-        return LostMessageStatement(items[0], direction, text, activation, line, arrow)
+        return LostMessageStatement(sender, direction, text, activation, line, arrow, width)
 
     @staticmethod
     def message(items):
@@ -317,6 +317,7 @@ class FoundMessageStatement(Statement):
     activation: MessageActivation
     line_style: LineStyle
     arrow_style: ArrowStyle
+    width: Optional[int]
 
 
 @dataclass
@@ -327,6 +328,7 @@ class LostMessageStatement(Statement):
     activation: MessageActivation
     line_style: LineStyle
     arrow_style: ArrowStyle
+    width: Optional[int]
 
 
 @dataclass
@@ -378,3 +380,12 @@ class VerticalOffsetStatement(Statement):
 @dataclass
 class FrameDimensionStatement(Statement):
     extend: int
+
+def consume(items):
+    return items.pop(0)
+
+def consume_if(items, predicate, default=None):
+    if predicate(items[0] if items else None):
+        return items.pop(0)
+    else:
+        return default

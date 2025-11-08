@@ -41,7 +41,6 @@ C -> B: message
 deactivate B
 deactivate B
 
-
 B -> lost left
 B -->> lost right
 
@@ -68,3 +67,8 @@ B -> lost left: message
 C -> B: message
 
 deactivate B
+
+found left 140 -> B: message
+found right 60 -> B
+B -> lost left 140: message
+B -> lost right 60

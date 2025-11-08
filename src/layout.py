@@ -22,7 +22,7 @@ CONTROL_FRAME_SPACING_AFTER = 5
 NOTE_DEFAULT_WIDTH = 100
 NOTE_DEFAULT_HEIGHT = 40
 
-FOUND_LOST_MESSAGE_WIDTH = 150
+FOUND_LOST_MESSAGE_DEFAULT_WIDTH = 100
 
 SELF_CALL_MIN_TEXT_WIDTH = 30
 SELF_CALL_MESSAGE_DX = 25
@@ -199,14 +199,15 @@ class Layouter:
             f"{statement.activation} not supported for found message"
 
         receiver = self.participant_by_name(statement.receiver)
+        width = statement.width or FOUND_LOST_MESSAGE_DEFAULT_WIDTH
 
         if statement.from_direction == seqast.MessageDirection.LEFT:
-            source_x = receiver.lifeline.center_x() - FOUND_LOST_MESSAGE_WIDTH
+            source_x = receiver.lifeline.center_x() - width
             marker = receiver.left_marker
             target_anchor = drawio.TargetAnchor.ACTIVATION_TOP_LEFT
             source_anchor = drawio.SourceAnchor.FOUND_DOT_RIGHT
         elif statement.from_direction == seqast.MessageDirection.RIGHT:
-            source_x = receiver.lifeline.center_x() + FOUND_LOST_MESSAGE_WIDTH
+            source_x = receiver.lifeline.center_x() + width
             marker = receiver.right_marker
             target_anchor = drawio.TargetAnchor.ACTIVATION_TOP_RIGHT
             source_anchor = drawio.SourceAnchor.FOUND_DOT_LEFT
@@ -245,14 +246,15 @@ class Layouter:
             f"{statement.activation} not supported for found message"
 
         sender = self.participant_by_name(statement.sender)
+        width = statement.width or FOUND_LOST_MESSAGE_DEFAULT_WIDTH
 
         if statement.to_direction == seqast.MessageDirection.LEFT:
-            source_x = sender.lifeline.center_x() - FOUND_LOST_MESSAGE_WIDTH
+            source_x = sender.lifeline.center_x() - width
             marker = sender.left_marker
             source_anchor = drawio.SourceAnchor.ACTIVATION_BOTTOM_LEFT
             target_anchor = drawio.TargetAnchor.LOST_DOT_RIGHT
         elif statement.to_direction == seqast.MessageDirection.RIGHT:
-            source_x = sender.lifeline.center_x() + FOUND_LOST_MESSAGE_WIDTH
+            source_x = sender.lifeline.center_x() + width
             marker = sender.right_marker
             source_anchor = drawio.SourceAnchor.ACTIVATION_BOTTOM_RIGHT
             target_anchor = drawio.TargetAnchor.LOST_DOT_LEFT

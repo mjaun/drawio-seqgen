@@ -140,21 +140,31 @@ Alice: I'm thinking
 This is a short form for sending a message to itself.
 The message text for this syntax is required.
 
-### Found / Lost Messages
+#### Found / Lost Messages
 
 ```
 found left -> Alice: some event happened
-found right ->+ Alice: another event happened
-```
-```
 John -> lost left: sending to someone
-John ->- lost right: sending to someone else
 ```
 
 Using the keywords "found/lost left/right", found respectively lost messages can be created.
 These kind of messages are typically used if the sender/receiver is out of scope of the diagram.
+As with regular messages, the arrow type can be customized and the message text is optional.
+
+```
+found right ->+ Alice
+John ->- lost right
+```
+
 Found messages may activate the receiver. Lost messages may deactivate the sender.
 Other activation types are not valid.
+
+```
+John -> lost left 120
+found right 140 -> Alice
+```
+
+The width of the message can be customized by adding a number.
 
 ### Frames
 
