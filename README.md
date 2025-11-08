@@ -29,18 +29,18 @@ Comments at the end of statements are not supported.
 ### Title
 
 ```
-title My Diagram Title
+title "My Diagram Title"
 ```
 
 If a title statement is present, the resulting diagram will be framed by a title frame.
 The title statement is optional.
 
-The size of the UML box containing the title can be changed using the following statements:
 
 ```
-title width 200
-title height 60
+title "My Super Long Diagram\nTitle With Multiple Lines" width 200 height 60
 ```
+
+The size of the UML box containing the title can be customized.
 
 ### Participants
 

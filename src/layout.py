@@ -101,8 +101,6 @@ class Layouter:
     def process_statements(self, statements: List[seqast.Statement]):
         handlers = {
             seqast.TitleStatement: self.handle_title,
-            seqast.TitleWidthStatement: self.handle_title_width,
-            seqast.TitleHeightStatement: self.handle_title_height,
             seqast.ParticipantStatement: self.handle_participant,
             seqast.ActivateStatement: self.handle_activate,
             seqast.DeactivateStatement: self.handle_deactivate,
@@ -128,14 +126,8 @@ class Layouter:
     def handle_title(self, statement: seqast.TitleStatement):
         assert not self.title_frame, "title may occur only once"
         self.title_frame = drawio.Frame(self.page, statement.text)
-        self.title_frame.box_width = TITLE_FRAME_DEFAULT_BOX_WIDTH
-        self.title_frame.box_height = TITLE_FRAME_DEFAULT_BOX_HEIGHT
-
-    def handle_title_width(self, statement: seqast.TitleWidthStatement):
-        self.title_frame.box_width = statement.width
-
-    def handle_title_height(self, statement: seqast.TitleHeightStatement):
-        self.title_frame.box_height = statement.height
+        self.title_frame.box_width = statement.width or TITLE_FRAME_DEFAULT_BOX_WIDTH
+        self.title_frame.box_height = statement.height or TITLE_FRAME_DEFAULT_BOX_HEIGHT
 
     def handle_participant(self, statement: seqast.ParticipantStatement):
         assert not self.participant_by_name(statement.name), "participant already exists"

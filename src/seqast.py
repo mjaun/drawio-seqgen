@@ -44,17 +44,18 @@ class SeqTransformer(Transformer):
     @staticmethod
     def title(items):
         text = consume(items)
-        return TitleStatement(text)
+        width = None
+        height = None
 
-    @staticmethod
-    def title_width(items):
-        width = consume(items)
-        return TitleWidthStatement(width)
+        while item := consume_opt(items):
+            if item.data == 'title_width':
+                width = str(consume(item.children))
+            elif item.data == 'title_height':
+                height = int(consume(item.children))
+            else:
+                raise NotImplementedError()
 
-    @staticmethod
-    def title_height(items):
-        height = consume(items)
-        return TitleHeightStatement(height)
+        return TitleStatement(text, width, height)
 
     @staticmethod
     def participant(items):
@@ -253,16 +254,8 @@ class Statement:
 @dataclass
 class TitleStatement(Statement):
     text: str
-
-
-@dataclass
-class TitleWidthStatement(Statement):
-    width: int
-
-
-@dataclass
-class TitleHeightStatement(Statement):
-    height: int
+    width: Optional[int] = None
+    height: Optional[int] = None
 
 
 @dataclass

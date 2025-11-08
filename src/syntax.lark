@@ -22,9 +22,9 @@ statement: title_width
          | message
          | self_call
 
-title: "title" _SPACE+ TEXT _NEWLINE
-title_width: "title width" _SPACE+ NUMBER _NEWLINE
-title_height: "title height" _SPACE+ NUMBER _NEWLINE
+title: "title" _SPACE+ name (title_width | title_height)* _NEWLINE
+title_width: _SPACE+ "width" _SPACE+ NUMBER
+title_height: _SPACE+ "height" _SPACE+ NUMBER
 
 participant: "participant" _SPACE+ name (participant_alias | participant_width | participant_spacing)* _NEWLINE
 participant_alias: _SPACE+ "as" _SPACE+ name
