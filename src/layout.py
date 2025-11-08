@@ -14,8 +14,8 @@ TITLE_FRAME_PADDING = 20
 CONTROL_FRAME_BOX_WIDTH = 60
 CONTROL_FRAME_BOX_HEIGHT = 20
 CONTROL_FRAME_LABEL_HEIGHT = 35
-CONTROL_FRAME_PADDING = 30
-CONTROL_FRAME_NESTED_PADDING = 20
+CONTROL_FRAME_PADDING = 20
+CONTROL_FRAME_ACTIVITY_EXTRA_PADDING = 10
 CONTROL_FRAME_SPACING_BEFORE = 5
 CONTROL_FRAME_SPACING_AFTER = 5
 
@@ -180,7 +180,7 @@ class Layouter:
         for name in statement.targets:
             participant = self.participant_by_name(name)
             self.activate_participant(participant)
-            self.update_frame_dimension(participant.lifeline.center_x())
+            self.update_frame_dimension(participant.lifeline.center_x(), extra_padding=True)
 
         self.current_position_y += STATEMENT_OFFSET_Y
 
@@ -190,7 +190,7 @@ class Layouter:
             assert participant.activation_stack, "participant not activated"
             self.deactivate_participant(participant)
             self.update_position_marker(participant.center_marker)
-            self.update_frame_dimension(participant.lifeline.center_x())
+            self.update_frame_dimension(participant.lifeline.center_x(), extra_padding=True)
 
         self.current_position_y += STATEMENT_OFFSET_Y
 
@@ -238,7 +238,7 @@ class Layouter:
 
         # layout
         self.current_position_y += STATEMENT_OFFSET_Y
-        self.update_frame_dimension(source_x, receiver.lifeline.center_x())
+        self.update_frame_dimension(source_x, receiver.lifeline.center_x(), extra_padding=True)
 
     def handle_lost_message(self, statement: seqast.LostMessageStatement):
         assert statement.activation in (seqast.MessageActivation.REGULAR, seqast.MessageActivation.DEACTIVATE), \
@@ -284,7 +284,7 @@ class Layouter:
 
         # layout
         self.current_position_y += STATEMENT_OFFSET_Y
-        self.update_frame_dimension(source_x, sender.lifeline.center_x())
+        self.update_frame_dimension(source_x, sender.lifeline.center_x(), extra_padding=True)
 
     def handle_message(self, statement: seqast.MessageStatement):
         if statement.sender == statement.receiver:
@@ -343,7 +343,7 @@ class Layouter:
 
         # layout
         self.current_position_y += STATEMENT_OFFSET_Y
-        self.update_frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x())
+        self.update_frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x(), extra_padding=True)
 
     def handle_self_call(self, statement: seqast.MessageStatement):
         assert statement.sender == statement.receiver
@@ -368,9 +368,11 @@ class Layouter:
 
         if self_call_activation.dx >= 0:
             self_call_x = activation_x + SELF_CALL_MESSAGE_DX
+            frame_x = self_call_x + SELF_CALL_MIN_TEXT_WIDTH
             message.text_alignment = drawio.TextAlignment.MIDDLE_LEFT
         else:
             self_call_x = activation_x - SELF_CALL_MESSAGE_DX
+            frame_x = self_call_x - SELF_CALL_MIN_TEXT_WIDTH
             message.text_alignment = drawio.TextAlignment.MIDDLE_RIGHT
 
         message.points.append(drawio.Point(
@@ -387,7 +389,7 @@ class Layouter:
         self.current_position_y += SELF_CALL_ACTIVATION_HEIGHT
         self.deactivate_participant(participant)
 
-        self.update_frame_dimension(participant.lifeline.center_x(), self_call_x + SELF_CALL_MIN_TEXT_WIDTH)
+        self.update_frame_dimension(participant.lifeline.center_x(), frame_x, extra_padding=True)
         self.current_position_y += STATEMENT_OFFSET_Y
 
     def handle_alternative(self, statement: seqast.AlternativeStatement):
@@ -492,21 +494,21 @@ class Layouter:
         frame.width = dimension.max_x + CONTROL_FRAME_PADDING - frame.x
 
         # update dimension for parent frame
-        reduce_padding = CONTROL_FRAME_PADDING - CONTROL_FRAME_NESTED_PADDING
-        self.update_frame_dimension(frame.x + reduce_padding, frame.x + frame.width - reduce_padding)
+        self.update_frame_dimension(frame.x, frame.x + frame.width)
 
-    def update_frame_dimension(self, *x: float):
+    def update_frame_dimension(self, *x: float, extra_padding: bool = False):
         dimension = self.frame_dimension_stack[-1]
+        extra_padding_val = CONTROL_FRAME_ACTIVITY_EXTRA_PADDING if extra_padding else 0
 
         if dimension.min_x is None:
-            dimension.min_x = min(x)
+            dimension.min_x = min(x) - extra_padding_val
         else:
-            dimension.min_x = min(dimension.min_x, min(x))
+            dimension.min_x = min(dimension.min_x, min(x) - extra_padding_val)
 
         if dimension.max_x is None:
-            dimension.max_x = max(x)
+            dimension.max_x = max(x) + extra_padding_val
         else:
-            dimension.max_x = max(dimension.max_x, max(x))
+            dimension.max_x = max(dimension.max_x, max(x) + extra_padding_val)
 
     def activate_participant(self, participant: ParticipantInfo, activator_x: Optional[float] = None):
         activation = drawio.Activation(participant.lifeline)
