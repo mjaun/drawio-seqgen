@@ -151,6 +151,7 @@ class Text(ObjectWithAbsoluteGeometry):
             'text': None,
             'html': '1',
             'rounded': '0',
+            'spacing': '0',
             'labelBackgroundColor': 'default',
         }
 
@@ -326,7 +327,7 @@ class Message(Object):
             'rounded': '0',
         }
 
-        if self.text_alignment == TextAlignment.MIDDLE_LEFT:
+        if self.text_alignment in (TextAlignment.MIDDLE_LEFT, TextAlignment.TOP_LEFT):
             style['spacingLeft'] = '2'
         if self.text_alignment == TextAlignment.MIDDLE_RIGHT:
             style['spacingRight'] = '2'
@@ -529,6 +530,7 @@ class TextAlignment(Enum):
     BOTTOM_CENTER = auto()
     MIDDLE_LEFT = auto()
     MIDDLE_RIGHT = auto()
+    TOP_LEFT = auto()
 
     def style(self) -> StyleAttributes:
         style_map = {
@@ -543,6 +545,10 @@ class TextAlignment(Enum):
             TextAlignment.MIDDLE_RIGHT: {
                 'align': 'right',
                 'verticalAlign': 'middle',
+            },
+            TextAlignment.TOP_LEFT: {
+                'align': 'left',
+                'verticalAlign': 'top',
             },
         }
 

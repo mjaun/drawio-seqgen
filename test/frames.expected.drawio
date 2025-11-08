@@ -19,7 +19,7 @@
         <mxCell id="test-6" value="loop" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=60;height=20;" vertex="1">
           <mxGeometry x="50.0" y="65" width="460.0" height="105" as="geometry" />
         </mxCell>
-        <mxCell id="test-7" value="[forever]" parent="test-6" style="text;html=1;rounded=0;labelBackgroundColor=default;align=left;verticalAlign=middle;" vertex="1">
+        <mxCell id="test-7" value="[forever]" parent="test-6" style="text;html=1;rounded=0;spacing=0;labelBackgroundColor=default;align=left;verticalAlign=top;" vertex="1">
           <mxGeometry x="10" y="25" width="100" height="20" as="geometry" />
         </mxCell>
         <mxCell id="test-8" value="" parent="test-3" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1">
@@ -49,7 +49,7 @@
         <mxCell id="test-14" value="opt" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=60;height=20;" vertex="1">
           <mxGeometry x="50.0" y="215" width="260.0" height="75" as="geometry" />
         </mxCell>
-        <mxCell id="test-15" value="[sometimes, sometimes not]" parent="test-14" style="text;html=1;rounded=0;labelBackgroundColor=default;align=left;verticalAlign=middle;" vertex="1">
+        <mxCell id="test-15" value="[sometimes, sometimes not]" parent="test-14" style="text;html=1;rounded=0;spacing=0;labelBackgroundColor=default;align=left;verticalAlign=top;" vertex="1">
           <mxGeometry x="10" y="25" width="100" height="20" as="geometry" />
         </mxCell>
         <mxCell id="test-16" value="message" parent="1" style="html=1;curved=0;rounded=0;align=center;verticalAlign=bottom;endArrow=block;dashed=0;" edge="1" source="test-10" target="test-11">
@@ -73,7 +73,7 @@
         <mxCell id="test-18" value="alt" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=60;height=20;" vertex="1">
           <mxGeometry x="450.0" y="335" width="120.0" height="205" as="geometry" />
         </mxCell>
-        <mxCell id="test-19" value="[what if?]" parent="test-18" style="text;html=1;rounded=0;labelBackgroundColor=default;align=left;verticalAlign=middle;" vertex="1">
+        <mxCell id="test-19" value="[what if?]" parent="test-18" style="text;html=1;rounded=0;spacing=0;labelBackgroundColor=default;align=left;verticalAlign=top;" vertex="1">
           <mxGeometry x="10" y="25" width="100" height="20" as="geometry" />
         </mxCell>
         <mxCell id="test-20" value="" parent="test-5" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1">
@@ -95,7 +95,7 @@
             <mxPoint as="sourcePoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="test-23" value="[what if not?]" parent="test-18" style="text;html=1;rounded=0;labelBackgroundColor=default;align=left;verticalAlign=middle;" vertex="1">
+        <mxCell id="test-23" value="[what if not?]" parent="test-18" style="text;html=1;rounded=0;spacing=0;labelBackgroundColor=default;align=left;verticalAlign=top;" vertex="1">
           <mxGeometry x="10" y="100" width="100" height="20" as="geometry" />
         </mxCell>
         <mxCell id="test-24" value="" parent="test-5" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1">
@@ -117,19 +117,19 @@
             <mxPoint as="sourcePoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="test-27" value="[else]" parent="test-18" style="text;html=1;rounded=0;labelBackgroundColor=default;align=left;verticalAlign=middle;" vertex="1">
+        <mxCell id="test-27" value="[else]" parent="test-18" style="text;html=1;rounded=0;spacing=0;labelBackgroundColor=default;align=left;verticalAlign=top;" vertex="1">
           <mxGeometry x="10" y="175" width="100" height="20" as="geometry" />
         </mxCell>
         <mxCell id="test-28" value="loop" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=60;height=20;" vertex="1">
           <mxGeometry x="-70.0" y="360" width="470.0" height="190" as="geometry" />
         </mxCell>
-        <mxCell id="test-29" value="[never]" parent="test-28" style="text;html=1;rounded=0;labelBackgroundColor=default;align=left;verticalAlign=middle;" vertex="1">
+        <mxCell id="test-29" value="[never]" parent="test-28" style="text;html=1;rounded=0;spacing=0;labelBackgroundColor=default;align=left;verticalAlign=top;" vertex="1">
           <mxGeometry x="10" y="25" width="100" height="20" as="geometry" />
         </mxCell>
         <mxCell id="test-30" value="opt" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=60;height=20;" vertex="1">
           <mxGeometry x="-50.0" y="420" width="430.0" height="115" as="geometry" />
         </mxCell>
-        <mxCell id="test-31" value="[but maybe]" parent="test-30" style="text;html=1;rounded=0;labelBackgroundColor=default;align=left;verticalAlign=middle;" vertex="1">
+        <mxCell id="test-31" value="[but maybe&lt;br/&gt;on two lines]" parent="test-30" style="text;html=1;rounded=0;spacing=0;labelBackgroundColor=default;align=left;verticalAlign=top;" vertex="1">
           <mxGeometry x="10" y="25" width="100" height="20" as="geometry" />
         </mxCell>
         <mxCell id="test-32" value="" parent="1" style="html=1;curved=0;rounded=0;align=center;verticalAlign=bottom;endArrow=block;dashed=0;" edge="1" source="test-10" target="test-11">

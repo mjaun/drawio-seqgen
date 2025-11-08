@@ -33,7 +33,7 @@ end
 vertical offset -200
 
 loop never
-  opt but maybe
+  opt but maybe\non two lines
     A -> B
     B: again a\nself call
     frame for B dx 70

@@ -399,6 +399,7 @@ class Layouter:
             separator.y = self.current_position_y - frame.y
 
             text = drawio.Text(self.page, frame, f'[{branch.text}]')
+            text.alignment = drawio.TextAlignment.TOP_LEFT
             text.x = 10
             text.y = separator.y + 5
 
@@ -455,6 +456,7 @@ class Layouter:
 
         if text:
             text = drawio.Text(self.page, frame, f'[{text}]')
+            text.alignment = drawio.TextAlignment.TOP_LEFT
             text.x = 10
             text.y = CONTROL_FRAME_BOX_HEIGHT + 5
 
