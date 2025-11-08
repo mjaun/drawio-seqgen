@@ -57,7 +57,7 @@ message: name _SPACE+ arrow _SPACE+ name (_SPACE* ":" _SPACE+ TEXT)? _NEWLINE
 self_call: name _SPACE* ":" _SPACE+ TEXT _NEWLINE
 
 vertical_offset: "vertical offset" _SPACE+ NUMBER _NEWLINE
-frame_dimension: "frame for" _SPACE+ name _SPACE+ "dx" _SPACE+ NUMBER _NEWLINE
+frame_dimension: "frame extend" _SPACE+ NUMBER _NEWLINE
 
 arrow: ARROW_LINE ARROW_END ARROW_ACTIVATION?
 ARROW_LINE: /-{1,2}/

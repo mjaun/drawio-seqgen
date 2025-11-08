@@ -190,8 +190,8 @@ class SeqTransformer(Transformer):
 
     @staticmethod
     def frame_dimension(items):
-        assert len(items) == 2
-        return FrameDimensionStatement(items[0], items[1])
+        assert len(items) == 1
+        return FrameDimensionStatement(items[0])
 
     @staticmethod
     def arrow(items):
@@ -377,5 +377,4 @@ class VerticalOffsetStatement(Statement):
 
 @dataclass
 class FrameDimensionStatement(Statement):
-    target: str
-    dx: int
+    extend: int

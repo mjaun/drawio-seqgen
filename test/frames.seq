@@ -25,7 +25,6 @@ alt what if?
 C: self call
 else what if not?
 C: self call\nalso
-frame for C dx 60
 else
 // empty
 end
@@ -36,8 +35,8 @@ loop never
   opt but maybe\non two lines
     A -> B
     B: again a\nself call
-    frame for B dx 70
-    frame for A dx -100
+    frame extend 30
+    frame extend -80
   end
 end
 

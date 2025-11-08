@@ -443,9 +443,13 @@ class Layouter:
             marker.y += statement.spacing
 
     def handle_frame_dimension(self, statement: seqast.FrameDimensionStatement):
-        participant = self.participant_by_name(statement.target)
-        lifeline_x = participant.lifeline.center_x()
-        self.update_frame_dimension(lifeline_x + statement.dx)
+        dimensions = self.frame_dimension_stack[-1]
+        assert dimensions.min_x is not None and dimensions.max_x is not None, "cannot extend empty frame"
+
+        if statement.extend >= 0:
+            dimensions.max_x += statement.extend
+        else:
+            dimensions.min_x += statement.extend
 
     def open_frame(self, value: str, text: Optional[str] = None) -> drawio.Frame:
         # create frame

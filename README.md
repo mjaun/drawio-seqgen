@@ -203,12 +203,14 @@ the frame. Therefore, a frame cannot be empty. Sometimes a frame must be enlarge
 This can be done with the following statement:
 
 ```
-frame for Alice dx 100
-frame for John dx -60
+frame extend 100
+frame extend -60
 ```
 
-The statement enforces that the point relative to the lifeline of the specified participant is contained
-in all parent frames where the statement occurs.
+The statement horizontally extends the current frame by the specified value.
+Positive values extend the frame to the right.
+Negative values extend the frame to the left.
+The size of the frame at the point where the statement occurs is extended.
 
 ### Notes
 
