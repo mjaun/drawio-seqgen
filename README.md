@@ -54,16 +54,14 @@ participant "More\nChars" as MC
 Unlike PlantUML or Mermaid.js, the participants must be declared explicitly at the beginning.
 Names with special characters must be quoted.
 Optionally an alias may be specified which is useful for referencing participants with long names.
-
 The participants occur in the same order as specified.
-The width for participants and the spacing between them can be modified with the following statements:
 
 ```
-participant width 200
-participant spacing 150
+participant Alice width 200
+participant John as J spacing 150
 ```
 
-These statements apply to all participants declared afterward.
+The width of a participant and the spacing between the current and the previous participant can be customized.
 
 ### Vertical Offsets
 

@@ -26,9 +26,10 @@ title: "title" _SPACE+ TEXT _NEWLINE
 title_width: "title width" _SPACE+ NUMBER _NEWLINE
 title_height: "title height" _SPACE+ NUMBER _NEWLINE
 
-participant: "participant" _SPACE+ name (_SPACE+ "as" _SPACE+ name)? _NEWLINE
-participant_width: "participant width" _SPACE+ NUMBER _NEWLINE
-participant_spacing: "participant spacing" _SPACE+ NUMBER _NEWLINE
+participant: "participant" _SPACE+ name (participant_alias | participant_width | participant_spacing)* _NEWLINE
+participant_alias: _SPACE+ "as" _SPACE+ name
+participant_width: _SPACE+ "width" _SPACE+ NUMBER
+participant_spacing: _SPACE+ "spacing" _SPACE+ NUMBER
 
 activation: "activate" _SPACE+ name (_SPACE+ name)* _NEWLINE
 deactivation: "deactivate" _SPACE+ name (_SPACE+ name)* _NEWLINE

@@ -4,8 +4,5 @@ participant Alice as A
 participant "Peter Müller" as P
 participant "Multiline\nParticipant"
 
-participant width 250
-participant spacing 100
-
-participant "Big Participant 1"
-participant "Big Participant 2"
+participant "Big Participant 1" width 250 spacing 100
+participant "Big Participant 2" as P2 width 250 spacing 100

@@ -64,19 +64,10 @@ class FrameDimension:
 class Layouter:
     def __init__(self, page: drawio.Page):
         self.page = page
-
         self.participants: List[ParticipantInfo] = []
-        self.frame_dimension_stack: List[FrameDimension] = []
-
-        self.current_position_y = START_POSITION_Y
-        self.participant_width = PARTICIPANT_DEFAULT_BOX_WIDTH
-        self.participant_spacing = PARTICIPANT_DEFAULT_SPACING
-
+        self.frame_dimension_stack: List[FrameDimension] = [FrameDimension()]
         self.title_frame: Optional[drawio.Frame] = None
-
-        self.frame_dimension_stack.append(FrameDimension())
-        self.update_frame_dimension(0)
-
+        self.current_position_y = START_POSITION_Y
         self.executed = False
 
     def layout(self, statements: List[seqast.Statement]):
@@ -113,8 +104,6 @@ class Layouter:
             seqast.TitleWidthStatement: self.handle_title_width,
             seqast.TitleHeightStatement: self.handle_title_height,
             seqast.ParticipantStatement: self.handle_participant,
-            seqast.ParticipantWidthStatement: self.handle_participant_width,
-            seqast.ParticipantSpacingStatement: self.handle_participant_spacing,
             seqast.ActivateStatement: self.handle_activate,
             seqast.DeactivateStatement: self.handle_deactivate,
             seqast.FoundMessageStatement: self.handle_found_message,
@@ -155,12 +144,12 @@ class Layouter:
         index = len(self.participants)
 
         lifeline = drawio.Lifeline(self.page, statement.text)
-        lifeline.width = self.participant_width
+        lifeline.width = statement.width or PARTICIPANT_DEFAULT_BOX_WIDTH
         lifeline.box_height = PARTICIPANT_BOX_HEIGHT
 
         if not first_participant:
             prev_lifeline = self.participants[-1].lifeline
-            lifeline.x = prev_lifeline.x + prev_lifeline.width + self.participant_spacing
+            lifeline.x = prev_lifeline.x + prev_lifeline.width + (statement.spacing or PARTICIPANT_DEFAULT_SPACING)
 
         participant = ParticipantInfo(index, statement.name, lifeline)
 
@@ -168,13 +157,7 @@ class Layouter:
             participant.left_marker = self.participants[-1].right_marker
 
         self.participants.append(participant)
-        self.update_frame_dimension(lifeline.x + lifeline.width)
-
-    def handle_participant_width(self, statement: seqast.ParticipantWidthStatement):
-        self.participant_width = statement.width
-
-    def handle_participant_spacing(self, statement: seqast.ParticipantSpacingStatement):
-        self.participant_spacing = statement.spacing
+        self.update_frame_dimension(lifeline.x, lifeline.x + lifeline.width)
 
     def handle_activate(self, statement: seqast.ActivateStatement):
         for name in statement.targets:

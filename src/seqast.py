@@ -58,19 +58,24 @@ class SeqTransformer(Transformer):
 
     @staticmethod
     def participant(items):
-        text = consume(items)
-        name = consume_opt(items, default=text)
-        return ParticipantStatement(text, name)
+        name = consume(items)
+        alias = None
+        width = None
+        spacing = None
 
-    @staticmethod
-    def participant_spacing(items):
-        spacing = consume(items)
-        return ParticipantSpacingStatement(spacing)
+        while item := consume_opt(items):
+            if item.data == 'participant_alias':
+                alias = str(consume(item.children))
+            elif item.data == 'participant_width':
+                width = int(consume(item.children))
+            elif item.data == 'participant_spacing':
+                spacing = int(consume(item.children))
+            else:
+                raise NotImplementedError()
 
-    @staticmethod
-    def participant_width(items):
-        width = consume(items)
-        return ParticipantWidthStatement(width)
+        text = name
+        name = alias or name
+        return ParticipantStatement(text, name, width, spacing)
 
     @staticmethod
     def activation(items):
@@ -180,6 +185,7 @@ class SeqTransformer(Transformer):
             else:
                 raise NotImplementedError()
 
+        assert text is not None
         text = '<br/>'.join(line.strip() for line in text.splitlines())
         return NoteStatement(target, text, dx, dy, width, height)
 
@@ -263,16 +269,8 @@ class TitleHeightStatement(Statement):
 class ParticipantStatement(Statement):
     text: str
     name: str
-
-
-@dataclass
-class ParticipantWidthStatement(Statement):
-    width: int
-
-
-@dataclass
-class ParticipantSpacingStatement(Statement):
-    spacing: int
+    width: Optional[int] = None
+    spacing: Optional[int] = None
 
 
 @dataclass
