@@ -97,13 +97,6 @@ deactivate John Alice
 Multiple participants can be activated or deactivated at once to have the activation
 lines start, respectively end on the same position.
 
-```
-activate John from left: With message
-activate Alice from right
-```
-
-A single participant can be activated with a message without source participant.
-
 ### Messages
 
 ```
@@ -227,8 +220,6 @@ end note
 note on Alice width 150 height 80 dx 100 dy 50
   a larger note with
   multiple lines
-
-  and even an emtpy line in it
 end note
 ```
 
