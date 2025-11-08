@@ -79,12 +79,12 @@ class SeqTransformer(Transformer):
         return ParticipantStatement(text, name, width, spacing)
 
     @staticmethod
-    def activation(items):
+    def activate(items):
         assert len(items) > 0
         return ActivateStatement(items)
 
     @staticmethod
-    def deactivation(items):
+    def deactivate(items):
         assert len(items) > 0
         return DeactivateStatement(items)
 

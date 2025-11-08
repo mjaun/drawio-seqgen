@@ -3,7 +3,7 @@ from typing import List, Optional, Iterable
 import seqast
 import drawio
 
-PARTICIPANT_DEFAULT_BOX_WIDTH = 160
+PARTICIPANT_DEFAULT_WIDTH = 160
 PARTICIPANT_DEFAULT_SPACING = 40
 PARTICIPANT_BOX_HEIGHT = 40
 
@@ -136,7 +136,7 @@ class Layouter:
         index = len(self.participants)
 
         lifeline = drawio.Lifeline(self.page, statement.text)
-        lifeline.width = statement.width or PARTICIPANT_DEFAULT_BOX_WIDTH
+        lifeline.width = statement.width or PARTICIPANT_DEFAULT_WIDTH
         lifeline.box_height = PARTICIPANT_BOX_HEIGHT
 
         if not first_participant:

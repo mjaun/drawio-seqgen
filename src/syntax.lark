@@ -8,8 +8,8 @@ statement: title_width
          | participant_width
          | participant_spacing
          | participant
-         | activation
-         | deactivation
+         | activate
+         | deactivate
          | alternative
          | option
          | loop
@@ -31,8 +31,8 @@ participant_alias: _SPACE+ "as" _SPACE+ name
 participant_width: _SPACE+ "width" _SPACE+ NUMBER
 participant_spacing: _SPACE+ "spacing" _SPACE+ NUMBER
 
-activation: "activate" _SPACE+ name (_SPACE+ name)* _NEWLINE
-deactivation: "deactivate" _SPACE+ name (_SPACE+ name)* _NEWLINE
+activate: "activate" _SPACE+ name (_SPACE+ name)* _NEWLINE
+deactivate: "deactivate" _SPACE+ name (_SPACE+ name)* _NEWLINE
 
 alternative: "alt" _SPACE+ TEXT _NEWLINE statement_list alternative_branch* "end" _NEWLINE
 alternative_branch: "else" (_SPACE+ TEXT)? _NEWLINE statement_list
