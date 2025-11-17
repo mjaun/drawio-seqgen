@@ -48,10 +48,11 @@ note_dy: _SPACE+ "dy" _SPACE+ NUMBER
 note_width: _SPACE+ "width" _SPACE+ NUMBER
 note_height: _SPACE+ "height" _SPACE+ NUMBER
 
-found_message: "found" _SPACE+ /left|right/ (_SPACE+ NUMBER)? _SPACE+ arrow _SPACE+ name (_SPACE* ":" _SPACE+ TEXT)? _NEWLINE
-lost_message: name _SPACE+ arrow _SPACE+ "lost" _SPACE+ /left|right/ (_SPACE+ NUMBER)? (_SPACE* ":" _SPACE+ TEXT)? _NEWLINE
+found_message: "found" _SPACE+ DIRECTION (_SPACE+ NUMBER)? _SPACE+ arrow _SPACE+ name (_SPACE* ":" _SPACE+ TEXT)? _NEWLINE
+lost_message: name _SPACE+ arrow _SPACE+ "lost" _SPACE+ DIRECTION (_SPACE+ NUMBER)? (_SPACE* ":" _SPACE+ TEXT)? _NEWLINE
 message: name _SPACE+ arrow _SPACE+ name (_SPACE* ":" _SPACE+ TEXT)? _NEWLINE
 self_call: name _SPACE* ":" _SPACE+ TEXT _NEWLINE
+DIRECTION: /left|right/
 
 vertical_offset: "vertical offset" _SPACE+ NUMBER _NEWLINE
 frame_dimension: "frame extend" _SPACE+ NUMBER _NEWLINE

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import auto, Enum
-from typing import List, Optional
+from typing import List, Optional, Any
 from lark import Lark, Transformer
 from pathlib import Path
 
@@ -28,221 +28,247 @@ class Parser:
 class SeqTransformer(Transformer):
     @staticmethod
     def start(items):
-        return consume(items)
+        return consume_next(items, 'statement_list')
 
     @staticmethod
     def statement_list(items):
         statements = []
 
         for item in items:
-            statement = consume(item.children)
+            statement = item.children[0]
             statement.line_number = item.meta.line
             statements.append(statement)
 
-        return statements
+        return ParsedValue(statements, 'statement_list')
 
     @staticmethod
     def title(items):
-        text = consume(items)
-        width = None
-        height = None
-
-        while item := consume_opt(items):
-            if item.data == 'title_width':
-                width = str(consume(item.children))
-            elif item.data == 'title_height':
-                height = int(consume(item.children))
-            else:
-                raise NotImplementedError()
-
+        text = consume_next(items, 'name')
+        width = consume_opt(items, 'title_width')
+        height = consume_opt(items, 'title_height')
         return TitleStatement(text, width, height)
 
     @staticmethod
+    def title_width(items):
+        value = consume_next(items, 'NUMBER')
+        return ParsedValue(value, 'title_width')
+
+    @staticmethod
+    def title_height(items):
+        value = consume_next(items, 'NUMBER')
+        return ParsedValue(value, 'title_height')
+
+    @staticmethod
     def participant(items):
-        name = consume(items)
-        alias = None
-        width = None
-        spacing = None
+        text = consume_next(items, 'name')
+        alias = consume_opt(items, 'participant_alias')
+        width = consume_opt(items, 'participant_width')
+        spacing = consume_opt(items, 'participant_spacing')
+        return ParticipantStatement(text, alias or text, width, spacing)
 
-        while item := consume_opt(items):
-            if item.data == 'participant_alias':
-                alias = str(consume(item.children))
-            elif item.data == 'participant_width':
-                width = int(consume(item.children))
-            elif item.data == 'participant_spacing':
-                spacing = int(consume(item.children))
-            else:
-                raise NotImplementedError()
+    @staticmethod
+    def participant_alias(items):
+        value = consume_next(items, 'name')
+        return ParsedValue(value, 'participant_alias')
 
-        text = name
-        name = alias or name
-        return ParticipantStatement(text, name, width, spacing)
+    @staticmethod
+    def participant_width(items):
+        value = consume_next(items, 'NUMBER')
+        return ParsedValue(value, 'participant_width')
+
+    @staticmethod
+    def participant_spacing(items):
+        value = consume_next(items, 'NUMBER')
+        return ParsedValue(value, 'participant_spacing')
 
     @staticmethod
     def activate(items):
-        assert len(items) > 0
-        return ActivateStatement(items)
+        targets = consume_all(items, 'name')
+        return ActivateStatement(targets)
 
     @staticmethod
     def deactivate(items):
-        assert len(items) > 0
-        return DeactivateStatement(items)
+        targets = consume_all(items, 'name')
+        return DeactivateStatement(targets)
 
     @staticmethod
     def found_message(items):
-        direction_map = {
-            'left': MessageDirection.LEFT,
-            'right': MessageDirection.RIGHT,
-        }
-
-        direction = direction_map[str(consume(items))]
-        width = consume_if(items, lambda item: isinstance(item, int))
-        line, arrow, activation = consume(items)
-        receiver = consume(items)
-        text = consume_opt(items, default='')
-
+        direction = consume_next(items, 'direction')
+        width = consume_next_opt(items, 'NUMBER')
+        line, arrow, activation = consume_next(items, 'arrow')
+        receiver = consume_next(items, 'name')
+        text = consume_next_opt(items, 'TEXT', default='')
         return FoundMessageStatement(direction, receiver, text, activation, line, arrow, width)
 
     @staticmethod
     def lost_message(items):
+        sender = consume_next(items, 'name')
+        line, arrow, activation = consume_next(items, 'arrow')
+        direction = consume_next(items, 'direction')
+        width = consume_next_opt(items, 'NUMBER')
+        text = consume_next_opt(items, 'TEXT', default='')
+        return LostMessageStatement(sender, direction, text, activation, line, arrow, width)
+
+    @staticmethod
+    def DIRECTION(token):
         direction_map = {
             'left': MessageDirection.LEFT,
             'right': MessageDirection.RIGHT,
         }
 
-        sender = consume(items)
-        line, arrow, activation = consume(items)
-        direction = direction_map[consume(items)]
-        width = consume_if(items, lambda item: isinstance(item, int))
-        text = consume_opt(items, default='')
-
-        return LostMessageStatement(sender, direction, text, activation, line, arrow, width)
+        value = direction_map[str(token)]
+        return ParsedValue(value, 'direction')
 
     @staticmethod
     def message(items):
-        sender = consume(items)
-        line, arrow, activation = consume(items)
-        receiver = consume(items)
-        text = consume_opt(items, '')
+        sender = consume_next(items, 'name')
+        line, arrow, activation = consume_next(items, 'arrow')
+        receiver = consume_next(items, 'name')
+        text = consume_next_opt(items, 'TEXT', default='')
         return MessageStatement(sender, receiver, text, activation, line, arrow)
 
     @staticmethod
     def self_call(items):
-        target = consume(items)
-        text = consume_opt(items)
+        target = consume_next(items, 'name')
+        text = consume_next_opt(items, 'TEXT', default='')
         return MessageStatement(target, target, text, MessageActivation.REGULAR, LineStyle.SOLID, ArrowStyle.BLOCK)
 
     @staticmethod
     def alternative(items):
-        text = consume(items)
-        inner = consume(items)
-        branches = []
-
-        while branch := consume_opt(items):
-            branch_text = consume_if(branch.children, lambda item: isinstance(item, str), 'else')
-            branch_inner = consume(branch.children)
-            branches.append(AlternativeBranch(branch_text, branch_inner))
-
+        text = consume_next(items, 'TEXT')
+        inner = consume_next(items, 'statement_list')
+        branches = consume_all(items, 'alternative_branch')
         return AlternativeStatement(text, inner, branches)
 
     @staticmethod
+    def alternative_branch(items):
+        text = consume_next_opt(items, 'TEXT', default='else')
+        inner = consume_next(items, 'statement_list')
+        return ParsedValue(AlternativeBranch(text, inner), 'alternative_branch')
+
+    @staticmethod
     def option(items):
-        text = consume(items)
-        inner = consume(items)
+        text = consume_next(items, 'TEXT')
+        inner = consume_next(items, 'statement_list')
         return OptionStatement(text, inner)
 
     @staticmethod
     def loop(items):
-        text = consume(items)
-        inner = consume(items)
+        text = consume_next(items, 'TEXT')
+        inner = consume_next(items, 'statement_list')
         return LoopStatement(text, inner)
 
     @staticmethod
     def group(items):
-        text = consume(items)
-        inner = consume(items)
+        text = consume_next(items, 'TEXT')
+        inner = consume_next(items, 'statement_list')
         return GroupStatement(text, inner)
 
     @staticmethod
     def note(items):
-        target = consume(items)
-        text = None
-        dx = None
-        dy = None
-        width = None
-        height = None
-
-        while item := consume_opt(items):
-            if item.data == 'note_text':
-                text = str(consume(item.children))
-            elif item.data == 'note_dx':
-                dx = int(consume(item.children))
-            elif item.data == 'note_dy':
-                dy = int(consume(item.children))
-            elif item.data == 'note_width':
-                width = int(consume(item.children))
-            elif item.data == 'note_height':
-                height = int(consume(item.children))
-            else:
-                raise NotImplementedError()
+        target = consume_next(items, 'name')
+        dx = consume_opt(items, 'note_dx')
+        dy = consume_opt(items, 'note_dy')
+        width = consume_opt(items, 'note_width')
+        height = consume_opt(items, 'note_height')
+        text = consume_next(items, 'note_text')
 
         assert text is not None
         text = '<br/>'.join(line.strip() for line in text.splitlines())
         return NoteStatement(target, text, dx, dy, width, height)
 
     @staticmethod
+    def note_text(items):
+        assert len(items) == 1
+        return ParsedValue(str(items[0]), 'note_text')
+
+    @staticmethod
+    def note_dx(items):
+        value = consume_next(items, 'NUMBER')
+        return ParsedValue(value, 'note_dx')
+
+    @staticmethod
+    def note_dy(items):
+        value = consume_next(items, 'NUMBER')
+        return ParsedValue(value, 'note_dy')
+
+    @staticmethod
+    def note_width(items):
+        value = consume_next(items, 'NUMBER')
+        return ParsedValue(value, 'note_width')
+
+    @staticmethod
+    def note_height(items):
+        value = consume_next(items, 'NUMBER')
+        return ParsedValue(value, 'note_height')
+
+    @staticmethod
     def vertical_offset(items):
-        offset = consume(items)
+        offset = consume_next(items, 'NUMBER')
         return VerticalOffsetStatement(offset)
 
     @staticmethod
     def frame_dimension(items):
-        extend = consume(items)
+        extend = consume_next(items, 'NUMBER')
         return ExtendFrameStatement(extend)
 
     @staticmethod
     def arrow(items):
+        line = consume_next(items, 'ARROW_LINE')
+        arrow = consume_next(items, 'ARROW_END')
+        activation = consume_next_opt(items, 'arrow_activation', MessageActivation.REGULAR)
+        return ParsedValue((line, arrow, activation), 'arrow')
+
+    @staticmethod
+    def ARROW_LINE(token):
         line_map = {
             '-': LineStyle.SOLID,
             '--': LineStyle.DASHED,
         }
+
+        return ParsedValue(line_map[str(token)], 'ARROW_LINE')
+
+    @staticmethod
+    def ARROW_END(token):
         arrow_map = {
             '>': ArrowStyle.BLOCK,
             '>>': ArrowStyle.OPEN,
         }
+
+        return ParsedValue(arrow_map[str(token)], 'ARROW_END')
+
+    @staticmethod
+    def ARROW_ACTIVATION(token):
         activation_map = {
-            '': MessageActivation.REGULAR,
             '+': MessageActivation.ACTIVATE,
             '-': MessageActivation.DEACTIVATE,
             '|': MessageActivation.FIREFORGET,
         }
 
-        line_str = str(consume(items))
-        arrow_str = str(consume(items))
-        activation_str = str(consume_opt(items, default=''))
-
-        return line_map[line_str], arrow_map[arrow_str], activation_map[activation_str]
+        return ParsedValue(activation_map[str(token)], 'arrow_activation')
 
     @staticmethod
     def name(items):
-        token = consume(items)
+        value = consume_next_opt(items, 'QUOTED_NAME') or consume_next_opt(items, 'UNQUOTED_NAME')
+        value = value.replace('\\n', '<br/>')
+        return ParsedValue(value, 'name')
 
-        if token.type == 'QUOTED_NAME':
-            name = str(token)[1:-1]
-        elif token.type == 'UNQUOTED_NAME':
-            name = str(token)
-        else:
-            raise NotImplementedError()
+    @staticmethod
+    def QUOTED_NAME(token):
+        return ParsedValue(str(token)[1:-1], 'QUOTED_NAME')
 
-        return name.replace('\\n', '<br/>')
+    @staticmethod
+    def UNQUOTED_NAME(token):
+        return ParsedValue(str(token), 'UNQUOTED_NAME')
 
     @staticmethod
     def TEXT(token):
-        return str(token).replace('\\n', '<br/>')
+        value = str(token).replace('\\n', '<br/>')
+        return ParsedValue(value, 'TEXT')
 
     @staticmethod
     def NUMBER(token):
-        return int(token)
+        return ParsedValue(int(token), 'NUMBER')
 
 
 @dataclass
@@ -371,17 +397,45 @@ class ExtendFrameStatement(Statement):
     extend: int
 
 
-def consume(items):
+@dataclass
+class ParsedValue:
+    value: Any
+    type: str
+
+
+def consume_next(items, expected_type):
     assert len(items) > 0, "missing item"
-    return items.pop(0)
+    assert isinstance(items[0], ParsedValue), f"unparsed value: {items[0]}"
+    assert items[0].type == expected_type, f"expected '{expected_type}' found '{items[0].type}'"
+    return items.pop(0).value
 
 
-def consume_if(items, predicate, default=None):
-    if predicate(items[0] if len(items) > 0 else None):
-        return consume(items)
-    else:
+def consume_next_opt(items, expected_type, default=None):
+    if len(items) == 0:
         return default
 
+    assert isinstance(items[0], ParsedValue), f"unparsed value: {items[0]}"
+    return items.pop(0).value if items[0].type == expected_type else default
 
-def consume_opt(items, default=None):
-    return consume_if(items, lambda item: item is not None, default)
+
+def consume_opt(items, expected_type, default=None):
+    for item in items:
+        assert isinstance(item, ParsedValue), f"unparsed value: {items[0]}"
+
+        if item.type == expected_type:
+            items.remove(item)
+            return item.value
+
+    return default
+
+
+def consume_all(items, expected_type):
+    found = []
+    for item in items:
+        assert isinstance(item, ParsedValue), f"unparsed value: {items[0]}"
+
+        if item.type == expected_type:
+            found.append(item)
+
+    items[:] = [item for item in items if item not in found]
+    return [item.value for item in found]
