@@ -451,7 +451,7 @@ class Layouter:
         if text:
             self.current_position_y += CONTROL_FRAME_BOX_HEIGHT + CONTROL_FRAME_LABEL_HEIGHT
         else:
-            self.current_position_y += CONTROL_FRAME_BOX_HEIGHT
+            self.current_position_y += CONTROL_FRAME_BOX_HEIGHT + STATEMENT_OFFSET_Y
 
         self.update_all_position_markers(-STATEMENT_OFFSET_Y)
 

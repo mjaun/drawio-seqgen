@@ -5,16 +5,16 @@
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="test-2" value="Frames" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=160;height=30;" vertex="1">
-          <mxGeometry x="-70.0" y="-50" width="660.0" height="735" as="geometry" />
+          <mxGeometry x="-70.0" y="-50" width="660.0" height="745" as="geometry" />
         </mxCell>
         <mxCell id="test-3" value="A" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};size=40;" vertex="1">
-          <mxGeometry x="0" y="0" width="160" height="665" as="geometry" />
+          <mxGeometry x="0" y="0" width="160" height="675" as="geometry" />
         </mxCell>
         <mxCell id="test-4" value="B" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};size=40;" vertex="1">
-          <mxGeometry x="200" y="0" width="160" height="665" as="geometry" />
+          <mxGeometry x="200" y="0" width="160" height="675" as="geometry" />
         </mxCell>
         <mxCell id="test-5" value="C" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};size=40;" vertex="1">
-          <mxGeometry x="400" y="0" width="160" height="665" as="geometry" />
+          <mxGeometry x="400" y="0" width="160" height="675" as="geometry" />
         </mxCell>
         <mxCell id="test-6" value="loop" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=60;height=20;" vertex="1">
           <mxGeometry x="50.0" y="65" width="460.0" height="105" as="geometry" />
@@ -155,14 +155,14 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="test-35" value="critical" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=60;height=20;" vertex="1">
-          <mxGeometry x="50.0" y="580" width="260.0" height="60" as="geometry" />
+          <mxGeometry x="50.0" y="580" width="260.0" height="70" as="geometry" />
         </mxCell>
         <mxCell id="test-36" value="" parent="1" style="html=1;curved=0;rounded=0;align=center;verticalAlign=bottom;endArrow=block;dashed=0;" edge="1" source="test-3" target="test-4">
           <mxGeometry relative="1" as="geometry">
             <mxPoint as="sourcePoint" />
             <mxPoint as="targetPoint" />
             <Array as="points">
-              <mxPoint x="180.0" y="610" />
+              <mxPoint x="180.0" y="620" />
             </Array>
           </mxGeometry>
         </mxCell>
@@ -171,7 +171,7 @@
             <mxPoint as="sourcePoint" />
             <mxPoint as="targetPoint" />
             <Array as="points">
-              <mxPoint x="180.0" y="630" />
+              <mxPoint x="180.0" y="640" />
             </Array>
           </mxGeometry>
         </mxCell>
