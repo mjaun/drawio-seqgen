@@ -399,9 +399,19 @@ class Layouter:
         self.process_statements(statement.inner)
         self.close_frame(frame)
 
-    def handle_group(self, statement: seqast.LoopStatement):
+    def handle_group(self, statement: seqast.GroupStatement):
         frame = self.open_frame(statement.text)
         self.process_statements(statement.inner)
+
+        for section in statement.sections:
+            separator = drawio.Separator(frame)
+            separator.y = self.current_position_y - frame.y
+
+            self.current_position_y += STATEMENT_OFFSET_Y
+            self.update_all_position_markers(-STATEMENT_OFFSET_Y)
+
+            self.process_statements(section.inner)
+
         self.close_frame(frame)
 
     def handle_note(self, statement: seqast.NoteStatement):

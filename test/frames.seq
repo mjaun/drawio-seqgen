@@ -46,3 +46,9 @@ group critical
   A -> B
   B -> A
 end
+
+group parallel
+  A -> B: hello
+section
+  A -> C: world
+end

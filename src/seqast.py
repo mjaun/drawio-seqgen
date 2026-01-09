@@ -162,7 +162,13 @@ class SeqTransformer(Transformer):
     def group(items):
         text = consume_next(items, 'TEXT')
         inner = consume_next(items, 'statement_list')
-        return GroupStatement(text, inner)
+        sections = consume_all(items, 'group_section')
+        return GroupStatement(text, inner, sections)
+
+    @staticmethod
+    def group_section(items):
+        inner = consume_next(items, 'statement_list')
+        return ParsedValue(GroupSection(inner), 'group_section')
 
     @staticmethod
     def note(items):
@@ -364,9 +370,15 @@ class LoopStatement(Statement):
 
 
 @dataclass
+class GroupSection:
+    inner: List[Statement]
+
+
+@dataclass
 class GroupStatement(Statement):
     text: str
     inner: List[Statement]
+    sections: List[GroupSection]
 
 
 @dataclass
