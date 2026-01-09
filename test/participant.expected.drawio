@@ -5,25 +5,34 @@
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="test-2" value="George" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};size=40;" vertex="1">
-          <mxGeometry x="0" y="0" width="160" height="70" as="geometry" />
+          <mxGeometry x="0" y="0" width="160" height="90" as="geometry" />
         </mxCell>
         <mxCell id="test-3" value="Max Muster" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};size=40;" vertex="1">
-          <mxGeometry x="200" y="0" width="160" height="70" as="geometry" />
+          <mxGeometry x="200" y="0" width="160" height="90" as="geometry" />
         </mxCell>
         <mxCell id="test-4" value="Alice" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};size=40;" vertex="1">
-          <mxGeometry x="400" y="0" width="160" height="70" as="geometry" />
+          <mxGeometry x="400" y="0" width="160" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="test-5" value="Peter Müller" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};size=40;" vertex="1">
-          <mxGeometry x="600" y="0" width="160" height="70" as="geometry" />
+        <mxCell id="test-5" value="Peter &quot;Müller&quot;" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};size=40;" vertex="1">
+          <mxGeometry x="600" y="0" width="160" height="90" as="geometry" />
         </mxCell>
         <mxCell id="test-6" value="Multiline&lt;br/&gt;Participant" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};size=40;" vertex="1">
-          <mxGeometry x="800" y="0" width="160" height="70" as="geometry" />
+          <mxGeometry x="800" y="0" width="160" height="90" as="geometry" />
         </mxCell>
         <mxCell id="test-7" value="Big Participant 1" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};size=40;" vertex="1">
-          <mxGeometry x="1060" y="0" width="250" height="70" as="geometry" />
+          <mxGeometry x="1060" y="0" width="250" height="90" as="geometry" />
         </mxCell>
         <mxCell id="test-8" value="Big Participant 2" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};size=40;" vertex="1">
-          <mxGeometry x="1410" y="0" width="250" height="70" as="geometry" />
+          <mxGeometry x="1410" y="0" width="250" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="test-9" value="" parent="test-4" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1">
+          <mxGeometry x="75.0" y="60" width="10" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="test-10" value="" parent="test-5" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1">
+          <mxGeometry x="75.0" y="60" width="10" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="test-11" value="" parent="test-8" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1">
+          <mxGeometry x="120.0" y="60" width="10" height="10" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

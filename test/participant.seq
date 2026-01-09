@@ -1,8 +1,11 @@
 participant George
 participant "Max Muster"
 participant Alice as A
-participant "Peter Müller" as P
+participant "Peter \"Müller\"" as "P"
 participant "Multiline\nParticipant"
 
 participant "Big Participant 1" width 250 spacing 100
-participant "Big Participant 2" as P2 width 250 spacing 100
+participant "Big Participant 2" as Big width 250 spacing 100
+
+activate A P Big
+deactivate A P Big

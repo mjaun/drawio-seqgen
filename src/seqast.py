@@ -255,7 +255,9 @@ class SeqTransformer(Transformer):
 
     @staticmethod
     def QUOTED_NAME(token):
-        return ParsedValue(str(token)[1:-1], 'QUOTED_NAME')
+        name = str(token)[1:-1]
+        name = name.replace(r'\"', '"')
+        return ParsedValue(name, 'QUOTED_NAME')
 
     @staticmethod
     def UNQUOTED_NAME(token):

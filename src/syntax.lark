@@ -63,7 +63,7 @@ ARROW_END: />{1,2}/
 ARROW_ACTIVATION: /\+|-|\|/
 
 name: QUOTED_NAME | UNQUOTED_NAME
-QUOTED_NAME: /"[^\n]*"/
+QUOTED_NAME: /"[^\n]*?[^\\]"/
 UNQUOTED_NAME: /[A-Za-z0-9_]+/
 
 TEXT: /[^\n]+/
