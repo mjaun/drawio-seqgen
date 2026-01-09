@@ -1,29 +1,14 @@
 participant A
 participant B
 
-note on A
-  default
-end note
-
-note on B width 150 height 80
-  a larger note with
-  multiple lines
-
-  in it
-end note
+note on A: default
+note on B width 150 height 80: a larger note with<br/>multiple lines<br/><br/>in it
 
 vertical offset 100
 
-note on A height 80
-  note follows vertical offset
-end note
-
-note on B
-  note with keyword end note
-end note
+note on A height 80: note follows vertical offset
+note on B: note with keyword end note
 
 vertical offset 100
 
-note on A dx 140 dy -40
-  moved note
-end note
+note on A dx 140 dy -40: moved note

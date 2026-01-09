@@ -171,16 +171,8 @@ class SeqTransformer(Transformer):
         dy = consume_opt(items, 'note_dy')
         width = consume_opt(items, 'note_width')
         height = consume_opt(items, 'note_height')
-        text = consume_next(items, 'note_text')
-
-        assert text is not None
-        text = '<br/>'.join(line.strip() for line in text.splitlines())
+        text = consume_next(items, 'TEXT')
         return NoteStatement(target, text, dx, dy, width, height)
-
-    @staticmethod
-    def note_text(items):
-        assert len(items) == 1
-        return ParsedValue(str(items[0]), 'note_text')
 
     @staticmethod
     def note_dx(items):

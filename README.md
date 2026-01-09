@@ -223,17 +223,10 @@ The size of the frame at the point where the statement occurs is extended.
 ### Notes
 
 ```
-note on Alice dx 10
-  short note
-end note
-
-note on Alice width 150 height 80 dx 100 dy 50
-  a larger note with
-  multiple lines
-end note
+note on Alice dx 10: short note
+note on Alice width 150 height 80 dx 100 dy 50: a larger note with<br/>multiple lines
 ```
 
 Notes are placed at the current vertical position at the lifeline of the specified participant.
 Using the attributes shown in the example, the size and position of the note can be modified.
-All lines are part of the note until the keyword `end note` is reached on its own line.
 Notes do not modify the current vertical position or frame width.
