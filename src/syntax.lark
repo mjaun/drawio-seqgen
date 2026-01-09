@@ -15,7 +15,7 @@ statement: title_width
          | loop
          | group
          | vertical_offset
-         | frame_dimension
+         | extend_frame
          | note
          | found_message
          | lost_message
@@ -55,7 +55,7 @@ self_call: name _SPACE* ":" _SPACE+ TEXT _NEWLINE
 DIRECTION: /left|right/
 
 vertical_offset: "vertical offset" _SPACE+ NUMBER _NEWLINE
-frame_dimension: "frame extend" _SPACE+ NUMBER _NEWLINE
+extend_frame: "extend frame" _SPACE+ NUMBER _NEWLINE
 
 arrow: ARROW_LINE ARROW_END ARROW_ACTIVATION?
 ARROW_LINE: /-{1,2}/

@@ -211,8 +211,8 @@ the frame. Therefore, a frame cannot be empty. Sometimes a frame must be enlarge
 This can be done with the following statement:
 
 ```
-frame extend 100
-frame extend -60
+extend frame 100
+extend frame -60
 ```
 
 The statement horizontally extends the current frame by the specified value.

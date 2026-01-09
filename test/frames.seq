@@ -35,8 +35,8 @@ loop never
   opt but maybe\non two lines
     A -> B
     B: again a\nself call
-    frame extend 30
-    frame extend -80
+    extend frame 30
+    extend frame -80
   end
 end
 

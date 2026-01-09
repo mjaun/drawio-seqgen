@@ -208,7 +208,7 @@ class SeqTransformer(Transformer):
         return VerticalOffsetStatement(offset)
 
     @staticmethod
-    def frame_dimension(items):
+    def extend_frame(items):
         extend = consume_next(items, 'NUMBER')
         return ExtendFrameStatement(extend)
 
