@@ -20,7 +20,7 @@ A -->>| B
 A -> B: short message
 
 vertical offset 30
-A -> B: longer message which spans\nover multiple lines
+A -> B: longer message which spans<br/>over multiple lines
 vertical offset 20
 
 // layouting

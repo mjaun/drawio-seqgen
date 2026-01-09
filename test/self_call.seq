@@ -5,16 +5,16 @@ participant C
 activate A
 
 A: self call
-A: self call with\nmultiple lines
+A: self call with<br/>multiple lines
 
 activate A
-A: self call on\nstacked activation
+A: self call on<br/>stacked activation
 deactivate A
 
 activate B
 
 A ->+ B
-B: self call on\nleft side
+B: self call on<br/>left side
 B ->- A
 
 deactivate A B
@@ -31,7 +31,7 @@ B: message
 B ->- C: message
 deactivate C
 
-A: self call\nwithout activation
+A: self call<br/>without activation
 
 activate B
 B -> B: different syntax

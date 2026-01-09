@@ -7,7 +7,7 @@ activate Alice
 
 Alice ->+ John: Hello John!
 
-John: Stop\nthinking
+John: Stop<br/>thinking
 
 alt John wants to chat
   John -> Alice: Hello Alice!

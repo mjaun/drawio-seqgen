@@ -37,7 +37,7 @@ The title statement is optional.
 
 
 ```
-title "My Super Long Diagram\nTitle With Multiple Lines" width 200 height 60
+title "My Super Long Diagram<br/>Title With Multiple Lines" width 200 height 60
 ```
 
 The size of the UML box containing the title can be customized.
@@ -48,7 +48,7 @@ The size of the UML box containing the title can be customized.
 participant Alice
 participant "With Special Chars()"
 participant John as J
-participant "More\nChars" as MC
+participant "More<br/>Chars" as MC
 ```
 
 Unlike PlantUML or Mermaid.js, the participants must be declared explicitly at the beginning.
@@ -98,7 +98,7 @@ lines start, respectively end on the same position.
 ### Messages
 
 ```
-Alice ->+ John: A long message\non multiple lines
+Alice ->+ John: A long message<br/>on multiple lines
 John -->>- Alice
 ```
 

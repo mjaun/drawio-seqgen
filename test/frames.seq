@@ -24,7 +24,7 @@ A -> B: message
 alt what if?
 C: self call
 else what if not?
-C: self call\nalso
+C: self call<br/>also
 else
 // empty
 end
@@ -32,9 +32,9 @@ end
 vertical offset -200
 
 loop never
-  opt but maybe\non two lines
+  opt but maybe<br/>on two lines
     A -> B
-    B: again a\nself call
+    B: again a<br/>self call
     extend frame 30
     extend frame -80
   end

@@ -242,7 +242,6 @@ class SeqTransformer(Transformer):
     @staticmethod
     def name(items):
         value = consume_next_opt(items, 'QUOTED_NAME') or consume_next_opt(items, 'UNQUOTED_NAME')
-        value = value.replace('\\n', '<br/>')
         return ParsedValue(value, 'name')
 
     @staticmethod
@@ -257,8 +256,7 @@ class SeqTransformer(Transformer):
 
     @staticmethod
     def TEXT(token):
-        value = str(token).replace('\\n', '<br/>')
-        return ParsedValue(value, 'TEXT')
+        return ParsedValue(str(token), 'TEXT')
 
     @staticmethod
     def NUMBER(token):
