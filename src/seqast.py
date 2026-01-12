@@ -131,7 +131,7 @@ class SeqTransformer(Transformer):
     def self_call(items):
         target = consume_next(items, 'name')
         text = consume_next_opt(items, 'TEXT', default='')
-        return MessageStatement(target, target, text, MessageActivation.REGULAR, LineStyle.SOLID, ArrowStyle.BLOCK)
+        return MessageStatement(target, target, text, MessageActivation.FIREFORGET, LineStyle.SOLID, ArrowStyle.BLOCK)
 
     @staticmethod
     def alternative(items):

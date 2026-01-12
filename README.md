@@ -127,15 +127,22 @@ The following activation types are defined:
 * `|` Receiver is activated and deactivated by the message
 * Omitted: No activation
 
-For self calls (sender equals receiver), no activation type must be specified.
+#### Self Calls
 
-#### Self Call Short Form
+```
+Alice -> Alice: I'm thinking
+Alice -->>| Alice: I'm still thinking
+Alice ->+ Alice: Doing other things while thinking
+```
+
+Self calls are like regular messages, but the sender equals the receiver.
+Supported activation types are: none, `+`, `|`
 
 ```
 Alice: I'm thinking
 ```
 
-This is a short form for sending a message to itself.
+This is a short form for a self call using activation type `|`.
 The message text for this syntax is required.
 
 #### Found / Lost Messages
@@ -154,7 +161,7 @@ found right ->+ Alice
 John ->- lost right
 ```
 
-Found messages may activate the receiver. Lost messages may deactivate the sender.
+Found messages may activate the receiver (`+`). Lost messages may deactivate the sender (`-`).
 Other activation types are not valid.
 
 ```

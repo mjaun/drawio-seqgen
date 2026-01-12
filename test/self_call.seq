@@ -32,8 +32,15 @@ B ->- C: message
 deactivate C
 
 A: self call<br/>without activation
+A -> A: different syntax
 
 activate B
-B -> B: different syntax
+B ->| B: different syntax
 B -->> B
 deactivate B
+
+A ->+ A: staying active
+A ->+ A: staying active
+A -> B: message
+deactivate A
+deactivate A

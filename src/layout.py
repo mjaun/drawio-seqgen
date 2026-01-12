@@ -26,8 +26,6 @@ FOUND_LOST_MESSAGE_DEFAULT_WIDTH = 100
 
 SELF_CALL_MIN_TEXT_WIDTH = 30
 SELF_CALL_MESSAGE_DX = 25
-SELF_CALL_MESSAGE_ACTIVATION_SPACING = 10
-SELF_CALL_ACTIVATION_HEIGHT = 20
 
 FIREFORGET_ACTIVATION_HEIGHT = 20
 
@@ -321,26 +319,39 @@ class Layouter:
 
     def handle_self_call(self, statement: seqast.MessageStatement):
         assert statement.sender == statement.receiver
-        assert statement.activation == seqast.MessageActivation.REGULAR, f"{statement.activation} invalid for self call"
+        assert statement.activation in (seqast.MessageActivation.REGULAR, seqast.MessageActivation.ACTIVATE,
+                                        seqast.MessageActivation.FIREFORGET), \
+            f"{statement.activation} not supported for self call"
 
         participant = self.participant_by_name(statement.sender)
 
-        # create activation for self call
-        self.current_position_y += SELF_CALL_MESSAGE_ACTIVATION_SPACING
-        self.participant_activate(participant)
+        if participant.activation_stack:
+            from_activation = participant.activation_stack[-1]
+        else:
+            from_activation = participant.lifeline
 
-        regular_activation = participant.activation_stack[-2] \
-            if len(participant.activation_stack) > 1 else participant.lifeline
-        self_call_activation = participant.activation_stack[-1]
+        self.current_position_y += STATEMENT_OFFSET_Y
+
+        # activation for self call
+        if statement.activation in (seqast.MessageActivation.ACTIVATE, seqast.MessageActivation.FIREFORGET):
+            self.participant_activate(participant)
+            to_activation = participant.activation_stack[-1]
+        else:
+            to_activation = from_activation
+
+        if isinstance(to_activation, drawio.Activation):
+            to_activation_dx = to_activation.dx
+        else:
+            to_activation_dx = 0
 
         # create self call message
-        message = drawio.Message(regular_activation, self_call_activation, statement.text)
+        message = drawio.Message(from_activation, to_activation, statement.text)
         message.line_style = statement.line_style
         message.arrow_style = statement.arrow_style
 
-        activation_x = participant.lifeline.center_x() + self_call_activation.dx
+        activation_x = participant.lifeline.center_x() + to_activation_dx
 
-        if self_call_activation.dx >= 0:
+        if to_activation_dx >= 0:
             self_call_x = activation_x + SELF_CALL_MESSAGE_DX
             frame_x = self_call_x + SELF_CALL_MIN_TEXT_WIDTH
             message.text_alignment = drawio.TextAlignment.MIDDLE_LEFT
@@ -351,20 +362,22 @@ class Layouter:
 
         message.points.append(drawio.Point(
             x=self_call_x,
-            y=self.current_position_y - SELF_CALL_MESSAGE_ACTIVATION_SPACING,
+            y=self.current_position_y - STATEMENT_OFFSET_Y,
         ))
 
         message.points.append(drawio.Point(
             x=self_call_x,
-            y=self.current_position_y + (SELF_CALL_ACTIVATION_HEIGHT / 2),
+            y=self.current_position_y + STATEMENT_OFFSET_Y
         ))
 
+        self.current_position_y += 2 * STATEMENT_OFFSET_Y
+
         # deactivate after self call
-        self.current_position_y += SELF_CALL_ACTIVATION_HEIGHT
-        self.participant_deactivate(participant)
+        if statement.activation == seqast.MessageActivation.FIREFORGET:
+            self.participant_deactivate(participant)
+            self.current_position_y += STATEMENT_OFFSET_Y
 
         self.frame_dimension(participant.lifeline.center_x(), frame_x, extra_padding=True)
-        self.current_position_y += STATEMENT_OFFSET_Y
 
     def handle_frame(self, statement: seqast.FrameStatement):
         frame = self.frame_open(statement.title, statement.text)
