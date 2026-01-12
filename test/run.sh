@@ -12,7 +12,7 @@ for input_file in *.seq; do
   output_file="${input_file%.*}.output.drawio"
   expected_file="${input_file%.*}.expected.drawio"
 
-  $SEQGEN -i $input_file -o $output_file
+  $SEQGEN -o $output_file $input_file
 
   if ! diff $output_file $expected_file > /dev/null ; then
     echo "  CONTENT CHANGED!"

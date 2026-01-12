@@ -11,6 +11,6 @@ for input_file in *.seq; do
   drawio_file="${input_file%.*}.drawio"
   image_file="${input_file%.*}.png"
 
-  $SEQGEN -i $input_file -o $drawio_file
+  $SEQGEN --output $drawio_file $input_file
   drawio --export --output $image_file $drawio_file
 done

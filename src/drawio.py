@@ -27,6 +27,26 @@ class File:
 
         return root
 
+    def xml_pretty(self) -> str:
+        # manually pretty print output to stay compatible with Python 3.8
+        xml_str = ET.tostring(self.xml(), encoding='utf-8', xml_declaration=False).decode('utf-8')
+        output = ''
+        indent = 0
+
+        for line in xml_str.replace('>', '>\n').split('\n'):
+            if not line:
+                continue
+
+            if line.startswith('</'):
+                indent -= 2
+
+            output += (' ' * indent) + line + '\n'
+
+            if not line.startswith('</') and not line.endswith('/>'):
+                indent += 2
+
+        return output
+
 
 class Page:
     def __init__(self, file: File, name: str):
@@ -452,6 +472,7 @@ class SourceAnchor(Enum):
         }
 
         return style_map[self]
+
 
 class TargetAnchor(Enum):
     NONE = auto()
