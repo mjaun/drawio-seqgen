@@ -207,6 +207,14 @@ Creates a frame for a looped part of the sequence.
 group critical
   ...
 end
+
+group parallel
+  ...
+section
+  ...
+section
+  ...
+end
 ```
 
 Creates a frame with a custom title.
