@@ -12,10 +12,7 @@ John: Stop<br/>thinking
 alt John wants to chat
   John -> Alice: Hello Alice!
 else
-  note on John dx -130
-    Ignore Alice
-  end note
-
+  note on John dx -130: Ignore Alice
   vertical offset 50
 end
 
