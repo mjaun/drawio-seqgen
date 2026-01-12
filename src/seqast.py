@@ -43,9 +43,9 @@ class SeqTransformer(Transformer):
 
     @staticmethod
     def title(items):
-        text = consume_next(items, 'name')
         width = consume_opt(items, 'title_width')
         height = consume_opt(items, 'title_height')
+        text = consume_next(items, 'TEXT')
         return TitleStatement(text, width, height)
 
     @staticmethod
@@ -60,15 +60,15 @@ class SeqTransformer(Transformer):
 
     @staticmethod
     def participant(items):
-        text = consume_next(items, 'name')
-        alias = consume_opt(items, 'participant_alias')
+        name = consume_next(items, 'NAME')
         width = consume_opt(items, 'participant_width')
         spacing = consume_opt(items, 'participant_spacing')
-        return ParticipantStatement(text, alias or text, width, spacing)
+        text = consume_opt(items, 'TEXT')
+        return ParticipantStatement(name, text or name, width, spacing)
 
     @staticmethod
     def participant_alias(items):
-        value = consume_next(items, 'name')
+        value = consume_next(items, 'NAME')
         return ParsedValue(value, 'participant_alias')
 
     @staticmethod
@@ -83,12 +83,12 @@ class SeqTransformer(Transformer):
 
     @staticmethod
     def activate(items):
-        targets = consume_all(items, 'name')
+        targets = consume_all(items, 'NAME')
         return ActivateStatement(targets)
 
     @staticmethod
     def deactivate(items):
-        targets = consume_all(items, 'name')
+        targets = consume_all(items, 'NAME')
         return DeactivateStatement(targets)
 
     @staticmethod
@@ -96,13 +96,13 @@ class SeqTransformer(Transformer):
         direction = consume_next(items, 'direction')
         width = consume_next_opt(items, 'NUMBER')
         line, arrow, activation = consume_next(items, 'arrow')
-        receiver = consume_next(items, 'name')
+        receiver = consume_next(items, 'NAME')
         text = consume_next_opt(items, 'TEXT', default='')
         return FoundMessageStatement(direction, receiver, text, activation, line, arrow, width)
 
     @staticmethod
     def lost_message(items):
-        sender = consume_next(items, 'name')
+        sender = consume_next(items, 'NAME')
         line, arrow, activation = consume_next(items, 'arrow')
         direction = consume_next(items, 'direction')
         width = consume_next_opt(items, 'NUMBER')
@@ -121,46 +121,46 @@ class SeqTransformer(Transformer):
 
     @staticmethod
     def message(items):
-        sender = consume_next(items, 'name')
+        sender = consume_next(items, 'NAME')
         line, arrow, activation = consume_next(items, 'arrow')
-        receiver = consume_next(items, 'name')
+        receiver = consume_next(items, 'NAME')
         text = consume_next_opt(items, 'TEXT', default='')
         return MessageStatement(sender, receiver, text, activation, line, arrow)
 
     @staticmethod
     def self_call(items):
-        target = consume_next(items, 'name')
+        target = consume_next(items, 'NAME')
         text = consume_next_opt(items, 'TEXT', default='')
         return MessageStatement(target, target, text, MessageActivation.FIREFORGET, LineStyle.SOLID, ArrowStyle.BLOCK)
 
     @staticmethod
     def alternative(items):
-        text = consume_next(items, 'TEXT')
+        text = consume_next(items, 'QUOTED_TEXT')
         inner = consume_next(items, 'statement_list')
         branches = consume_all(items, 'alternative_branch')
         return FrameStatement('alt', text, inner, branches)
 
     @staticmethod
     def alternative_branch(items):
-        text = consume_next_opt(items, 'TEXT', default='else')
+        text = consume_next_opt(items, 'QUOTED_TEXT', default='else')
         inner = consume_next(items, 'statement_list')
         return ParsedValue(FrameSection(text, inner), 'alternative_branch')
 
     @staticmethod
     def option(items):
-        text = consume_next(items, 'TEXT')
+        text = consume_next(items, 'QUOTED_TEXT')
         inner = consume_next(items, 'statement_list')
         return FrameStatement('opt', text, inner, [])
 
     @staticmethod
     def loop(items):
-        text = consume_next(items, 'TEXT')
+        text = consume_next(items, 'QUOTED_TEXT')
         inner = consume_next(items, 'statement_list')
         return FrameStatement('loop', text, inner, [])
 
     @staticmethod
     def group(items):
-        title = consume_next(items, 'TEXT')
+        title = consume_next(items, 'QUOTED_TEXT')
         inner = consume_next(items, 'statement_list')
         sections = consume_all(items, 'group_section')
         return FrameStatement(title, None, inner, sections)
@@ -172,7 +172,7 @@ class SeqTransformer(Transformer):
 
     @staticmethod
     def note(items):
-        target = consume_next(items, 'name')
+        target = consume_next(items, 'NAME')
         dx = consume_opt(items, 'note_dx')
         dy = consume_opt(items, 'note_dy')
         width = consume_opt(items, 'note_width')
@@ -246,23 +246,18 @@ class SeqTransformer(Transformer):
         return ParsedValue(activation_map[str(token)], 'arrow_activation')
 
     @staticmethod
-    def name(items):
-        value = consume_next_opt(items, 'QUOTED_NAME') or consume_next_opt(items, 'UNQUOTED_NAME')
-        return ParsedValue(value, 'name')
-
-    @staticmethod
-    def QUOTED_NAME(token):
-        name = str(token)[1:-1]
-        name = name.replace(r'\"', '"')
-        return ParsedValue(name, 'QUOTED_NAME')
-
-    @staticmethod
-    def UNQUOTED_NAME(token):
-        return ParsedValue(str(token), 'UNQUOTED_NAME')
+    def QUOTED_TEXT(token):
+        text = str(token)[1:-1]
+        text = text.replace(r'\"', '"')
+        return ParsedValue(text, 'QUOTED_TEXT')
 
     @staticmethod
     def TEXT(token):
         return ParsedValue(str(token), 'TEXT')
+
+    @staticmethod
+    def NAME(token):
+        return ParsedValue(str(token), 'NAME')
 
     @staticmethod
     def NUMBER(token):
@@ -284,8 +279,8 @@ class TitleStatement(Statement):
 
 @dataclass
 class ParticipantStatement(Statement):
-    text: str
     name: str
+    text: str
     width: Optional[int] = None
     spacing: Optional[int] = None
 

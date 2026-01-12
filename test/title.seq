@@ -1,4 +1,4 @@
-title "My Diagram<br/>with a title" width 200 height 60
+title width 200 height 60: My Diagram<br/>with a title
 
 participant A
 participant B

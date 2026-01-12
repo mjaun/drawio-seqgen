@@ -29,7 +29,7 @@ Comments at the end of statements are not supported.
 ### Title
 
 ```
-title "My Diagram Title"
+title: My Diagram Title
 ```
 
 If a title statement is present, the resulting diagram will be framed by a title frame.
@@ -37,7 +37,7 @@ The title statement is optional.
 
 
 ```
-title "My Super Long Diagram<br/>Title With Multiple Lines" width 200 height 60
+title width 200 height 60: My Super Long Diagram<br/>Title With Multiple Lines
 ```
 
 The size of the UML box containing the title can be customized.
@@ -46,19 +46,21 @@ The size of the UML box containing the title can be customized.
 
 ```
 participant Alice
+participant J: John Jumper
+participant ML: Multiple<br/>Lines
 participant "With Special Chars()"
-participant John as J
-participant "More<br/>Chars" as MC
 ```
 
-Unlike PlantUML or Mermaid.js, the participants must be declared explicitly at the beginning.
-Names with special characters must be quoted.
-Optionally an alias may be specified which is useful for referencing participants with long names.
+Participants must be declared explicitly at the beginning.
+The name after the keyword `participant` is its identifier and must be unique.
+It is used for referencing the participant in other statements.
+Optionally a text other than the participant identifier may be specified.
+This is useful if the text is very long or contains special characters.
 The participants occur in the same order as specified.
 
 ```
 participant Alice width 200
-participant John as J spacing 150
+participant J width 200 spacing 150: John
 ```
 
 The width of a participant and the spacing between the current and the previous participant can be customized.
@@ -174,7 +176,7 @@ The width of the message can be customized by adding a number.
 ### Frames
 
 ```
-opt Something happened
+opt "Something happened"
   ...
 end
 ```
@@ -182,9 +184,9 @@ end
 Creates a frame for an optional part of the sequence.
 
 ```
-alt x == 1
+alt "x == 1"
   ...
-else x == 2
+else "str == \"abc\""
   ...
 else
   ...
@@ -196,7 +198,7 @@ An arbitrary amount of branches can be defined.
 If the branch label is omitted, it defaults to "else".
 
 ```
-loop Until tired
+loop "until tired"
   ...
 end
 ```
