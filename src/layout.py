@@ -107,10 +107,7 @@ class Layouter:
             seqast.FoundMessageStatement: self.handle_found_message,
             seqast.LostMessageStatement: self.handle_lost_message,
             seqast.MessageStatement: self.handle_message,
-            seqast.AlternativeStatement: self.handle_alternative,
-            seqast.OptionStatement: self.handle_option,
-            seqast.LoopStatement: self.handle_loop,
-            seqast.GroupStatement: self.handle_group,
+            seqast.FrameStatement: self.handle_frame,
             seqast.NoteStatement: self.handle_note,
             seqast.VerticalOffsetStatement: self.handle_vertical_offset,
             seqast.ExtendFrameStatement: self.handle_extend_frame,
@@ -149,13 +146,13 @@ class Layouter:
             participant.left_marker = self.participants[-1].right_marker
 
         self.participants.append(participant)
-        self.update_frame_dimension(lifeline.x, lifeline.x + lifeline.width)
+        self.frame_dimension(lifeline.x, lifeline.x + lifeline.width)
 
     def handle_activate(self, statement: seqast.ActivateStatement):
         for name in statement.targets:
             participant = self.participant_by_name(name)
-            self.activate_participant(participant)
-            self.update_frame_dimension(participant.lifeline.center_x(), extra_padding=True)
+            self.participant_activate(participant)
+            self.frame_dimension(participant.lifeline.center_x(), extra_padding=True)
 
         self.current_position_y += STATEMENT_OFFSET_Y
 
@@ -163,9 +160,9 @@ class Layouter:
         for name in statement.targets:
             participant = self.participant_by_name(name)
             assert participant.activation_stack, "participant not activated"
-            self.deactivate_participant(participant)
-            self.update_position_marker(participant.center_marker)
-            self.update_frame_dimension(participant.lifeline.center_x(), extra_padding=True)
+            self.participant_deactivate(participant)
+            self.position_marker_update(participant.center_marker)
+            self.frame_dimension(participant.lifeline.center_x(), extra_padding=True)
 
         self.current_position_y += STATEMENT_OFFSET_Y
 
@@ -191,11 +188,11 @@ class Layouter:
 
         # activation before message
         if statement.activation == seqast.MessageActivation.ACTIVATE:
-            self.ensure_vertical_spacing(marker, MESSAGE_MIN_SPACING - MESSAGE_ANCHOR_DY)
-            self.activate_participant(receiver, source_x)
+            self.position_marker_ensure_spacing(marker, MESSAGE_MIN_SPACING - MESSAGE_ANCHOR_DY)
+            self.participant_activate(receiver, source_x)
             self.current_position_y += MESSAGE_ANCHOR_DY
         else:
-            self.ensure_vertical_spacing(marker, MESSAGE_MIN_SPACING)
+            self.position_marker_ensure_spacing(marker, MESSAGE_MIN_SPACING)
 
         # actual message
         bullet = drawio.LostFoundDot(self.page)
@@ -210,11 +207,11 @@ class Layouter:
         if statement.activation == seqast.MessageActivation.ACTIVATE:
             message.target_anchor = target_anchor
 
-        self.update_position_marker(marker)
+        self.position_marker_update(marker)
 
         # layout
         self.current_position_y += STATEMENT_OFFSET_Y
-        self.update_frame_dimension(source_x, receiver.lifeline.center_x(), extra_padding=True)
+        self.frame_dimension(source_x, receiver.lifeline.center_x(), extra_padding=True)
 
     def handle_lost_message(self, statement: seqast.LostMessageStatement):
         assert statement.activation in (seqast.MessageActivation.REGULAR, seqast.MessageActivation.DEACTIVATE), \
@@ -236,7 +233,7 @@ class Layouter:
         else:
             raise NotImplementedError()
 
-        self.ensure_vertical_spacing(marker, MESSAGE_MIN_SPACING)
+        self.position_marker_ensure_spacing(marker, MESSAGE_MIN_SPACING)
 
         # actual message
         bullet = drawio.LostFoundDot(self.page)
@@ -250,18 +247,18 @@ class Layouter:
         if statement.activation == seqast.MessageActivation.DEACTIVATE:
             message.source_anchor = source_anchor
 
-        self.update_position_marker(marker)
+        self.position_marker_update(marker)
 
         # deactivation after message
         if statement.activation == seqast.MessageActivation.DEACTIVATE:
             assert sender.activation_stack, "sender not activated"
             self.current_position_y += MESSAGE_ANCHOR_DY
-            self.deactivate_participant(sender)
-            self.update_position_marker(sender.center_marker)
+            self.participant_deactivate(sender)
+            self.position_marker_update(sender.center_marker)
 
         # layout
         self.current_position_y += STATEMENT_OFFSET_Y
-        self.update_frame_dimension(source_x, sender.lifeline.center_x(), extra_padding=True)
+        self.frame_dimension(source_x, sender.lifeline.center_x(), extra_padding=True)
 
     def handle_message(self, statement: seqast.MessageStatement):
         if statement.sender == statement.receiver:
@@ -278,13 +275,13 @@ class Layouter:
         if statement.activation == seqast.MessageActivation.FIREFORGET:
             min_spacing -= FIREFORGET_ACTIVATION_HEIGHT / 2
 
-        self.ensure_vertical_spacing_between(sender, receiver, min_spacing)
+        self.position_marker_ensure_spacing_between(sender, receiver, min_spacing)
 
         if statement.activation == seqast.MessageActivation.ACTIVATE:
-            self.activate_participant(receiver, sender.lifeline.center_x())
+            self.participant_activate(receiver, sender.lifeline.center_x())
             self.current_position_y += MESSAGE_ANCHOR_DY
         if statement.activation == seqast.MessageActivation.FIREFORGET:
-            self.activate_participant(receiver, sender.lifeline.center_x())
+            self.participant_activate(receiver, sender.lifeline.center_x())
             self.current_position_y += FIREFORGET_ACTIVATION_HEIGHT / 2
 
         # actual message
@@ -305,22 +302,22 @@ class Layouter:
                 y=self.current_position_y
             ))
 
-        self.update_position_markers_between(sender, receiver)
+        self.position_marker_update_between(sender, receiver)
 
         # deactivation after message
         if statement.activation == seqast.MessageActivation.DEACTIVATE:
             assert sender.activation_stack, "sender not activated"
             self.current_position_y += MESSAGE_ANCHOR_DY
-            self.deactivate_participant(sender)
-            self.update_position_marker(sender.center_marker)
+            self.participant_deactivate(sender)
+            self.position_marker_update(sender.center_marker)
         if statement.activation == seqast.MessageActivation.FIREFORGET:
             self.current_position_y += FIREFORGET_ACTIVATION_HEIGHT / 2
-            self.deactivate_participant(receiver)
-            self.update_position_marker(receiver.center_marker)
+            self.participant_deactivate(receiver)
+            self.position_marker_update(receiver.center_marker)
 
         # layout
         self.current_position_y += STATEMENT_OFFSET_Y
-        self.update_frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x(), extra_padding=True)
+        self.frame_dimension(sender.lifeline.center_x(), receiver.lifeline.center_x(), extra_padding=True)
 
     def handle_self_call(self, statement: seqast.MessageStatement):
         assert statement.sender == statement.receiver
@@ -330,7 +327,7 @@ class Layouter:
 
         # create activation for self call
         self.current_position_y += SELF_CALL_MESSAGE_ACTIVATION_SPACING
-        self.activate_participant(participant)
+        self.participant_activate(participant)
 
         regular_activation = participant.activation_stack[-2] \
             if len(participant.activation_stack) > 1 else participant.lifeline
@@ -364,55 +361,20 @@ class Layouter:
 
         # deactivate after self call
         self.current_position_y += SELF_CALL_ACTIVATION_HEIGHT
-        self.deactivate_participant(participant)
+        self.participant_deactivate(participant)
 
-        self.update_frame_dimension(participant.lifeline.center_x(), frame_x, extra_padding=True)
+        self.frame_dimension(participant.lifeline.center_x(), frame_x, extra_padding=True)
         self.current_position_y += STATEMENT_OFFSET_Y
 
-    def handle_alternative(self, statement: seqast.AlternativeStatement):
-        frame = self.open_frame('alt', statement.text)
-        self.process_statements(statement.inner)
-
-        for branch in statement.branches:
-            separator = drawio.Separator(frame)
-            separator.y = self.current_position_y - frame.y
-
-            text = drawio.Text(self.page, frame, f'[{branch.text}]')
-            text.alignment = drawio.TextAlignment.TOP_LEFT
-            text.x = 10
-            text.y = separator.y + 5
-
-            self.current_position_y += CONTROL_FRAME_LABEL_HEIGHT
-            self.update_all_position_markers(-STATEMENT_OFFSET_Y)
-
-            self.process_statements(branch.inner)
-
-        self.close_frame(frame)
-
-    def handle_option(self, statement: seqast.OptionStatement):
-        frame = self.open_frame('opt', statement.text)
-        self.process_statements(statement.inner)
-        self.close_frame(frame)
-
-    def handle_loop(self, statement: seqast.LoopStatement):
-        frame = self.open_frame('loop', statement.text)
-        self.process_statements(statement.inner)
-        self.close_frame(frame)
-
-    def handle_group(self, statement: seqast.GroupStatement):
-        frame = self.open_frame(statement.text)
+    def handle_frame(self, statement: seqast.FrameStatement):
+        frame = self.frame_open(statement.title, statement.text)
         self.process_statements(statement.inner)
 
         for section in statement.sections:
-            separator = drawio.Separator(frame)
-            separator.y = self.current_position_y - frame.y
-
-            self.current_position_y += STATEMENT_OFFSET_Y
-            self.update_all_position_markers(-STATEMENT_OFFSET_Y)
-
+            self.frame_section(frame, section.text)
             self.process_statements(section.inner)
 
-        self.close_frame(frame)
+        self.frame_close(frame)
 
     def handle_note(self, statement: seqast.NoteStatement):
         participant = self.participant_by_name(statement.target)
@@ -426,7 +388,7 @@ class Layouter:
     def handle_vertical_offset(self, statement: seqast.VerticalOffsetStatement):
         self.current_position_y += statement.offset
 
-        for marker in self.all_position_markers():
+        for marker in self.position_marker_all():
             marker.y += statement.offset
 
     def handle_extend_frame(self, statement: seqast.ExtendFrameStatement):
@@ -438,42 +400,41 @@ class Layouter:
         else:
             dimensions.min_x += statement.extend
 
-    def open_frame(self, value: str, text: Optional[str] = None) -> drawio.Frame:
+    def frame_open(self, title: str, text: Optional[str] = None) -> drawio.Frame:
         # create frame
         self.current_position_y += CONTROL_FRAME_SPACING_BEFORE
 
-        frame = drawio.Frame(self.page, value)
+        frame = drawio.Frame(self.page, title)
         frame.y = self.current_position_y
         frame.box_width = CONTROL_FRAME_BOX_WIDTH
         frame.box_height = CONTROL_FRAME_BOX_HEIGHT
 
+        # push frame stack
+        dimension = FrameDimension()
+        self.frame_dimension_stack.append(dimension)
+
+        # handle text
         if text:
             text = drawio.Text(self.page, frame, f'[{text}]')
             text.alignment = drawio.TextAlignment.TOP_LEFT
             text.x = 10
             text.y = CONTROL_FRAME_BOX_HEIGHT + 5
 
-        # push frame stack
-        dimension = FrameDimension()
-        self.frame_dimension_stack.append(dimension)
-
-        # positioning on frame begin
-        if text:
             self.current_position_y += CONTROL_FRAME_BOX_HEIGHT + CONTROL_FRAME_LABEL_HEIGHT
         else:
             self.current_position_y += CONTROL_FRAME_BOX_HEIGHT + STATEMENT_OFFSET_Y
 
-        self.update_all_position_markers(-STATEMENT_OFFSET_Y)
+        self.position_marker_update_all(-STATEMENT_OFFSET_Y)
 
         return frame
 
-    def close_frame(self, frame: drawio.Frame):
+    def frame_close(self, frame: drawio.Frame):
         # set frame height
         frame.height = self.current_position_y - frame.y
 
         # positioning on frame end
         self.current_position_y += STATEMENT_OFFSET_Y
-        self.update_all_position_markers()
+        self.position_marker_update_all()
         self.current_position_y += CONTROL_FRAME_SPACING_AFTER
 
         # pop frame stack
@@ -485,9 +446,27 @@ class Layouter:
         frame.width = dimension.max_x + CONTROL_FRAME_PADDING - frame.x
 
         # update dimension for parent frame
-        self.update_frame_dimension(frame.x, frame.x + frame.width)
+        self.frame_dimension(frame.x, frame.x + frame.width)
 
-    def update_frame_dimension(self, *x: float, extra_padding: bool = False):
+    def frame_section(self, frame: drawio.Frame, text: Optional[str] = None):
+        # create separator
+        separator = drawio.Separator(frame)
+        separator.y = self.current_position_y - frame.y
+
+        # handle text
+        if text:
+            text = drawio.Text(self.page, frame, f'[{text}]')
+            text.alignment = drawio.TextAlignment.TOP_LEFT
+            text.x = 10
+            text.y = separator.y + 5
+
+            self.current_position_y += CONTROL_FRAME_LABEL_HEIGHT
+        else:
+            self.current_position_y += STATEMENT_OFFSET_Y
+
+        self.position_marker_update_all(-STATEMENT_OFFSET_Y)
+
+    def frame_dimension(self, *x: float, extra_padding: bool = False):
         dimension = self.frame_dimension_stack[-1]
         extra_padding_val = CONTROL_FRAME_ACTIVITY_EXTRA_PADDING if extra_padding else 0
 
@@ -501,7 +480,7 @@ class Layouter:
         else:
             dimension.max_x = max(dimension.max_x, max(x) + extra_padding_val)
 
-    def activate_participant(self, participant: ParticipantInfo, activator_x: Optional[float] = None):
+    def participant_activate(self, participant: ParticipantInfo, activator_x: Optional[float] = None):
         activation = drawio.Activation(participant.lifeline)
         activation.y = self.current_position_y
 
@@ -529,35 +508,36 @@ class Layouter:
 
         participant.activation_stack.append(activation)
 
-    def deactivate_participant(self, participant: ParticipantInfo):
+    def participant_deactivate(self, participant: ParticipantInfo):
         activation = participant.activation_stack.pop()
         activation.height = self.current_position_y - activation.y
 
     def participant_by_name(self, name: str) -> ParticipantInfo:
         return next((p for p in self.participants if p.name == name), None)
 
-    def ensure_vertical_spacing_between(self, first: ParticipantInfo, second: ParticipantInfo, required_spacing: float):
-        for marker in self.position_markers_between(first, second):
-            self.ensure_vertical_spacing(marker, required_spacing)
+    def position_marker_ensure_spacing_between(self, first: ParticipantInfo, second: ParticipantInfo,
+                                               required_spacing: float):
+        for marker in self.position_marker_between(first, second):
+            self.position_marker_ensure_spacing(marker, required_spacing)
 
-    def ensure_vertical_spacing(self, marker: PositionMarker, required_spacing: float):
+    def position_marker_ensure_spacing(self, marker: PositionMarker, required_spacing: float):
         current_spacing = (self.current_position_y - marker.y)
 
         if current_spacing < required_spacing:
             self.current_position_y += required_spacing - current_spacing
 
-    def update_position_markers_between(self, first: ParticipantInfo, second: ParticipantInfo):
-        for marker in self.position_markers_between(first, second):
-            self.update_position_marker(marker)
+    def position_marker_update_between(self, first: ParticipantInfo, second: ParticipantInfo):
+        for marker in self.position_marker_between(first, second):
+            self.position_marker_update(marker)
 
-    def update_all_position_markers(self, dy: float = 0):
-        for marker in self.all_position_markers():
-            self.update_position_marker(marker, dy)
+    def position_marker_update_all(self, dy: float = 0):
+        for marker in self.position_marker_all():
+            self.position_marker_update(marker, dy)
 
-    def update_position_marker(self, marker: PositionMarker, dy: float = 0):
+    def position_marker_update(self, marker: PositionMarker, dy: float = 0):
         marker.y = self.current_position_y + dy
 
-    def position_markers_between(self, first: ParticipantInfo, second: ParticipantInfo) \
+    def position_marker_between(self, first: ParticipantInfo, second: ParticipantInfo) \
             -> Iterable[PositionMarker]:
         start_index = min(first.index, second.index)
         end_index = max(first.index, second.index)
@@ -569,7 +549,7 @@ class Layouter:
             if participant.index != end_index:
                 yield participant.right_marker
 
-    def all_position_markers(self) -> Iterable[PositionMarker]:
+    def position_marker_all(self) -> Iterable[PositionMarker]:
         if self.participants:
             yield self.participants[0].left_marker
 

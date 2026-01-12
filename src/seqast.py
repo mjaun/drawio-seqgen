@@ -138,37 +138,37 @@ class SeqTransformer(Transformer):
         text = consume_next(items, 'TEXT')
         inner = consume_next(items, 'statement_list')
         branches = consume_all(items, 'alternative_branch')
-        return AlternativeStatement(text, inner, branches)
+        return FrameStatement('alt', text, inner, branches)
 
     @staticmethod
     def alternative_branch(items):
         text = consume_next_opt(items, 'TEXT', default='else')
         inner = consume_next(items, 'statement_list')
-        return ParsedValue(AlternativeBranch(text, inner), 'alternative_branch')
+        return ParsedValue(FrameSection(text, inner), 'alternative_branch')
 
     @staticmethod
     def option(items):
         text = consume_next(items, 'TEXT')
         inner = consume_next(items, 'statement_list')
-        return OptionStatement(text, inner)
+        return FrameStatement('opt', text, inner, [])
 
     @staticmethod
     def loop(items):
         text = consume_next(items, 'TEXT')
         inner = consume_next(items, 'statement_list')
-        return LoopStatement(text, inner)
+        return FrameStatement('loop', text, inner, [])
 
     @staticmethod
     def group(items):
-        text = consume_next(items, 'TEXT')
+        title = consume_next(items, 'TEXT')
         inner = consume_next(items, 'statement_list')
         sections = consume_all(items, 'group_section')
-        return GroupStatement(text, inner, sections)
+        return FrameStatement(title, None, inner, sections)
 
     @staticmethod
     def group_section(items):
         inner = consume_next(items, 'statement_list')
-        return ParsedValue(GroupSection(inner), 'group_section')
+        return ParsedValue(FrameSection(None, inner), 'group_section')
 
     @staticmethod
     def note(items):
@@ -345,40 +345,17 @@ class LostMessageStatement(Statement):
 
 
 @dataclass
-class AlternativeBranch:
-    text: str
+class FrameSection:
+    text: Optional[str]
     inner: List[Statement]
 
 
 @dataclass
-class AlternativeStatement(Statement):
-    text: str
+class FrameStatement(Statement):
+    title: str
+    text: Optional[str]
     inner: List[Statement]
-    branches: List[AlternativeBranch]
-
-
-@dataclass
-class OptionStatement(Statement):
-    text: str
-    inner: List[Statement]
-
-
-@dataclass
-class LoopStatement(Statement):
-    text: str
-    inner: List[Statement]
-
-
-@dataclass
-class GroupSection:
-    inner: List[Statement]
-
-
-@dataclass
-class GroupStatement(Statement):
-    text: str
-    inner: List[Statement]
-    sections: List[GroupSection]
+    sections: List[FrameSection]
 
 
 @dataclass
