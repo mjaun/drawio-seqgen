@@ -11,5 +11,5 @@ for input_file in *.seq; do
   output_file="${input_file%.*}.output.drawio"
   expected_file="${input_file%.*}.expected.drawio"
 
-  $SEQGEN -i $input_file -o $expected_file
+  $SEQGEN -o $expected_file $input_file
 done
