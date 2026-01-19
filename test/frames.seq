@@ -5,7 +5,7 @@ participant B
 participant C
 
 // activation sets frame size
-loop "forever"
+loop forever
   activate A C
   vertical offset 30
   deactivate A C
@@ -15,15 +15,15 @@ activate A B C
 
 // message sets frame size
 A -> B: message
-opt "sometimes, sometimes not"
+opt sometimes, sometimes not
   A -> B: message
 end
 A -> B: message
 
 // self call sets frame size
-alt "what if?"
+alt what if?
 C: self call
-else "what if \"not\"?"
+else what if "not"?
 C: self call<br/>also
 else
 // empty
@@ -31,24 +31,67 @@ end
 
 vertical offset -200
 
-loop "never"
-  opt "but maybe<br/>on two lines"
+loop never
+  opt but maybe<br/>on two lines
     A -> B
     B: again a<br/>self call
     extend frame 30
     extend frame -80
   end
+  break on condition
+    A -> B
+  end
 end
 
 deactivate A B C
 
-group "critical"
+alt
+  A -> B
+else
+  B -> A
+end
+
+opt
+  A -> B
+end
+
+loop
+  A -> B
+end
+
+break
+  A -> B
+end
+
+critical
+  A -> B
+end
+
+critical with text
   A -> B
   B -> A
 end
 
-group "parallel"
+par
   A -> B: hello
-section
+and
   A -> C: world
+end
+
+par process 1
+  A -> B: hello
+and process 2
+  A -> C: world
+end
+
+group "custom"
+  A -> B
+section
+  A -> C
+end
+
+group "custom" with text
+  A -> B
+section with another text
+  A -> C
 end

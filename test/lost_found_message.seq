@@ -5,7 +5,7 @@ participant C
 found left -> B
 found right -->> B
 
-opt "frame"
+opt frame
 
 found left ->+ B: message
 vertical offset 10
@@ -44,7 +44,7 @@ deactivate B
 B -> lost left
 B -->> lost right
 
-opt "frame"
+opt frame
 
 activate B
 vertical offset 10

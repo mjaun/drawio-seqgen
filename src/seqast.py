@@ -134,41 +134,68 @@ class SeqTransformer(Transformer):
         return MessageStatement(target, target, text, MessageActivation.FIREFORGET, LineStyle.SOLID, ArrowStyle.BLOCK)
 
     @staticmethod
-    def alternative(items):
-        text = consume_next(items, 'QUOTED_TEXT')
-        inner = consume_next(items, 'statement_list')
-        branches = consume_all(items, 'alternative_branch')
-        return FrameStatement('alt', text, inner, branches)
-
-    @staticmethod
-    def alternative_branch(items):
-        text = consume_next_opt(items, 'QUOTED_TEXT', default='else')
-        inner = consume_next(items, 'statement_list')
-        return ParsedValue(FrameSection(text, inner), 'alternative_branch')
-
-    @staticmethod
     def option(items):
-        text = consume_next(items, 'QUOTED_TEXT')
+        text = consume_next_opt(items, 'TEXT')
         inner = consume_next(items, 'statement_list')
         return FrameStatement('opt', text, inner, [])
 
     @staticmethod
     def loop(items):
-        text = consume_next(items, 'QUOTED_TEXT')
+        text = consume_next_opt(items, 'TEXT')
         inner = consume_next(items, 'statement_list')
         return FrameStatement('loop', text, inner, [])
 
     @staticmethod
+    def break_(items):
+        text = consume_next_opt(items, 'TEXT')
+        inner = consume_next(items, 'statement_list')
+        return FrameStatement('break', text, inner, [])
+
+    @staticmethod
+    def critical(items):
+        text = consume_next_opt(items, 'TEXT')
+        inner = consume_next(items, 'statement_list')
+        return FrameStatement('critical', text, inner, [])
+
+    @staticmethod
+    def alternative(items):
+        text = consume_next_opt(items, 'TEXT')
+        inner = consume_next(items, 'statement_list')
+        sections = consume_all(items, 'alternative_section')
+        return FrameStatement('alt', text, inner, sections)
+
+    @staticmethod
+    def alternative_section(items):
+        text = consume_next_opt(items, 'TEXT', default='else')
+        inner = consume_next(items, 'statement_list')
+        return ParsedValue(FrameSection(text, inner), 'alternative_section')
+
+    @staticmethod
+    def parallel(items):
+        text = consume_next_opt(items, 'TEXT')
+        inner = consume_next(items, 'statement_list')
+        sections = consume_all(items, 'parallel_section')
+        return FrameStatement('par', text, inner, sections)
+
+    @staticmethod
+    def parallel_section(items):
+        text = consume_next_opt(items, 'TEXT', default='else')
+        inner = consume_next(items, 'statement_list')
+        return ParsedValue(FrameSection(text, inner), 'parallel_section')
+
+    @staticmethod
     def group(items):
         title = consume_next(items, 'QUOTED_TEXT')
+        text = consume_next_opt(items, 'TEXT')
         inner = consume_next(items, 'statement_list')
         sections = consume_all(items, 'group_section')
-        return FrameStatement(title, None, inner, sections)
+        return FrameStatement(title, text, inner, sections)
 
     @staticmethod
     def group_section(items):
+        text = consume_next_opt(items, 'TEXT')
         inner = consume_next(items, 'statement_list')
-        return ParsedValue(FrameSection(None, inner), 'group_section')
+        return ParsedValue(FrameSection(text, inner), 'group_section')
 
     @staticmethod
     def note(items):
