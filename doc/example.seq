@@ -9,7 +9,7 @@ Alice ->+ John: Hello John!
 
 John: Stop<br/>thinking
 
-alt "John wants to chat"
+alt John wants to chat
   John -> Alice: Hello Alice!
 else
   note on John dx -130: Ignore Alice

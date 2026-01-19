@@ -176,7 +176,7 @@ The width of the message can be customized by adding a number.
 ### Frames
 
 ```
-opt "Something happened"
+opt something happened
   ...
 end
 ```
@@ -184,9 +184,9 @@ end
 Creates a frame for an optional part of the sequence.
 
 ```
-alt "x == 1"
+alt x == 1
   ...
-else "str == \"abc\""
+else str == "abc"
   ...
 else
   ...
@@ -198,7 +198,7 @@ An arbitrary amount of branches can be defined.
 If the branch label is omitted, it defaults to "else".
 
 ```
-loop "until tired"
+loop until tired
   ...
 end
 ```
@@ -206,20 +206,46 @@ end
 Creates a frame for a looped part of the sequence.
 
 ```
-group critical
-  ...
-end
-
-group parallel
-  ...
-section
-  ...
-section
+break on error
   ...
 end
 ```
 
-Creates a frame with a custom title.
+Creates a frame to indicate the abortion of a sequence.
+
+```
+critical
+  ...
+end
+```
+
+Creates a frame to indicate an uninterruptible sequence.
+
+```
+parallel
+  ...
+and
+  ...
+end
+```
+
+Creates a frame to indicate multiple processes running in parallel.
+
+```
+group "custom"
+  ...
+end
+
+group "custom" with text
+  ...
+section and more text
+  ...
+section and even more
+  ...
+end
+```
+
+Creates a frame with a custom title and optionally custom labels and multiple sections.
 
 The vertical dimensions of a frame is determined by the current vertical position on the beginning and end of the
 frame as described above.
