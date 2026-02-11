@@ -179,7 +179,7 @@ class SeqTransformer(Transformer):
 
     @staticmethod
     def parallel_section(items):
-        text = consume_next_opt(items, 'TEXT', default='else')
+        text = consume_next_opt(items, 'TEXT')
         inner = consume_next(items, 'statement_list')
         return ParsedValue(FrameSection(text, inner), 'parallel_section')
 

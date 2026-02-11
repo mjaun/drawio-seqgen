@@ -10,7 +10,7 @@ but the resulting file is an editable draw.io diagram instead of an image file.
 ## Usage
 
 ```
-src/main.py -i [input_file] -o [output_file]
+src/main.py -o [output_file] [input_file] 
 ```
 
 Where the input file is a text file describing the sequence using the syntax explained below and the output file
@@ -48,7 +48,7 @@ The size of the UML box containing the title can be customized.
 participant Alice
 participant J: John Jumper
 participant ML: Multiple<br/>Lines
-participant "With Special Chars()"
+participant P: With "Special" Chars()
 ```
 
 Participants must be declared explicitly at the beginning.
@@ -222,7 +222,7 @@ end
 Creates a frame to indicate an uninterruptible sequence.
 
 ```
-parallel
+par
   ...
 and
   ...
